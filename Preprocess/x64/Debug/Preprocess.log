@@ -1,0 +1,15 @@
+﻿C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V140\Microsoft.CppBuild.targets(392,5): warning MSB8028: The intermediate directory (x64\Debug\) contains files shared from another project (Preprocess.vcxproj).  This can lead to incorrect clean and rebuild behavior.
+  Reading Qt configuration (D:\Qt\Qt5.10.0\5.10.0\msvc2015_64\bin\qmake.exe)
+C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V140\Microsoft.CppBuild.targets(392,5): warning MSB8028: The intermediate directory (x64\Debug\) contains files shared from another project (Preprocess.vcxproj).  This can lead to incorrect clean and rebuild behavior.
+  Vectorization.cpp
+F:\Visual Studio 2015\Projects\Preprocess\Preprocess\Dependencies\NETCDF-x64\include\netcdf.h(1808): warning C4005: 'MAX_NC_DIMS': macro redefinition
+  f:\visual studio 2015\projects\preprocess\preprocess\dependencies\hdf4-x64-4-2-13\include\hlimits.h(197): note: see previous definition of 'MAX_NC_DIMS'
+F:\Visual Studio 2015\Projects\Preprocess\Preprocess\Dependencies\NETCDF-x64\include\netcdf.h(1810): warning C4005: 'MAX_NC_VARS': macro redefinition
+  f:\visual studio 2015\projects\preprocess\preprocess\dependencies\hdf4-x64-4-2-13\include\hlimits.h(198): note: see previous definition of 'MAX_NC_VARS'
+F:\Visual Studio 2015\Projects\Preprocess\Preprocess\Dependencies\NETCDF-x64\include\netcdf.h(1811): warning C4005: 'MAX_NC_NAME': macro redefinition
+  f:\visual studio 2015\projects\preprocess\preprocess\dependencies\hdf4-x64-4-2-13\include\hlimits.h(199): note: see previous definition of 'MAX_NC_NAME'
+F:\Visual Studio 2015\Projects\Preprocess\Preprocess\Dependencies\NETCDF-x64\include\netcdf.h(1812): warning C4005: 'MAX_VAR_DIMS': macro redefinition
+  f:\visual studio 2015\projects\preprocess\preprocess\dependencies\hdf4-x64-4-2-13\include\hlimits.h(201): note: see previous definition of 'MAX_VAR_DIMS'
+Vectorization.cpp(343): warning C4838: conversion from 'unsigned __int64' to 'double' requires a narrowing conversion
+  Preprocess.vcxproj -> F:\Visual Studio 2015\Projects\Preprocess\x64\Debug\X.exe
+  Preprocess.vcxproj -> F:\Visual Studio 2015\Projects\Preprocess\x64\Debug\X.pdb (Full PDB)
