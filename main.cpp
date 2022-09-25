@@ -1,14 +1,12 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <io.h>
 #include "Convertor.h"
 #include "AnomalyAnalysis.h"
-#include "ThreadPool.h"
 #include "opt.h"
-#include "algorithm/DcSTMC.h"
-#include "process/Postprocessor.h"
-#include "process/Vectorization.h"
+#include "DcSTMC.h"
+#include "Postprocessor.h"
+#include "Vectorization.h"
 
 using namespace std;
 

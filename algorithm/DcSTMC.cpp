@@ -1,5 +1,4 @@
 #include "opt.h"
-#include "../_const.h"
 #include "DcSTMC.h"
 #include <cmath>
 #include <memory>

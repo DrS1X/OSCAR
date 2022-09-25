@@ -1,4 +1,4 @@
-"D:\CLion 2022.1\bin\cmake\win\bin\cmake.exe" -DCMAKE_BUILD_TYPE=Debug "-DCMAKE_MAKE_PROGRAM=D:/CLion 2022.1/bin/ninja/win/ninja.exe" -G Ninja -S E:\CLion_project\Clustering -B E:\CLion_project\Clustering\cmake-build-debug
+"D:\CLion 2022.1\bin\cmake\win\bin\cmake.exe" -DCMAKE_BUILD_TYPE=Debug "-DCMAKE_MAKE_PROGRAM=D:/CLion 2022.1/bin/ninja/win/ninja.exe" -G Ninja -S F:\CLion_Project\Clustering -B F:\CLion_Project\Clustering\cmake-build-debug
 -- Configuring done
 -- Generating done
--- Build files have been written to: E:/CLion_project/Clustering/cmake-build-debug
+-- Build files have been written to: F:/CLion_Project/Clustering/cmake-build-debug

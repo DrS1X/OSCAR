@@ -6,6 +6,13 @@
 
 using namespace std;
 
+
+//include_directories(pkg/GDAL-x64-2-2-2/include)
+//include_directories(pkg/HDF4-x64-4-2-13/include)
+//include_directories(pkg/HDF5 x64-1-82-0/include)
+//include_directories(pkg/NETCDF-x64/include)
+//include_directories(pkg/Matrix/include)
+
 struct Meta {
 	double Resolution;
 	double Scale;

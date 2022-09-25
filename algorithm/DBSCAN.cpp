@@ -14,14 +14,14 @@ const double BEG = INT_MIN; // already cluster as beginning
 const int SUR[9][2] = { {-1,0}, {-1,1},{0,1},{1,1},{1,0},{1,-1},{0,-1},{-1,-1},{0,0}};
 
 
-double DBSCAN::calculateClusterParameter(vector<string> files, int K) {
+/*double DBSCAN::calculateClusterParameter(vector<string> files, int K) {
 	vector<double *> data;
 	for (int i = 0; i < files.size(); ++i) {
 		double* buf = new double[Def.Size];
 		data.push_back(buf);
 		gdalOpt::readGeoTiff(files[i].c_str(), buf);
 	}
-}
+}*/
 
 bool DBSCAN::core(vector<string> Files, string outputPath) {
 	int n = Files.size();
