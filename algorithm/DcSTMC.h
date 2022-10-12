@@ -3,16 +3,16 @@
 class RoSTCM
 {
 public:
-	int rsID = -1; //դ����ԪID
-	int rsclusterId = -1; //��������ID
-	bool isKeyrs; //�Ƿ�Ϊ���Ķ���
-	bool Visited; //�Ƿ��ѷ��� 
-	double Attribute = 0;//ר�����ԣ���դ��ֵ
-	int t;//ʱ������
+	int rsID = -1; //??????ID
+	int rsclusterId = -1; //????????ID
+	bool isKeyrs; //???????????
+	bool Visited; //???????? 
+	double Attribute = 0;//??????????????
+	int t;//???????
 	int x;
-	int y;//�ռ�����
-	int a;//ת�����ԣ���ֵ��Ϊ1����ֵ��Ϊ-1������Ϊ0��
-	vector<int> neighborgrids; //ʱ���������ݵ�id�б�
+	int y;//???????
+	int a;//??????????????1????????-1???????0??
+	vector<int> neighborgrids; //????????????id?б?
 
 							   //RoSTCM() {}
 
@@ -21,49 +21,49 @@ public:
 		return this->isKeyrs;
 	}
 
-	//���ú��Ķ����־
+	//???ú????????
 	void SetKey(bool isKeyrs)
 	{
 		this->isKeyrs = isKeyrs;
 	}
 
-	//��ȡDpId����
+	//???DpId????
 	int GetrsID()
 	{
 		return this->rsID;
 	}
 
-	//����DpId����
+	//????DpId????
 	void SetrsId(int rsID)
 	{
 		this->rsID = rsID;
 	}
 
-	//GetIsVisited����
+	//GetIsVisited????
 	bool isVisited()
 	{
 		return this->Visited;
 	}
 
-	//SetIsVisited����
+	//SetIsVisited????
 	void SetVisited(bool Visited)
 	{
 		this->Visited = Visited;
 	}
 
-	//GetClusterId����
+	//GetClusterId????
 	long GetrsClusterId()
 	{
 		return this->rsclusterId;
 	}
 
-	//GetClusterId����
+	//GetClusterId????
 	void SetrsClusterId(int rsclusterId)
 	{
 		this->rsclusterId = rsclusterId;
 	}
 
-	//GetArrivalPoints����
+	//GetArrivalPoints????
 	vector<int> Getneighborgrids()
 	{
 		return neighborgrids;
@@ -97,13 +97,13 @@ struct Param
 class DcSTMC {
 private:
 	int T = 2;
-	int Neighborhood = 8;//�ռ�����
-	int mPerNum = 200;//ÿ�ξ����ļ���
-	int rsclusterId = 2;//�ر��
-						//double NNeighbor = 0.3;//������ֵ
+	int Neighborhood = 8;//???????
+	int mPerNum = 200;//??ξ????????
+	int rsclusterId = 2;//????
+						//double NNeighbor = 0.3;//???????
 
-	int MinNum = 100; // 400;//���룺��Ϊ��8*((mRows*mCols)/20000)*mFileNum�����ã�
-	int CP = 15;//���ĵ����������ֵ
+	int MinNum = 100; // 400;//?????????8*((mRows*mCols)/20000)*mFileNum???????
+	int CP = 15;//???????????????
 
 	int mRows = Def.Rows;
 	int mCols = Def.Cols;

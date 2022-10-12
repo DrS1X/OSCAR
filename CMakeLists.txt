@@ -12,6 +12,7 @@ include_directories(release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs/include)
 include_directories(release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs/include/hdf4)
 
 link_directories(release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs/lib)
+link_directories(release-1930-x64-gdal-3-5-2-mapserver-8-0-0/bin)
 
 add_executable(Clustering
         main.cpp
@@ -20,12 +21,11 @@ add_executable(Clustering
         operator/opt.cpp
         process/Postprocessor.cpp
         process/Vectorization.cpp
-        thread/AnomalyAnalysis.cpp
-        thread/Convertor.cpp
+        process/AnomalyAnalysis.cpp
+        process/Convertor.cpp
         algorithm/DcSTMC.cpp
-        algorithm/DcSTMC.cpp)
+        algorithm/DBSCAN.cpp)
 
 target_link_libraries(Clustering gdal_i.lib mfhdf.lib)
-
 
 

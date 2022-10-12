@@ -326,95 +326,6 @@ double GetRadiusPoint(POL polygon, double x, double y)
 	return distances;
 }
 
-myCircle GetMaxInCir(POL polygon, double step, double x, double y)
-{
-	double xOir = x;
-	double yOir = y;
-	if (xOir == 561 && yOir == 639.5)
-	{
-		int aa = 0;
-	}
-	double stepOir = step;//记录原始值
-	step = step * 0.5;
-	Line line = polygon.lines[0];
-	vector<Node> nodeList = line.nodes;
-	vector<array<double, 2>> points( nodeList.size());
-	for (int i = 0; i < nodeList.size(); i++)
-	{//取出xy
-		points[i][0] = nodeList[i].row;//x
-		points[i][1] = nodeList[i].col;//y
-	}
-
-	double lastStandDev = DBL_MAX;//记录上一个标准差
-	double standDev = DBL_MAX;//当前标准差
-	double r = 0.0;//圆的半径
-	while (true)
-	{//迭代求最大面积内切圆
-		vector<double> distances(nodeList.size() - 1);//点与线段的距离
-		vector<array<double, 2>> disPoints(nodeList.size() - 1);//计算线段距离的另一个端点
-
-		vector<int> minDisPosList;//记录距离最小点位置
-		for (int i = 0; i < distances.size(); i++)
-		{//计算距离
-			array<double,2> disPoint;//计算距离的另一个点
-			distances[i] = floor(GetPointLineDistance(x, y, points[i][0], points[i][1], points[i + 1][0], points[i + 1][1], disPoint)
-				* pow(10,4) + 0.5) / pow(10,4);
-			//计算距离 四舍五入取4位小数
-			disPoints[i][0] = disPoint[0];//记录计算距离端点位置
-			disPoints[i][1] = disPoint[1];
-			bool isInsert = false;//记录是否插入
-			for (int j = 0; j < minDisPosList.size(); j++)
-			{
-				if (distances[i] < distances[minDisPosList[j]])
-				{//更小的距离
-					minDisPosList.insert(minDisPosList.begin() + j, i);//插入该位置
-					if (minDisPosList.size() > 3) 
-						minDisPosList.erase(minDisPosList.end());//移除后面的
-					isInsert = true;
-					break;
-				}
-			}
-			if (!isInsert && minDisPosList.size() < 3)
-			{//没有插入
-				minDisPosList.push_back(i);//在最后记录下该位置
-			}
-			//if (minDisPosList.size() > 3) minDisPosList.RemoveRange(3, minDisPosList.size()() - 3);//移除后面的
-		}
-		r = *min_element(distances.begin(), distances.end());//选取最小距离最为圆的半径
-							//if(r>1000)
-							//{
-							//    r = 0;
-							//}
-		standDev = GetStandDev(distances[minDisPosList[0]], distances[minDisPosList[1]], distances[minDisPosList[2]]);//计算标准
-
-		if (standDev < (stepOir * 0.01))
-		{//标准差很小
-			break;//结束迭代运算
-		}
-		else
-		{
-			int minDisPos = minDisPosList[0];//最短距离位置
-			array<double, 2> pointMove = GetMovePoint(disPoints[minDisPos][0], disPoints[minDisPos][1], x, y, step);//获取移动后的点
-			x = pointMove[0];
-			y = pointMove[1];
-			array<double, 2> pointMove2 = GetMovePoint(disPoints[minDisPos][0], disPoints[minDisPos][1], 561, 639.5, step);//获取移动后的点
-		}
-
-		if (standDev >= lastStandDev)
-		{//标准差变大了
-
-			step = step * 0.5;//调整距离变为减半
-		}
-		lastStandDev = standDev;//记录标准差
-
-		if (step < (stepOir * (pow(0.5, 100))))
-		{//调整很小
-			break;//结束迭代运算
-		}
-	}
-	myCircle cir(x, y, r);
-	return cir;
-}
 
 bool IsOnLine(double x, double y, int x1, int y1, int x2, int y2)
 {
@@ -456,7 +367,97 @@ bool IsInPolygonNoBorder(double row, double col,const vector<Node>& nodes)
 	return inside;
 }
 
-myCircle GetMaxInCir(POL polygon, double step)
+myCircle GetMaxInCir(POL& polygon, double step, double x, double y)
+{
+    double xOir = x;
+    double yOir = y;
+    if (xOir == 561 && yOir == 639.5)
+    {
+        int aa = 0;
+    }
+    double stepOir = step;//记录原始值
+    step = step * 0.5;
+    Line line = polygon.lines[0];
+    vector<Node> nodeList = line.nodes;
+    vector<array<double, 2>> points( nodeList.size());
+    for (int i = 0; i < nodeList.size(); i++)
+    {//取出xy
+        points[i][0] = nodeList[i].row;//x
+        points[i][1] = nodeList[i].col;//y
+    }
+
+    double lastStandDev = DBL_MAX;//记录上一个标准差
+    double standDev = DBL_MAX;//当前标准差
+    double r = 0.0;//圆的半径
+    while (true)
+    {//迭代求最大面积内切圆
+        vector<double> distances(nodeList.size() - 1);//点与线段的距离
+        vector<array<double, 2>> disPoints(nodeList.size() - 1);//计算线段距离的另一个端点
+
+        vector<int> minDisPosList;//记录距离最小点位置
+        for (int i = 0; i < distances.size(); i++)
+        {//计算距离
+            array<double,2> disPoint;//计算距离的另一个点
+            distances[i] = floor(GetPointLineDistance(x, y, points[i][0], points[i][1], points[i + 1][0], points[i + 1][1], disPoint)
+                                 * pow(10,4) + 0.5) / pow(10,4);
+            //计算距离 四舍五入取4位小数
+            disPoints[i][0] = disPoint[0];//记录计算距离端点位置
+            disPoints[i][1] = disPoint[1];
+            bool isInsert = false;//记录是否插入
+            for (int j = 0; j < minDisPosList.size(); j++)
+            {
+                if (distances[i] < distances[minDisPosList[j]])
+                {//更小的距离
+                    minDisPosList.insert(minDisPosList.begin() + j, i);//插入该位置
+                    if (minDisPosList.size() > 3)
+                        minDisPosList.pop_back();//移除后面的
+                    isInsert = true;
+                    break;
+                }
+            }
+            if (!isInsert && minDisPosList.size() < 3)
+            {//没有插入
+                minDisPosList.push_back(i);//在最后记录下该位置
+            }
+            //if (minDisPosList.size() > 3) minDisPosList.RemoveRange(3, minDisPosList.size()() - 3);//移除后面的
+        }
+        r = *min_element(distances.begin(), distances.end());//选取最小距离最为圆的半径
+        //if(r>1000)
+        //{
+        //    r = 0;
+        //}
+        standDev = GetStandDev(distances[minDisPosList[0]], distances[minDisPosList[1]], distances[minDisPosList[2]]);//计算标准
+
+        if (standDev < (stepOir * 0.01))
+        {//标准差很小
+            break;//结束迭代运算
+        }
+        else
+        {
+            int minDisPos = minDisPosList[0];//最短距离位置
+            array<double, 2> pointMove = GetMovePoint(disPoints[minDisPos][0], disPoints[minDisPos][1], x, y, step);//获取移动后的点
+            x = pointMove[0];
+            y = pointMove[1];
+            array<double, 2> pointMove2 = GetMovePoint(disPoints[minDisPos][0], disPoints[minDisPos][1], 561, 639.5, step);//获取移动后的点
+        }
+
+        if (standDev >= lastStandDev)
+        {//标准差变大了
+
+            step = step * 0.5;//调整距离变为减半
+        }
+        lastStandDev = standDev;//记录标准差
+
+        if (step < (stepOir * (pow(0.5, 100))))
+        {//调整很小
+            break;//结束迭代运算
+        }
+    }
+    myCircle cir(x, y, r);
+    return cir;
+}
+
+myCircle GetMaxInCir(POL& polygon, double step)
 {
 	double minX = polygon.minRow;
 	double minY = polygon.minCol;
@@ -940,7 +941,8 @@ void Point2Line(const vector<vector<int>>& spImg, vector<Node> & nodes, vector<L
 	}
 }
 
-void Line2Polygon(const vector<vector<double>>& oriImg, const vector<vector<int>>& spImg, vector<Line>& lines, vector<POL>& polygons, int row, double startLat, double resolution) {
+void Line2Polygon(const vector<vector<double>>& oriImg, const vector<vector<int>>& spImg, vector<Line>& lines,
+vector<POL>& polygons, int row, double startLat, double resolution) {
 	for (int i = 0; i < lines.size(); i++)
 	{//循环每一条线
 		if (lines[i].type != 0) continue;//不是外环，退出本次循环
@@ -1027,7 +1029,7 @@ void Line2Polygon(const vector<vector<double>>& oriImg, const vector<vector<int>
 		polygon.minRec = GetMinAreaRec(polygon);
 		polygon.minOutCir = GetMinOutCir(polygon);
 		polygon.maxInCir = GetMaxInCir(polygon, 0.5);
-		polygons.emplace_back(polygon);
+		polygons.push_back(polygon);
 	}
 }
 
@@ -1301,8 +1303,9 @@ void Save(string outPath, string startTime, string AbnormalType, const double st
 		OGRGeometry* new_Geom;
 		OGRGeometryFactory::createFromWkt(&pszWkt, ref, &new_Geom);
 		poFeature->SetGeometryDirectly(new_Geom);
-		
-		if (poLayer->CreateFeature(poFeature) != OGRERR_NONE)
+
+        OGRErr createFeat = poLayer->CreateFeature(poFeature);
+		if ( createFeat != OGRERR_NONE)
 		{
 			printf("Failed to create feature in shapefile.\n");
 			return;

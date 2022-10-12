@@ -10,7 +10,11 @@
 
 using namespace std;
 
-int main(int argc, char *argv[])
+void func(std::vector<int>& vec){
+    vec.push_back(1);
+}
+
+int main()
 {
 	cout << "Chose the function by number" << endl;
 	cout << "1) GeoTiff2HDF" << endl;
@@ -123,35 +127,13 @@ int main(int argc, char *argv[])
 		string output = "E:\\IMERG\\test\\tmp\\vec";
 		Vectorization(fileSet0, fileSet1, output);
 		break;
-
-
-		/*
-		long* buf = new long[9]{3000,3000,3000,3000,3000,3000,3000,3000,0};
-		hdfOpt ho;
-		ho.writeHDF("E:\\IMERG\\test\\tmp\\ori\\p3.hdf",Test,buf);
-		*/
-
-		
-		/*
-		ThreadPool pool(4);
-		std::vector< std::future<int> > results;
-
-		for (int i = 0; i < 8; ++i) {
-			results.emplace_back(
-				pool.enqueue([i] {
-				std::cout << "hello" << i << std::endl;
-				//std::this_thread::sleep_for(std::chrono::seconds(1));
-				//std::cout << "world" << i << std::endl;
-				return i * i;
-				})
-			);
-		}
-
-		for (auto && result : results)
-			std::cout << result.get() << ' ';
-		std::cout << std::endl;
-		*/
 	}
+
+    case 11:{
+        std::vector<int> vec;
+        func(vec);
+        cout<<vec[0]<< endl;
+    }
 	default:
 		break;
 	}
