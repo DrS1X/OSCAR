@@ -129,6 +129,14 @@ build CMakeFiles\Clustering.dir\algorithm\DBSCAN.cpp.obj: CXX_COMPILER__Clusteri
   TARGET_COMPILE_PDB = CMakeFiles\Clustering.dir\
   TARGET_PDB = Clustering.pdb
 
+build CMakeFiles\Clustering.dir\algorithm\BFS.cpp.obj: CXX_COMPILER__Clustering_Debug F$:\CLion_Project\Clustering\algorithm\BFS.cpp || cmake_object_order_depends_target_Clustering
+  FLAGS = /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -MDd
+  INCLUDES = -IF:\CLion_Project\Clustering\. -IF:\CLion_Project\Clustering\operator -IF:\CLion_Project\Clustering\thread -IF:\CLion_Project\Clustering\algorithm -IF:\CLion_Project\Clustering\process -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include\hdf4
+  OBJECT_DIR = CMakeFiles\Clustering.dir
+  OBJECT_FILE_DIR = CMakeFiles\Clustering.dir\algorithm
+  TARGET_COMPILE_PDB = CMakeFiles\Clustering.dir\
+  TARGET_PDB = Clustering.pdb
+
 
 # =============================================================================
 # Link build statements for EXECUTABLE target Clustering
@@ -137,7 +145,7 @@ build CMakeFiles\Clustering.dir\algorithm\DBSCAN.cpp.obj: CXX_COMPILER__Clusteri
 #############################################
 # Link the executable Clustering.exe
 
-build Clustering.exe: CXX_EXECUTABLE_LINKER__Clustering_Debug CMakeFiles\Clustering.dir\main.cpp.obj CMakeFiles\Clustering.dir\operator\gdalOpt.cpp.obj CMakeFiles\Clustering.dir\operator\hdfOpt.cpp.obj CMakeFiles\Clustering.dir\operator\opt.cpp.obj CMakeFiles\Clustering.dir\process\Postprocessor.cpp.obj CMakeFiles\Clustering.dir\process\Vectorization.cpp.obj CMakeFiles\Clustering.dir\process\AnomalyAnalysis.cpp.obj CMakeFiles\Clustering.dir\process\Convertor.cpp.obj CMakeFiles\Clustering.dir\algorithm\DcSTMC.cpp.obj CMakeFiles\Clustering.dir\algorithm\DBSCAN.cpp.obj
+build Clustering.exe: CXX_EXECUTABLE_LINKER__Clustering_Debug CMakeFiles\Clustering.dir\main.cpp.obj CMakeFiles\Clustering.dir\operator\gdalOpt.cpp.obj CMakeFiles\Clustering.dir\operator\hdfOpt.cpp.obj CMakeFiles\Clustering.dir\operator\opt.cpp.obj CMakeFiles\Clustering.dir\process\Postprocessor.cpp.obj CMakeFiles\Clustering.dir\process\Vectorization.cpp.obj CMakeFiles\Clustering.dir\process\AnomalyAnalysis.cpp.obj CMakeFiles\Clustering.dir\process\Convertor.cpp.obj CMakeFiles\Clustering.dir\algorithm\DcSTMC.cpp.obj CMakeFiles\Clustering.dir\algorithm\DBSCAN.cpp.obj CMakeFiles\Clustering.dir\algorithm\BFS.cpp.obj
   FLAGS = /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -MDd
   LINK_FLAGS = /machine:x64 /debug /INCREMENTAL /subsystem:console
   LINK_LIBRARIES = gdal_i.lib  mfhdf.lib  kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib

@@ -1,12 +1,12 @@
-﻿#include "opt.h"
-#include "../_const.h"
-#include <cmath>
+﻿#include <cmath>
 #include <memory>
 #include "Vectorization.h"
 #include <array>
 #include "ogrsf_frmts.h"
 #include "ogr_spatialref.h"
 #include "ogr_geometry.h"
+#include "opt.h"
+#include "_const.h"
 
 using namespace std;
 
@@ -113,9 +113,6 @@ Node GetNextNode(Node tailNode, vector<Node>& nodes, int& minRow, int& minCol, i
 					else if (node.row > maxRow) maxRow = node.row;//最大行数
 					if (node.col < minCol) minCol = node.col;//最小列数
 					else if (node.col > maxCol) maxCol = node.col;//最大列数
-																  //vector<Node> nextNodes = GetNextNodes(node, ref nodes, ref minRow, ref minCol, ref maxRow, ref maxCol);
-																  //nextNodes.Insert(0, node);//将该结点添加到头上
-																  //return nextNodes;
 				}
 				return nodes[i];
 			}
@@ -152,9 +149,6 @@ Node GetNextNode(Node tailNode, vector<Node>& nodes, int& minRow, int& minCol, i
 					else if (node.row > maxRow) maxRow = node.row;//最大行数
 					if (node.col < minCol) minCol = node.col;//最小列数
 					else if (node.col > maxCol) maxCol = node.col;//最大列数
-																  //vector<Node> nextNodes = GetNextNodes(node, ref nodes, ref minRow, ref minCol, ref maxRow, ref maxCol);
-																  //nextNodes.Insert(0, node);//将该结点添加到头上
-																  //return nextNodes;
 				}
 				return nodes[i];
 			}
@@ -325,7 +319,6 @@ double GetRadiusPoint(POL polygon, double x, double y)
 
 	return distances;
 }
-
 
 bool IsOnLine(double x, double y, int x1, int y1, int x2, int y2)
 {
@@ -1033,289 +1026,6 @@ vector<POL>& polygons, int row, double startLat, double resolution) {
 	}
 }
 
-void Save(string outPath, string startTime, string AbnormalType, const double startLog, const double startLat, const double resolution, vector<POL> polygons) {
-	GDALAllRegister();
-	//保存shp
-	CPLSetConfigOption("GDAL_FILENAME_IS_UTF8", "NO");
-	// 为了使属性表字段支持中文，请添加下面这句
-	CPLSetConfigOption("SHAPE_ENCODING", "");
-
-	const char *pszDriverName = "ESRI Shapefile";
-	GDALDriver *poDriver;
-	poDriver = GetGDALDriverManager()->GetDriverByName(pszDriverName);
-	if (poDriver == NULL)
-	{
-		printf("%s driver not available.\n", pszDriverName);
-		return;
-	}
-
-	GDALDataset *poDS;
-
-	poDS = poDriver->Create(outPath.c_str(), 0, 0, 0, GDT_Unknown, NULL);
-	if (poDS == NULL)
-	{
-		printf("Creation of output file failed.\n");
-		return;
-	}
-
-	OGRLayer *poLayer;
-
-	OGRSpatialReference * ref;
-	ref = new OGRSpatialReference(Def.Projection.c_str());
-
-	poLayer = poDS->CreateLayer("PolygonLayer", ref, wkbPolygon, NULL);
-	if (poLayer == NULL)
-	{
-		printf("Layer creation failed.\n");
-		return;
-	}
-
-	//Fields
-	{
-		OGRFieldDefn oFieldName("Name", OFTString);
-		oFieldName.SetWidth(20);
-		poLayer->CreateField(&oFieldName, 1);
-
-		// 先创建一个叫FieldID的整型属性
-		OGRFieldDefn oFieldStormID("PRID", OFTInteger);
-		poLayer->CreateField(&oFieldStormID, 1);
-
-		// 先创建一个叫FieldID的整型属性
-		OGRFieldDefn oFieldStateID("STID", OFTString);
-		oFieldStateID.SetWidth(20);
-		poLayer->CreateField(&oFieldStateID, 1);
-
-		// 再创建一个叫FeatureName的字符型属性，字符长度为50
-		OGRFieldDefn oFieldSeqID("SQID", OFTString);
-		oFieldSeqID.SetWidth(20);
-		poLayer->CreateField(&oFieldSeqID, 1);
-
-		// 再创建一个叫FeatureName的字符型属性，字符长度为50
-		OGRFieldDefn oFieldTime("Time", OFTString);
-		oFieldTime.SetWidth(20);
-		poLayer->CreateField(&oFieldTime, 1);
-
-		//// 再创建一个叫FeatureName的字符型属性，字符长度为50
-		//OGRFieldDefn oFieldLongTime("LongTime", OFTString);
-		//oFieldLongTime.SetWidth(20);
-		//poLayer->CreateField(&oFieldLongTime, 1);
-
-		//创建x坐标字段
-		OGRFieldDefn oFieldMinLog("MinLon", OFTReal);
-		oFieldMinLog.SetWidth(20);
-		oFieldMinLog.SetPrecision(8);
-		poLayer->CreateField(&oFieldMinLog, 1);
-		//创建y坐标字段
-		OGRFieldDefn oFieldMinLat("MinLat", OFTReal);
-		oFieldMinLat.SetWidth(20);
-		oFieldMinLat.SetPrecision(8);
-		poLayer->CreateField(&oFieldMinLat, 1);
-		//创建z坐标字段
-		OGRFieldDefn oFieldMaxLog("MaxLon", OFTReal);
-		oFieldMaxLog.SetWidth(20);
-		oFieldMaxLog.SetPrecision(8);
-		poLayer->CreateField(&oFieldMaxLog, 1);
-		//创建z坐标字段
-		OGRFieldDefn oFieldMaxLat("MaxLat", OFTReal);
-		oFieldMaxLat.SetWidth(20);
-		oFieldMaxLat.SetPrecision(8);
-		poLayer->CreateField(&oFieldMaxLat, 1);
-
-		//创建area字段
-		OGRFieldDefn oFieldArea("Area", OFTReal);
-		oFieldArea.SetWidth(20);
-		oFieldArea.SetPrecision(8);
-		poLayer->CreateField(&oFieldArea, 1);
-
-		//创建平均降雨量字段
-		OGRFieldDefn oFieldAvgRainFall("AvgValue", OFTReal);
-		oFieldAvgRainFall.SetWidth(20);
-		oFieldAvgRainFall.SetPrecision(8);
-		poLayer->CreateField(&oFieldAvgRainFall, 1);
-
-		////创建体积字段
-		//OGRFieldDefn oFieldVolume("Volume", OFTReal);
-		//oFieldVolume.SetWidth(20);
-		//oFieldVolume.SetPrecision(8);
-		//poLayer->CreateField(&oFieldVolume, 1);
-
-		//创建最大降雨量字段
-		OGRFieldDefn oFieldMaxRainFall("MaxValue", OFTReal);
-		oFieldMaxRainFall.SetWidth(20);
-		oFieldMaxRainFall.SetPrecision(8);
-		poLayer->CreateField(&oFieldMaxRainFall, 1);
-
-		//创建最大降雨量字段
-		OGRFieldDefn oFieldMinRainFall("MinValue", OFTReal);
-		oFieldMinRainFall.SetWidth(20);
-		oFieldMinRainFall.SetPrecision(8);
-		poLayer->CreateField(&oFieldMinRainFall, 1);
-
-		////创建周长字段
-		//OGRFieldDefn oFieldLength("Length", OFTReal);
-		//oFieldLength.SetWidth(20);
-		//oFieldLength.SetPrecision(8);
-		//poLayer->CreateField(&oFieldLength, 1);
-
-		//创建质心字段
-		OGRFieldDefn oFieldLogCore("CoreLon", OFTReal);
-		oFieldLogCore.SetWidth(20);
-		oFieldLogCore.SetPrecision(8);
-		poLayer->CreateField(&oFieldLogCore, 1);
-
-		//创建质心字段
-		OGRFieldDefn oFieldLatCore("CoreLat", OFTReal);
-		oFieldLatCore.SetWidth(20);
-		oFieldLatCore.SetPrecision(8);
-		poLayer->CreateField(&oFieldLatCore, 1);
-
-		//创建Power字段
-		OGRFieldDefn oFieldPower("Power", OFTInteger);
-		poLayer->CreateField(&oFieldPower, 1);
-
-		//创建Abnormal异常类型
-		OGRFieldDefn oFieldAbnormal("Abnormal", OFTString);
-		oFieldAbnormal.SetWidth(20);
-		poLayer->CreateField(&oFieldAbnormal, 1);
-
-		//创建形状系数字段
-		OGRFieldDefn oFieldSI("SI", OFTReal);
-		oFieldSI.SetWidth(20);
-		oFieldSI.SetPrecision(8);
-		poLayer->CreateField(&oFieldSI, 1);
-
-		////创建最大长度字段
-		//OGRFieldDefn oFieldLMax("LMax", OFTReal);
-		//oFieldLMax.SetWidth(20);
-		//oFieldLMax.SetPrecision(8);
-		//poLayer->CreateField(&oFieldLMax, 1);
-
-		////创建最大宽度字段
-		//OGRFieldDefn oFieldWMax("WMax", OFTReal);
-		//oFieldWMax.SetWidth(20);
-		//oFieldWMax.SetPrecision(8);
-		//poLayer->CreateField(&oFieldWMax, 1);
-
-		//创建偏心率字段
-		OGRFieldDefn oFieldERatio("ERatio", OFTReal);
-		oFieldERatio.SetWidth(20);
-		oFieldERatio.SetPrecision(8);
-		poLayer->CreateField(&oFieldERatio, 1);
-
-		//创建矩形度字段
-		OGRFieldDefn oFieldRecDeg("RecDeg", OFTReal);
-		oFieldRecDeg.SetWidth(20);
-		oFieldRecDeg.SetPrecision(8);
-		poLayer->CreateField(&oFieldRecDeg, 1);
-
-		//创建圆形度字段
-		OGRFieldDefn oFieldSphDeg("SphDeg", OFTReal);
-		oFieldSphDeg.SetWidth(20);
-		oFieldSphDeg.SetPrecision(8);
-		poLayer->CreateField(&oFieldSphDeg, 1);
-		/*if (poLayer->CreateField(&oFieldSphDeg, 1) != OGRERR_NONE)
-		{
-		printf("Creating Name field failed.\n");
-		return false;
-		}*/
-	}
-
-	//write	
-	//OGRFeatureDefn *Defn = poLayer->GetLayerDefn();
-
-	for (auto polygon : polygons)
-	{//写出每个多边形
-		OGRFeature * poFeature;
-		poFeature = OGRFeature::CreateFeature(poLayer->GetLayerDefn());
-
-		poFeature->SetField(0, "pr");
-		poFeature->SetField(1, polygon.eventID);
-		poFeature->SetField(4, startTime.c_str());
-
-		//计算经纬度
-		double minLog = startLog + (polygon.minCol + 1) * resolution;//最小经度
-		double minLat = startLat - (polygon.maxRow + 1) * resolution;//最小纬度
-		double maxLog = startLog + (polygon.maxCol + 1) * resolution;//最大经度
-		double maxLat = startLat - (polygon.minRow + 1) * resolution;//最大纬度
-
-		//计算经纬度
-		double CoreLog = startLog + (polygon.coreCol + 0.5) * resolution;//质心经度
-		double CoreLat = startLat - (polygon.coreRow + 0.5) * resolution;//质心纬度
-
-																			   //	形状系数（SI）：面积（A）/周长（P）
-		double si = (4 * sqrt(polygon.area)) / polygon.length;
-		double eRatio = polygon.minRec.width / polygon.minRec.length;
-		double recDeg = polygon.area / ((polygon.minRec.length * polygon.minRec.width) * 123.93 * cos((maxLat + minLat) / 2 * M_PI / 180));//最小外包矩形面积为近似计算
-		double sphDeg = polygon.maxInCir.r / polygon.minOutCir.r;
-
-		poFeature->SetField(5, minLog);
-		poFeature->SetField(6, minLat);
-		poFeature->SetField(7, maxLog);
-		poFeature->SetField(8, maxLat);
-
-		poFeature->SetField(9, polygon.area);
-		poFeature->SetField(10, polygon.avgValue);
-		//poFeature->SetField(11, polygon.volume);
-		poFeature->SetField(11, polygon.maxValue);
-		poFeature->SetField(12, polygon.minValue);
-
-		//poFeature->SetField(15, polygon.length);
-		poFeature->SetField(13, CoreLog);
-		poFeature->SetField(14, CoreLat);
-		poFeature->SetField(15, polygon.power);
-		poFeature->SetField(16, AbnormalType.c_str());
-
-		poFeature->SetField(17, si);
-		//poFeature->SetField(20, polygon.minRec.length * resolution);
-		//poFeature->SetField(21, polygon.minRec.width * resolution);
-		poFeature->SetField(18, eRatio);
-		poFeature->SetField(19, recDeg);
-		poFeature->SetField(20, sphDeg);
-
-		string polygonStr = "POLYGON (";
-		for (auto line : polygon.lines)
-		{//写出多边形中每条线
-			polygonStr += "(";
-			for (auto node : line.nodes)
-			{
-				int _row = node.row;//点行号
-				int _col = node.col;//点列号
-
-				double log = startLog + (_col + 1) * resolution;//经度
-				double lat = startLat - (_row + 1) * resolution;//纬度
-
-				polygonStr += to_string(log) + " " + to_string(lat);
-				polygonStr += ",";
-			}
-			//移除最后一个逗号
-			if (polygonStr[polygonStr.size() - 1] == ',') {
-				polygonStr = polygonStr.substr(0, polygonStr.size() - 1);
-			}
-			polygonStr += "),";
-		}
-		//移除最后一个逗号
-		if (polygonStr[polygonStr.size() - 1] == ',') {
-			polygonStr = polygonStr.substr(0, polygonStr.size() - 1);
-		}
-		polygonStr += ")";
-
-		char* pszWkt = (char*)polygonStr.c_str();
-		OGRGeometry* new_Geom;
-		OGRGeometryFactory::createFromWkt(&pszWkt, ref, &new_Geom);
-		poFeature->SetGeometryDirectly(new_Geom);
-
-        OGRErr createFeat = poLayer->CreateFeature(poFeature);
-		if ( createFeat != OGRERR_NONE)
-		{
-			printf("Failed to create feature in shapefile.\n");
-			return;
-		}
-
-		OGRFeature::DestroyFeature(poFeature);
-	}
-	GDALClose(poDS);
-}
-
 void RasterToVectorBasedonSpace(string oriPath, string spPath, string outPath, string AbnormalType)
 {
 	//打开hdf文件, 获取基本信息
@@ -1393,7 +1103,7 @@ void RasterToVectorBasedonSpace(string oriPath, string spPath, string outPath, s
 	Line2Polygon(oriImg, spImg, lines, polygons, row, startLat, resolution);
 	
 	//保存shp	
-	Save(outPath, startTime, AbnormalType, -180, startLat, resolution, polygons);
+	gdalOpt::save(outPath, startTime, AbnormalType, -180, startLat, resolution, polygons);
 }
 
 void Vectorization(vector<string>& oriFileNames, vector<string>& spFileNames, string outFolderPath) {

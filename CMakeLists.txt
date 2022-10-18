@@ -24,7 +24,7 @@ add_executable(Clustering
         process/AnomalyAnalysis.cpp
         process/Convertor.cpp
         algorithm/DcSTMC.cpp
-        algorithm/DBSCAN.cpp)
+        algorithm/DBSCAN.cpp algorithm/BFS.cpp algorithm/algo.h)
 
 target_link_libraries(Clustering gdal_i.lib mfhdf.lib)
 

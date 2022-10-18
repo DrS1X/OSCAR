@@ -112,7 +112,7 @@ void Convertor::SpaceTransform(vector<string> strFileList, string strSavePath)
 					}
 				}
 			}
-			//pBuffer = NULL;
+			//buffer = NULL;
 			for (long i = 0; i < Rows; i++)
 			{
 				for (long j = 0; j < Cols; j++)

@@ -4,7 +4,7 @@
 #include "Convertor.h"
 #include "AnomalyAnalysis.h"
 #include "opt.h"
-#include "DcSTMC.h"
+#include "algo.h"
 #include "Postprocessor.h"
 #include "Vectorization.h"
 
@@ -14,8 +14,19 @@ void func(std::vector<int>& vec){
     vec.push_back(1);
 }
 
+void test(){
+    vector<string> fileList;
+    string f = "E:\\IMERG\\test\\tmp\\vec\\ori\\Positive20160102_3.tif";
+    fileList.push_back(f);
+    string outputPath = "E:\\IMERG\\test\\tmp\\vec";
+    BFS(fileList, outputPath);
+}
+
 int main()
 {
+    test();
+    return 0;
+
 	cout << "Chose the function by number" << endl;
 	cout << "1) GeoTiff2HDF" << endl;
 	cout << "2) StandAnomaly" << endl;

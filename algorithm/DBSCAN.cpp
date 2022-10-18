@@ -1,12 +1,26 @@
 #include<iostream>
-#include<memory>
 #include <queue>
 #include <array>
-#include "DBSCAN.h"
+#include "algo.h"
 #include "opt.h"
-#include "../_const.h"
+#include <iostream>
+#include <vector>
+#include <string>
 
 using namespace std;
+
+
+using namespace std;
+
+class DBSCAN
+{
+public:
+
+    static double calculateClusterParameter(vector<string> Files, int K = 15);
+    static bool core(vector<string> Files, string outputPath);
+    static bool cluster(vector<string> core, string outputPath);
+};
+
 
 const double CORE = INT_MAX;
 const double BEG = INT_MIN; // already cluster as beginning
@@ -65,7 +79,7 @@ bool DBSCAN::core(vector<string> Files, string outputPath) {
 				}
 
 				if (cnt >= threshold)
-					//data[t][r * cols + c] = CORE;
+					//data[t][r * colNum + c] = CORE;
 					buf[r * cols + c] = CORE;
 				else
 					buf[r * cols + c] = data[t][r * cols + c] / Def.Scale;

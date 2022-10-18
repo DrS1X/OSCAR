@@ -1,7 +1,6 @@
-#include "opt.h"
-#include "DcSTMC.h"
 #include <cmath>
 #include <memory>
+#include "algo.h"
 
 using namespace std;
 
@@ -421,12 +420,11 @@ void DcSTMC::Run(vector<string>& FileList, string outputPath, int in_mPerNum, in
 		}
 		for (int j = mStartFileIndex; j < mEndFileIndex; j++)
 		{
-			//��ȡһ���ļ�������
 			int* pBuffer = new int[mRows * mCols];//�ļ�����
 			gdalOpt::readGeoTiff(FileList[j], pBuffer);
 			for (int k = 0; k < mRows * mCols; k++)
 			{
-				//psBuffer[k + (j - mStartFileIndex) * mRows * mCols] = pBuffer[k] * mScale;
+				//psBuffer[k + (j - mStartFileIndex) * mRows * mCols] = buffer[k] * mScale;
 				//rsets.Attribute = psBuffer[k + (j - mStartFileIndex) * mRows * mCols];
 				RoSTCM rsets;
 				rsets.Attribute = pBuffer[k] * mScale;

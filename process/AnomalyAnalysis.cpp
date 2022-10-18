@@ -98,7 +98,7 @@ bool AnomalyAnalysis::StandardAnomaly_OnePeriod(vector<string> Files, Meta meta,
 			//��ֵ��������һ��ʱ��ֵ-9999
 			//if (pValueNum[iMonth][j] * 1.0 / FileNum < 0.5)
 			//{
-			//	pBuffer[j] = mMissingValue;
+			//	buffer[j] = mMissingValue;
 			//	continue;
 			//}
 
@@ -130,7 +130,7 @@ bool AnomalyAnalysis::StandardAnomaly_OnePeriod(vector<string> Files, Meta meta,
 			_mkdir(folder.c_str());
 
 		string mOutFileName =  folder + "StandAnomaly" + date + ".hdf";
-		//pReadHDF->WriteHDFFile(mOutFileName, mReDsName, mDsDate, mResolution, pBuffer, mStartLat, mEndLat, mStartLog, mEndLog, mRows, mCols, 0.001);
+		//pReadHDF->WriteHDFFile(mOutFileName, mReDsName, mDsDate, mResolution, buffer, mStartLat, mEndLat, mStartLog, mEndLog, mRows, mCols, 0.001);
 		if (!ReadHDF.WriteCustomHDF2DFile(mOutFileName.c_str(), date.c_str(), Def.ProductType.c_str(), "0",
 			Def.DataSetName.c_str(), pBuffer, meta.Scale, meta.Offset, meta.StartLog, meta.EndLog, meta.StartLat, meta.EndLat,
 			meta.Rows, meta.Cols, mMaxValue, mMinValue, mMeanValue, mStdValue, meta.MissingValue, meta.Resolution, "2ά"))
@@ -184,7 +184,7 @@ bool AnomalyAnalysis::SpatiotemporalAnomaly(vector<string> Files, string outputP
 		/*
 		double *pos = new double[meta.Size];
 		double *neg = new double[meta.Size];
-		long *pBuffer = new long[meta.Size];
+		long *buffer = new long[meta.Size];
 		*/
 		unique_ptr<double[]> pos(new double[meta.Size]);
 		unique_ptr<double[]> neg(new double[meta.Size]);
@@ -195,7 +195,7 @@ bool AnomalyAnalysis::SpatiotemporalAnomaly(vector<string> Files, string outputP
 		if (!ho.GetDsByDsnameFROMProduct(pBuffer.get(), fileName, Def.DataSetName.c_str(), 0, meta.Rows, 0, meta.Cols))
 		{
 			/*
-			delete[] pBuffer;
+			delete[] buffer;
 			delete[] pos;
 			delete[] neg;
 			*/
@@ -241,7 +241,7 @@ bool AnomalyAnalysis::SpatiotemporalAnomaly(vector<string> Files, string outputP
 		}
 
 		/*
-		delete[] pBuffer;
+		delete[] buffer;
 		delete[] pos;
 		delete[] neg;
 		*/
