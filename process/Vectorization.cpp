@@ -18,12 +18,12 @@ Node GetNextNode(Node tailNode, vector<Node>& nodes, int& minRow, int& minCol, i
 		{//向后搜索
 			if (tailNode.row == nodes[i].row)
 			{//行号相同
-				if (nodes[i].isUsed == false)
+				if (nodes[i].isVisited == false)
 				{//该节点没有被使用
 					Node node = nodes[i];
 					if (node.type <= 4)
 					{//前四种结点
-						node.isUsed = true;
+						node.isVisited = true;
 						if (node.dir1 == "l") node.outDir = node.dir2;
 						else node.outDir = node.dir1;
 					}
@@ -49,10 +49,10 @@ Node GetNextNode(Node tailNode, vector<Node>& nodes, int& minRow, int& minCol, i
 		{//向后搜索
 			if (tailNode.col == nodes[i].col)
 			{//列号相同
-				if (nodes[i].isUsed == false)
+				if (nodes[i].isVisited == false)
 				{//该节点没有被使用
 					Node node = nodes[i];
-					//node.isUsed = true;
+					//node.isVisited = true;
 					//if (node.dir1 == "t")
 					//{
 					//    node.outDir = node.dir2;
@@ -63,7 +63,7 @@ Node GetNextNode(Node tailNode, vector<Node>& nodes, int& minRow, int& minCol, i
 					//}
 					if (node.type <= 4)
 					{//前四种结点
-						node.isUsed = true;
+						node.isVisited = true;
 						if (node.dir1 == "t") node.outDir = node.dir2;
 						else node.outDir = node.dir1;
 					}
@@ -88,10 +88,10 @@ Node GetNextNode(Node tailNode, vector<Node>& nodes, int& minRow, int& minCol, i
 		{//向前搜索
 			if (tailNode.row == nodes[i].row)
 			{//行号相同
-				if (nodes[i].isUsed == false)
+				if (nodes[i].isVisited == false)
 				{//该节点没有被使用
 					Node node = nodes[i];
-					//node.isUsed = true;
+					//node.isVisited = true;
 					//if (node.dir1 == "r")
 					//{
 					//    node.outDir = node.dir2;
@@ -102,7 +102,7 @@ Node GetNextNode(Node tailNode, vector<Node>& nodes, int& minRow, int& minCol, i
 					//}
 					if (node.type <= 4)
 					{//前四种结点
-						node.isUsed = true;
+						node.isVisited = true;
 						if (node.dir1 == "r") node.outDir = node.dir2;
 						else node.outDir = node.dir1;
 					}
@@ -124,10 +124,10 @@ Node GetNextNode(Node tailNode, vector<Node>& nodes, int& minRow, int& minCol, i
 		{//向前搜索
 			if (tailNode.col == nodes[i].col)
 			{//列号相同
-				if (nodes[i].isUsed == false)
+				if (nodes[i].isVisited == false)
 				{//该节点没有被使用
 					Node node = nodes[i];
-					//node.isUsed = true;
+					//node.isVisited = true;
 					//if (node.dir1 == "b")
 					//{
 					//    node.outDir = node.dir2;
@@ -138,7 +138,7 @@ Node GetNextNode(Node tailNode, vector<Node>& nodes, int& minRow, int& minCol, i
 					//}
 					if (node.type <= 4)
 					{//前四种结点
-						node.isUsed = true;
+						node.isVisited = true;
 						if (node.dir1 == "b") node.outDir = node.dir2;
 						else node.outDir = node.dir1;
 					}
@@ -297,7 +297,7 @@ double GetPointLineDistance(double x, double y, double px, double py, double nx,
 	return distance;
 }
 
-double GetRadiusPoint(POL polygon, double x, double y)
+double GetRadiusPoint(Poly polygon, double x, double y)
 {
 	Line line = polygon.lines[0];
 	vector<Node> nodeList = line.nodes;
@@ -360,7 +360,7 @@ bool IsInPolygonNoBorder(double row, double col,const vector<Node>& nodes)
 	return inside;
 }
 
-myCircle GetMaxInCir(POL& polygon, double step, double x, double y)
+myCircle GetMaxInCir(Poly& polygon, double step, double x, double y)
 {
     double xOir = x;
     double yOir = y;
@@ -450,7 +450,7 @@ myCircle GetMaxInCir(POL& polygon, double step, double x, double y)
     return cir;
 }
 
-myCircle GetMaxInCir(POL& polygon, double step)
+myCircle GetMaxInCir(Poly& polygon, double step)
 {
 	double minX = polygon.minRow;
 	double minY = polygon.minCol;
@@ -611,7 +611,7 @@ vector<array<double, 2>> getPoints(const vector<Node>& pointList)
 	return points;
 }
 
-myCircle GetMinOutCir(POL polygon)
+myCircle GetMinOutCir(Poly polygon)
 {
 	myCircle minCircle;
 
@@ -680,7 +680,7 @@ myRectangle getRecRotate(myRectangle minRec, int angle)
 	return RecR;
 }
 
-myRectangle GetMinAreaRec(POL polygon)
+myRectangle GetMinAreaRec(Poly polygon)
 {
 	myRectangle minRec(DBL_MAX, DBL_MIN, DBL_MAX, DBL_MAX, DBL_MAX);
 
@@ -727,7 +727,7 @@ void Pixel2Node(const vector<vector<int>>& spImg, vector<Node>& nodes, int row, 
 				node.col = j;
 				node.dir1 = dir1;
 				node.dir2 = dir2;
-				node.isUsed = false;
+				node.isVisited = false;
 				if (ltv > 0)
 				{
 					node.power = ltv;
@@ -749,7 +749,7 @@ void Pixel2Node(const vector<vector<int>>& spImg, vector<Node>& nodes, int row, 
 				node.col = j;
 				node.dir1 = dir1;
 				node.dir2 = dir2;
-				node.isUsed = false;
+				node.isVisited = false;
 				if (rtv > 0)
 				{
 					node.power = rtv;
@@ -771,7 +771,7 @@ void Pixel2Node(const vector<vector<int>>& spImg, vector<Node>& nodes, int row, 
 				node.col = j;
 				node.dir1 = dir1;
 				node.dir2 = dir2;
-				node.isUsed = false;
+				node.isVisited = false;
 				if (lbv > 0)
 				{
 					node.power = lbv;
@@ -793,7 +793,7 @@ void Pixel2Node(const vector<vector<int>>& spImg, vector<Node>& nodes, int row, 
 				node.col = j;
 				node.dir1 = dir1;
 				node.dir2 = dir2;
-				node.isUsed = false;
+				node.isVisited = false;
 				if (rbv > 0)
 				{
 					node.power = rbv;
@@ -824,7 +824,7 @@ void Pixel2Node(const vector<vector<int>>& spImg, vector<Node>& nodes, int row, 
 				node.col = j;
 				node.dir1 = dir1;
 				node.dir2 = dir2;
-				node.isUsed = false;
+				node.isVisited = false;
 				nodes.emplace_back(node);
 			}
 		}
@@ -834,9 +834,9 @@ void Pixel2Node(const vector<vector<int>>& spImg, vector<Node>& nodes, int row, 
 void Point2Line(const vector<vector<int>>& spImg, vector<Node> & nodes, vector<Line>& lines, int row, double startLat, double resolution) {
 	for (int i = 0; i < nodes.size(); i++)
 	{//寻找每一条线
-		if (nodes[i].isUsed == true || nodes[i].type > 4) continue;//被使用，跳出本次循环
+		if (nodes[i].isVisited == true || nodes[i].type > 4) continue;//被使用，跳出本次循环
 		Node headNode = nodes[i];//头结点
-		headNode.isUsed = true;//记录被使用
+		headNode.isVisited = true;//记录被使用
 		headNode.outDir = headNode.dir1;//记录出去的方向
 		nodes[i] = headNode;//进行保存
 		Line line;//新建一条线
@@ -935,12 +935,12 @@ void Point2Line(const vector<vector<int>>& spImg, vector<Node> & nodes, vector<L
 }
 
 void Line2Polygon(const vector<vector<double>>& oriImg, const vector<vector<int>>& spImg, vector<Line>& lines,
-vector<POL>& polygons, int row, double startLat, double resolution) {
+                  vector<Poly>& polygons, int row, double startLat, double resolution) {
 	for (int i = 0; i < lines.size(); i++)
 	{//循环每一条线
 		if (lines[i].type != 0) continue;//不是外环，退出本次循环
 
-		POL polygon;
+		Poly polygon;
 		vector<Line> pLines;
 		pLines.emplace_back(lines[i]);//添加外环
 		polygon.id = polygons.size();
@@ -1007,8 +1007,8 @@ vector<POL>& polygons, int row, double startLat, double resolution) {
 		if (polygon.eventID <= 0.1/* || area <= 20000*/)
 			continue;
 		//平均
-		polygon.coreRow = _rowCore / volume;
-		polygon.coreCol = _colCore / volume;
+		polygon.centroidRow = _rowCore / volume;
+		polygon.centroidCol = _colCore / volume;
 
 		avgValue = volume / area;//计算平均
 		polygon.avgValue = avgValue;//保存平均
@@ -1099,7 +1099,7 @@ void RasterToVectorBasedonSpace(string oriPath, string spPath, string outPath, s
 	Point2Line(spImg, nodes, lines, row, startLat, resolution);
 
 	//线构成面
-	vector<POL> polygons;//所有面
+	vector<Poly> polygons;//所有面
 	Line2Polygon(oriImg, spImg, lines, polygons, row, startLat, resolution);
 	
 	//保存shp	

@@ -78,12 +78,12 @@ private:
 public:
     int id;//唯一标识
     int type;//结点类型
-    int row;//经度
-    int col;//维度
+    int row;
+    int col;
     string dir1;//方向1
     string dir2;//方向2
     string outDir;//线进入方向
-    bool isUsed;//是否被使用
+    bool isVisited;
     int power;//强度
     int eventID;
 public:
@@ -93,7 +93,7 @@ public:
             type(_nodeType),
             row(_row),
             col(_col) {
-        isUsed = false;
+        isVisited = false;
 
         switch (type) {
             case NodeType_LeftTop:
@@ -123,6 +123,14 @@ public:
             default:
                 dir1 = "n";
                 dir2 = "n";
+        }
+    }
+
+    bool operator< (const Node& another) const{
+        if(this->row != another.row){
+            return this->row < another.row;
+        }else{
+            return this->col < another.col;
         }
     }
 
@@ -207,15 +215,6 @@ public:
 public:
     Line(){}
 
-    Line(const Range& _range, const vector<Node>& nodeList){
-        minRow = _range.rowMin;
-        maxRow = _range.rowMax;
-        minCol = _range.colMin;
-        maxCol = _range.colMax;
-        range = _range;
-
-        nodes = nodeList;
-    }
 
     bool sortNodes(){
         int rowOffset = range.rowMin;
@@ -236,10 +235,11 @@ public:
         Matrix mat(range, nodes);
 
         // search the line of edge
+        vector<Node> newNodeList;
         Node *cur = head;
         string direction = cur->dir1;
         int r = cur->row - rowOffset, c = cur->col - colOffset;
-        vector<Node> newNodeList;
+        cur->isVisited = true;
         newNodeList.push_back(*head);
         int cnt = 0;
         do {
@@ -254,13 +254,13 @@ public:
                 continue;
 
             cur = mat.get(r, c);
-            if(cur->isUsed){
+            if(cur->isVisited){
                 newNodeList.push_back(*cur);
                 break;
             }
 
             if(cur->type != NodeType_LeftTopAndRightBot && cur->type != NodeType_RightTopAndLeftBot) {
-                cur->isUsed = true;
+                cur->isVisited = true;
                 newNodeList.push_back(*cur);
             }
             direction = cur->getNextDirection(direction);
@@ -380,7 +380,7 @@ public:
     }
 };
 
-class POL {
+class Poly {
 public:
     int id;//唯一标识
     int eventID;//事件id
@@ -389,21 +389,50 @@ public:
     int minCol;//最小列数
     int maxRow;//最大行数
     int maxCol;//最大列数
+    Range range;
     double area;//实际面积
+    double length;
     double avgValue;//平均距平值
-    double volume;//距平值体积
     double maxValue;//最大距平值
     double minValue;//最小距平值
+    double sumValue;
+    long pixelCount;
     int power;//强度
     bool isMulti;//是否是多面
-    double length;//周长
-    double coreRow;//重心行号
-    double coreCol;//重心列号
+    double centroidRow;//重心行号
+    double centroidCol;//重心列号
     myRectangle minRec;//最小面积外包矩形
     myCircle minOutCir;//最小面积外接圆
     myCircle maxInCir;//最大面积内接圆
-};
+public:
+    Poly(){
+        maxValue = DBL_MIN;
+        minValue = DBL_MAX;
+        sumValue = 0.0;
+        pixelCount = 0;
 
+        centroidRow = POLYGON_FIELD_EMPTY;
+        centroidCol = POLYGON_FIELD_EMPTY;
+        area = POLYGON_FIELD_EMPTY;
+    }
+
+    void update(float v){
+        if(v > maxValue){
+            maxValue = v;
+        }else if( v < minValue){
+            minValue = v;
+        }
+        sumValue += v;
+        ++pixelCount;
+        avgValue = sumValue / pixelCount;
+    }
+
+    void scale(float scale){
+        maxValue *= scale;
+        minValue *= scale;
+        avgValue *= scale;
+    }
+};
 
 class opt {
 public:
@@ -610,7 +639,7 @@ public:
 
     static void
     save(string outPath, string startTime, string AbnormalType, const double startLog, const double startLat,
-         const double resolution, vector<POL> polygons);
+         const double resolution, vector<Poly> polygons);
 
     bool writeGeoTiff(string fileName, Meta meta, double *buf);
 

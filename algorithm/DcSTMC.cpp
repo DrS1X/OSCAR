@@ -424,7 +424,7 @@ void DcSTMC::Run(vector<string>& FileList, string outputPath, int in_mPerNum, in
 			gdalOpt::readGeoTiff(FileList[j], pBuffer);
 			for (int k = 0; k < mRows * mCols; k++)
 			{
-				//psBuffer[k + (j - mStartFileIndex) * mRows * mCols] = buffer[k] * mScale;
+				//psBuffer[k + (j - mStartFileIndex) * mRows * mCols] = val[k] * mScale;
 				//rsets.Attribute = psBuffer[k + (j - mStartFileIndex) * mRows * mCols];
 				RoSTCM rsets;
 				rsets.Attribute = pBuffer[k] * mScale;

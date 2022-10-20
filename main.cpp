@@ -19,7 +19,7 @@ void test(){
     string f = "E:\\IMERG\\test\\tmp\\vec\\ori\\Positive20160102_3.tif";
     fileList.push_back(f);
     string outputPath = "E:\\IMERG\\test\\tmp\\vec";
-    BFS(fileList, outputPath);
+    BFS(3, 8, 5.0,fileList, outputPath);
 }
 
 int main()

@@ -487,7 +487,25 @@ const char * gdalOpt::GetProjection(const char * mFileName)
 	return "";
 }
 
-void gdalOpt::save(string outPath, string startTime, string AbnormalType, const double startLog, const double startLat, const double resolution, vector<POL> polygons) {
+// TODO UTM是等角投影，根据此投影坐标系计算的面积是否准确；投影和面积计算是否存在性能消耗；面积字段用处多吗
+double getArea(OGRGeometry* poGeom) {
+    if (poGeom != NULL && wkbFlatten(poGeom->getGeometryType()) == wkbPolygon)
+    {
+        OGRPolygon* polygon = (OGRPolygon*) poGeom;
+        OGRSpatialReference* spatialReference =  poGeom->getSpatialReference();
+
+        spatialReference->SetProjCS( "UTM 17 (wgs84) in northern hemisphere" );
+        spatialReference->SetWellKnownGeogCS( "WGS84" );
+        spatialReference->SetUTM( 17, TRUE );
+
+        polygon->transformTo(spatialReference);
+        double area = polygon->get_Area();
+        return area;
+    }
+    return 0.0;
+}
+
+void gdalOpt::save(string outPath, string startTime, string AbnormalType, const double startLog, const double startLat, const double resolution, vector<Poly> polygons) {
     GDALAllRegister();
     //保存shp
     CPLSetConfigOption("GDAL_FILENAME_IS_UTF8", "NO");
@@ -549,22 +567,18 @@ void gdalOpt::save(string outPath, string startTime, string AbnormalType, const 
         oFieldTime.SetWidth(20);
         poLayer->CreateField(&oFieldTime, 1);
 
-        //创建x坐标字段
         OGRFieldDefn oFieldMinLog("MinLon", OFTReal);
         oFieldMinLog.SetWidth(20);
         oFieldMinLog.SetPrecision(8);
         poLayer->CreateField(&oFieldMinLog, 1);
-        //创建y坐标字段
         OGRFieldDefn oFieldMinLat("MinLat", OFTReal);
         oFieldMinLat.SetWidth(20);
         oFieldMinLat.SetPrecision(8);
         poLayer->CreateField(&oFieldMinLat, 1);
-        //创建z坐标字段
         OGRFieldDefn oFieldMaxLog("MaxLon", OFTReal);
         oFieldMaxLog.SetWidth(20);
         oFieldMaxLog.SetPrecision(8);
         poLayer->CreateField(&oFieldMaxLog, 1);
-        //创建z坐标字段
         OGRFieldDefn oFieldMaxLat("MaxLat", OFTReal);
         oFieldMaxLat.SetWidth(20);
         oFieldMaxLat.SetPrecision(8);
@@ -595,13 +609,13 @@ void gdalOpt::save(string outPath, string startTime, string AbnormalType, const 
         poLayer->CreateField(&oFieldMinRainFall, 1);
 
         //创建质心字段
-        OGRFieldDefn oFieldLogCore("CoreLon", OFTReal);
+        OGRFieldDefn oFieldLogCore("CentLon", OFTReal);
         oFieldLogCore.SetWidth(20);
         oFieldLogCore.SetPrecision(8);
         poLayer->CreateField(&oFieldLogCore, 1);
 
         //创建质心字段
-        OGRFieldDefn oFieldLatCore("CoreLat", OFTReal);
+        OGRFieldDefn oFieldLatCore("CentLat", OFTReal);
         oFieldLatCore.SetWidth(20);
         oFieldLatCore.SetPrecision(8);
         poLayer->CreateField(&oFieldLatCore, 1);
@@ -616,48 +630,15 @@ void gdalOpt::save(string outPath, string startTime, string AbnormalType, const 
         poLayer->CreateField(&oFieldAbnormal, 1);
     }
 
-    for (auto polygon : polygons)
-    {//写出每个多边形
-        OGRFeature * poFeature;
+    for (auto polygon : polygons) {
+        OGRFeature *poFeature;
         poFeature = OGRFeature::CreateFeature(poLayer->GetLayerDefn());
 
-        poFeature->SetField(0, "pr");
-        poFeature->SetField(1, polygon.eventID);
-        poFeature->SetField(4, startTime.c_str());
-
-        //计算经纬度
-        double minLog = startLog + (polygon.minCol + 1) * resolution;//最小经度
-        double minLat = startLat - (polygon.maxRow + 1) * resolution;//最小纬度
-        double maxLog = startLog + (polygon.maxCol + 1) * resolution;//最大经度
-        double maxLat = startLat - (polygon.minRow + 1) * resolution;//最大纬度
-
-        //计算经纬度
-        double CoreLog = startLog + (polygon.coreCol + 0.5) * resolution;//质心经度
-        double CoreLat = startLat - (polygon.coreRow + 0.5) * resolution;//质心纬度
-
-        poFeature->SetField(5, minLog);
-        poFeature->SetField(6, minLat);
-        poFeature->SetField(7, maxLog);
-        poFeature->SetField(8, maxLat);
-
-        poFeature->SetField(9, polygon.area);
-        poFeature->SetField(10, polygon.avgValue);
-        //poFeature->SetField(11, polygon.volume);
-        poFeature->SetField(11, polygon.maxValue);
-        poFeature->SetField(12, polygon.minValue);
-
-        //poFeature->SetField(15, polygon.length);
-        poFeature->SetField(13, CoreLog);
-        poFeature->SetField(14, CoreLat);
-        poFeature->SetField(15, polygon.power);
-        poFeature->SetField(16, AbnormalType.c_str());
 
         string polygonStr = "POLYGON (";
-        for (auto line : polygon.lines)
-        {//写出多边形中每条线
+        for (auto line: polygon.lines) {
             polygonStr += "(";
-            for (auto node : line.nodes)
-            {
+            for (auto node: line.nodes) {
                 int _row = node.row;//点行号
                 int _col = node.col;//点列号
 
@@ -679,15 +660,53 @@ void gdalOpt::save(string outPath, string startTime, string AbnormalType, const 
         }
         polygonStr += ")";
 
-        char* pszWkt = (char*)polygonStr.c_str();
-        OGRGeometry* new_Geom;
-        OGRGeometryFactory::createFromWkt(&pszWkt, ref, &new_Geom);
-        poFeature->SetGeometryDirectly(new_Geom);
+        char *pszWkt = (char *) polygonStr.c_str();
 
-        OGRErr createFeat = poLayer->CreateFeature(poFeature);
-        if ( createFeat != OGRERR_NONE)
+        OGRGeometry *poGeom;
+        OGRGeometryFactory::createFromWkt(&pszWkt, ref, &poGeom);
+
         {
-            printf("Failed to create feature in shapefile.\n");
+            // calculate field of polygon
+            poFeature->SetField(0, "pr");
+            poFeature->SetField(1, polygon.eventID);
+            poFeature->SetField(4, startTime.c_str());
+            double minLog = startLog + (polygon.minCol + 1) * resolution;//最小经度
+            double minLat = startLat - (polygon.maxRow + 1) * resolution;//最小纬度
+            double maxLog = startLog + (polygon.maxCol + 1) * resolution;//最大经度
+            double maxLat = startLat - (polygon.minRow + 1) * resolution;//最大纬度
+
+            double centroidLog = startLog + (polygon.centroidCol + 0.5) * resolution;//质心经度
+            double centroidLat = startLat - (polygon.centroidRow + 0.5) * resolution;//质心纬度
+
+            poFeature->SetField(5, minLog);
+            poFeature->SetField(6, minLat);
+            poFeature->SetField(7, maxLog);
+            poFeature->SetField(8, maxLat);
+
+            double area = polygon.area;
+            /*if(area == POLYGON_FIELD_EMPTY){
+                area = getArea(poGeom);
+            }*/
+            poFeature->SetField(9, area);
+
+            poFeature->SetField(10, polygon.avgValue);
+            //poFeature->SetField(11, polygon.volume);
+            poFeature->SetField(11, polygon.maxValue);
+            poFeature->SetField(12, polygon.minValue);
+
+            //poFeature->SetField(15, polygon.length);
+            poFeature->SetField(13, centroidLog);
+            poFeature->SetField(14, centroidLat);
+            poFeature->SetField(15, polygon.power);
+            poFeature->SetField(16, AbnormalType.c_str());
+        }
+
+        poFeature->SetGeometryDirectly(poGeom);
+
+        OGRErr err = poLayer->CreateFeature(poFeature);
+        if (err != OGRERR_NONE)
+        {
+            cout << "error: [save]Failed to create feature in shapefile. err:" << to_string(err) << endl;
             return;
         }
 

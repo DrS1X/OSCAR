@@ -369,7 +369,7 @@ BOOL hdfOpt::WriteCustomHDF2DFile(string Filename, string m_ImageDate, string m_
     //???????????????С?
     /*double minValue, maxValue;
     double  *tempValue = new double[2];
-    tempValue = opt::GetMin_Max(buffer, m_Rows, m_Cols);*/
+    tempValue = opt::GetMin_Max(val, m_Rows, m_Cols);*/
     //minValue = tempValue[0]; m_MaxValue = tempValue[1];
 
     status = SDsetattr(sid, "MaxValue", DFNT_FLOAT64, 1, &m_MaxValue);
@@ -621,7 +621,7 @@ BOOL hdfOpt::WriteCustomHDF2DFile(string Filename, string m_ImageDate,
     //???????????????С?
     //double minValue, maxValue;
     //double  *tempValue = new double[2];
-    //tempValue = opt::GetMin_Max(buffer, m_Rows, m_Cols);
+    //tempValue = opt::GetMin_Max(val, m_Rows, m_Cols);
     //minValue = tempValue[0]; m_MaxValue = tempValue[1];
 
     status = SDsetattr(sid, "MaxValue", DFNT_FLOAT64, 1, &m_MaxValue);
@@ -846,7 +846,7 @@ BOOL hdfOpt::WriteCustomHDF2DFile(string Filename, string m_ImageDate, string m_
     //???????????????С?
     /*double minValue, maxValue;
     double  *tempValue = new double[2];
-    tempValue = opt::GetMin_Max(buffer, m_Rows, m_Cols);*/
+    tempValue = opt::GetMin_Max(val, m_Rows, m_Cols);*/
     //minValue = tempValue[0]; m_MaxValue = tempValue[1];
 
     status = SDsetattr(sid, "MaxValue", DFNT_FLOAT64, 1, &m_MaxValue);
@@ -1726,13 +1726,13 @@ bool hdfOpt::GetDsByDsnameFROMProduct(long * pBuffer, string Filename, string Ds
             for (int i = 0; i< m_Rows*m_Cols; i++)
             {
                 pBuffer[i] = int8_databuffer[i];
-                /*int8 temp = buffer[i];
+                /*int8 temp = val[i];
                 if (temp ==-1)
-                buffer[i] = 1000;
+                val[i] = 1000;
                 else if(temp ==0)
-                buffer[i] = -9999;
+                val[i] = -9999;
                 else
-                buffer[i]=(int8_databuffer[i]*scale)*1000+0.5 ;*/
+                val[i]=(int8_databuffer[i]*scale)*1000+0.5 ;*/
             }
 
             free(int8_databuffer);
