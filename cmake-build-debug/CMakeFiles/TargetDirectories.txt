@@ -1,3 +1,5 @@
+F:/CLion_Project/Clustering/cmake-build-debug/CMakeFiles/LibsGDAL.dir
+F:/CLion_Project/Clustering/cmake-build-debug/CMakeFiles/LibsSpatialIndex.dir
 F:/CLion_Project/Clustering/cmake-build-debug/CMakeFiles/Clustering.dir
 F:/CLion_Project/Clustering/cmake-build-debug/CMakeFiles/edit_cache.dir
 F:/CLion_Project/Clustering/cmake-build-debug/CMakeFiles/rebuild_cache.dir

@@ -12,6 +12,8 @@
 
 using namespace std;
 
+int init();
+
 void BFS(const int windowSize, const int coreThreshold, const float valueThreshold, vector<string> &fileList, string outputPath);
 
 class RoSTCM

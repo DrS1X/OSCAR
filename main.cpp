@@ -22,9 +22,13 @@ void test(){
     BFS(3, 8, 5.0,fileList, outputPath);
 }
 
+void test1(){
+    init();
+}
+
 int main()
 {
-    test();
+    test1();
     return 0;
 
 	cout << "Chose the function by number" << endl;
