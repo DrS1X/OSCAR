@@ -137,9 +137,9 @@ void Postprocessor::Resort(vector<string> RepeatFileList, vector<string> OtherFi
 	int mCols = Def.Cols;
 	int mRows = Def.Rows;
 	string DataSetName = Def.DataSetName;
-	double mStartLog = Def.StartLog;
+	double mStartLog = Def.StartLon;
 	double mStartLat = Def.StartLat;
-	double mEndLog = Def.EndLog;
+	double mEndLog = Def.EndLon;
 	double mEndLat = Def.EndLat;
 	double mScale = Def.Scale;
 	string mDataType = Def.DataType;

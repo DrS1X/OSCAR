@@ -38,9 +38,9 @@ Meta hdfOpt::getHDFMeta(string templateFile) {
     meta.Cols = pReadHDF.GetDatasetsCols(tName, DsName);
     meta.Size = meta.Rows * meta.Cols;
 
-    meta.StartLog = pReadHDF.GetDatasetsStartLog(tName, DsName);
+    meta.StartLon = pReadHDF.GetDatasetsStartLog(tName, DsName);
     meta.StartLat = pReadHDF.GetDatasetsStartLat(tName, DsName);
-    meta.EndLog = pReadHDF.GetDatasetsEndLog(tName, DsName);
+    meta.EndLon = pReadHDF.GetDatasetsEndLog(tName, DsName);
     meta.EndLat = pReadHDF.GetDatasetsEndLat(tName, DsName);
     //USES_CONVERSION;
     //meta.ProductType = W2A(pReadHDF.GetFileProductType(tName));
@@ -68,22 +68,21 @@ bool hdfOpt::meanAndStandardDeviation(vector<string> Files, double *pMeanBuffer,
     for (long i = 0; i < mRows * mCols; ++i)
         pValueNum[i] = 0;
 
-    //?????????
+    //
     for (long i = 0; i < FileNum; i++) {
         string tStr = Files[i].c_str();
-        //???建????,?洢??????
         long *pBuffer = NULL;
         pBuffer = (long *) malloc(mRows * mCols * sizeof(long));
 
-        //???????
+        //
         if (!ReadHDF.GetDsByDsnameFROMProduct(pBuffer, tStr, mDsName, 0, mRows, 0, mCols)) {
-            //??????
+            //
             free(pBuffer);
             return false;
         }
 
         //int serialNum = opt::getDayOfYear(Files[i]);
-        //????
+        //
         for (long j = 0; j < mRows * mCols; j++) {
             if (pBuffer[j] != (long) mMissingValue) {
                 pMeanBuffer[j] += ((double) pBuffer[j] * mScale);
@@ -92,14 +91,14 @@ bool hdfOpt::meanAndStandardDeviation(vector<string> Files, double *pMeanBuffer,
             }
         }
 
-        //??????
+        //
         free(pBuffer);
     }
 
-    //?????????????\?????????
+
     for (long j = 0; j < mRows * mCols; j++) {
         if (pValueNum[j] != 0) {
-            pMeanBuffer[j] = ((double) pMeanBuffer[j] / pValueNum[j]);  //  ???????
+            pMeanBuffer[j] = ((double) pMeanBuffer[j] / pValueNum[j]);  //  
             double tV1 = (double) pStdBuffer[j] / pValueNum[j];
             double tV2 = pow(pMeanBuffer[j], 2.0);
             if (tV1 >= tV2)
@@ -127,10 +126,10 @@ bool hdfOpt::writeHDF(string Filename, Meta meta, long *pBuffer) {
     string Date = meta.Date.c_str();
 
     if (!this->WriteCustomHDF2DFile(Filename.c_str(), Date, Def.ProductType.c_str(), "0",
-                                    Def.DataSetName.c_str(), pBuffer, meta.Scale, meta.Offset, meta.StartLog,
-                                    meta.EndLog, meta.StartLat, meta.EndLat,
+                                    Def.DataSetName.c_str(), pBuffer, meta.Scale, meta.Offset, meta.StartLon,
+                                    meta.EndLon, meta.StartLat, meta.EndLat,
                                     meta.Rows, meta.Cols, mMaxValue, mMinValue, mMeanValue, mStdValue,
-                                    meta.MissingValue, meta.Resolution, "2?"))
+                                    meta.MissingValue, meta.Resolution, "2"))
         return false;
 
     return true;
@@ -138,7 +137,7 @@ bool hdfOpt::writeHDF(string Filename, Meta meta, long *pBuffer) {
 
 bool hdfOpt::writeHDF(string Filename, Meta meta, int *buf) {
     double sum = 0;
-    //???????????С?
+    //С
     double MaxValue = DBL_MIN, MinValue = DBL_MAX;
     int count = 0;
     for (int j = 0; j < meta.Size; j++) {
@@ -149,22 +148,22 @@ bool hdfOpt::writeHDF(string Filename, Meta meta, int *buf) {
         sum += buf[j];
         count++;
     }
-    //???????
+    //
     double MeanValue = sum / count;
     sum = 0;
     for (int j = 0; j < meta.Size; j++) {
         sum += ((double) buf[j] - MeanValue) * ((double) buf[j] - MeanValue);
     }
-    //???????
+    //
     double StdValue = sqrt(sum / count);
 
     string Date = meta.Date.c_str();
 
     if (!this->WriteCustomHDF2DFile(Filename.c_str(), Date, Def.ProductType.c_str(), "0",
-                                    Def.DataSetName.c_str(), buf, meta.Scale, meta.Offset, meta.StartLog, meta.EndLog,
+                                    Def.DataSetName.c_str(), buf, meta.Scale, meta.Offset, meta.StartLon, meta.EndLon,
                                     meta.StartLat, meta.EndLat,
                                     meta.Rows, meta.Cols, MaxValue, MinValue, MeanValue, StdValue, meta.MissingValue,
-                                    meta.Resolution, "2?"))
+                                    meta.Resolution, "2"))
         return false;
 
     return true;
@@ -175,23 +174,23 @@ bool hdfOpt::readHDF(string fileName, long *buf) {
 }
 
 bool hdfOpt::readHDF(string fileName, int *buf) {
-    //????????id
+    //id
     const char *lpsz = fileName.c_str();
     int fid = SDstart(lpsz, DFACC_READ);
 
-    //???????
+    //
     const char *tagChar = Def.DataSetName.c_str();
     int32 tagIndex = SDnametoindex(fid, tagChar);
 
-    //??id?л??????????????id??
+    //idлid
     int sid = SDselect(fid, tagIndex);
-    //?????????????? ?????????? ????????С ??????????????? ???????????????????
+    //  С  
     status = SDgetinfo(sid, filename, &rank, dimesize, &datatype, &attrnum);
     int a = datatype;
     int b = rank;
     int c = attrnum;
     long t = 0;
-    //???????
+    //
     start[0] = 0;
     start[1] = 0;
     start[2] = 0;
@@ -223,76 +222,76 @@ BOOL hdfOpt::WriteCustomHDF2DFile(string Filename, string m_ImageDate, string m_
 
     int32 startWrite[2], dimesizeWrite[2];
 
-    //?????????id
+    //id
     dimesizeWrite[0] = m_Rows;
     dimesizeWrite[1] = m_Cols;
 
     const char *tagChar = m_DsName.c_str();
-    int sid = SDcreate(fid, tagChar, DFNT_INT32, 2, dimesizeWrite); //????????
+    int sid = SDcreate(fid, tagChar, DFNT_INT32, 2, dimesizeWrite); //
     if (sid == -1) {
-        //????hdf???
+        //hdf
         status = SDend(fid);
         return false;
     }
 
-    //д???????
+    //д
     startWrite[0] = 0;
     startWrite[1] = 0;
 
     status = SDwritedata(sid, startWrite, NULL, dimesizeWrite, (VOIDP) pBuffer);
     if (status == -1) {
-        //????hdf???
+        //hdf
         status = SDendaccess(sid);
         status = SDend(fid);
         return false;
     }
 
-    //д?????????
-    //?????????
+    //д
+    //
     tagChar = m_ImageDate.c_str();
     status = SDsetattr(fid, "ImageDate", DFNT_CHAR8, 50, (VOIDP) tagChar);
     if (status == -1) {
-        //????hdf???
+        //hdf
         status = SDendaccess(sid);
         status = SDend(fid);
         return false;
     }
 
-    //???????????
+    //
     tagChar = m_DataType.c_str();
     status = SDsetattr(fid, "DataType", DFNT_CHAR8, 50, (VOIDP) tagChar);
     if (status == -1) {
-        //????hdf???
+        //hdf
         status = SDendaccess(sid);
         status = SDend(fid);
         return false;
     }
 
-    //??????????
+    //
     tagChar = "Product";
     status = SDsetattr(fid, "ProductType", DFNT_CHAR8, 50, (VOIDP) tagChar);
     if (status == -1) {
-        //????hdf???
+        //hdf
         status = SDendaccess(sid);
         status = SDend(fid);
         return false;
     }
 
-    //??????
+    //
     tagChar = m_Dimension.c_str();
     status = SDsetattr(fid, "Dimension", DFNT_CHAR8, 50, (VOIDP) tagChar);
     if (status == -1) {
-        //????hdf???
+        //hdf
         status = SDendaccess(sid);
         status = SDend(fid);
         return false;
     }
 
-    //д????????????????
-    //???????????
+    //д
+    //
     status = SDsetattr(sid, "Scale", DFNT_FLOAT64, 1, &m_Scale);
     if (status == -1) {
-        //????hdf???
+        //hdf
         status = SDendaccess(sid);
         status = SDend(fid);
         return false;
@@ -301,24 +300,24 @@ BOOL hdfOpt::WriteCustomHDF2DFile(string Filename, string m_ImageDate, string m_
     double mOffsets = 0.00;
     status = SDsetattr(sid, "Offsets", DFNT_FLOAT64, 1, &m_Offset);
     if (status == -1) {
-        //????hdf???
+        //hdf
         status = SDendaccess(sid);
         status = SDend(fid);
         return false;
     }
 
-    //?????γ??
-    status = SDsetattr(sid, "StartLog", DFNT_FLOAT64, 1, &m_StartLog);
+    //γ
+    status = SDsetattr(sid, "StartLon", DFNT_FLOAT64, 1, &m_StartLog);
     if (status == -1) {
-        //????hdf???
+        //hdf
         status = SDendaccess(sid);
         status = SDend(fid);
         return false;
     }
 
-    status = SDsetattr(sid, "EndLog", DFNT_FLOAT64, 1, &m_EndLog);
+    status = SDsetattr(sid, "EndLon", DFNT_FLOAT64, 1, &m_EndLog);
     if (status == -1) {
-        //????hdf???
+        //hdf
         status = SDendaccess(sid);
         status = SDend(fid);
         return false;
@@ -326,7 +325,7 @@ BOOL hdfOpt::WriteCustomHDF2DFile(string Filename, string m_ImageDate, string m_
 
     status = SDsetattr(sid, "StartLat", DFNT_FLOAT64, 1, &m_StartLat);
     if (status == -1) {
-        //????hdf???
+        //hdf
         status = SDendaccess(sid);
         status = SDend(fid);
         return false;
@@ -334,16 +333,16 @@ BOOL hdfOpt::WriteCustomHDF2DFile(string Filename, string m_ImageDate, string m_
 
     status = SDsetattr(sid, "EndLat", DFNT_FLOAT64, 1, &m_EndLat);
     if (status == -1) {
-        //????hdf???
+        //hdf
         status = SDendaccess(sid);
         status = SDend(fid);
         return false;
     }
 
-    //?????????????
+    //
     status = SDsetattr(sid, "Rows", DFNT_UINT16, 1, &m_Rows);
     if (status == -1) {
-        //????hdf???
+        //hdf
         status = SDendaccess(sid);
         status = SDend(fid);
         return false;
@@ -351,22 +350,22 @@ BOOL hdfOpt::WriteCustomHDF2DFile(string Filename, string m_ImageDate, string m_
 
     status = SDsetattr(sid, "Cols", DFNT_UINT16, 1, &m_Cols);
     if (status == -1) {
-        //????hdf???
+        //hdf
         status = SDendaccess(sid);
         status = SDend(fid);
         return false;
     }
 
-    //????
+    //
     status = SDsetattr(sid, "FillValue", DFNT_INT32, 1, &m_FillValue);
     if (status == -1) {
-        //????hdf???
+        //hdf
         status = SDendaccess(sid);
         status = SDend(fid);
         return false;
     }
 
-    //???????????????С?
+    //С
     /*double minValue, maxValue;
     double  *tempValue = new double[2];
     tempValue = opt::GetMin_Max(val, m_Rows, m_Cols);*/
@@ -374,7 +373,7 @@ BOOL hdfOpt::WriteCustomHDF2DFile(string Filename, string m_ImageDate, string m_
 
     status = SDsetattr(sid, "MaxValue", DFNT_FLOAT64, 1, &m_MaxValue);
     if (status == -1) {
-        //????hdf???
+        //hdf
         status = SDendaccess(sid);
         status = SDend(fid);
         return false;
@@ -382,15 +381,15 @@ BOOL hdfOpt::WriteCustomHDF2DFile(string Filename, string m_ImageDate, string m_
 
     status = SDsetattr(sid, "MinValue", DFNT_FLOAT64, 1, &m_MinValue);
     if (status == -1) {
-        //????hdf???
+        //hdf
         status = SDendaccess(sid);
         status = SDend(fid);
         return false;
     }
-    //???????????????С?
+    //С
     status = SDsetattr(sid, "MeanVaue", DFNT_FLOAT64, 1, &m_MeanValue);
     if (status == -1) {
-        //????hdf???
+        //hdf
         status = SDendaccess(sid);
         status = SDend(fid);
         return false;
@@ -398,21 +397,21 @@ BOOL hdfOpt::WriteCustomHDF2DFile(string Filename, string m_ImageDate, string m_
 
     status = SDsetattr(sid, "StdValue", DFNT_FLOAT64, 1, &m_StdValue);
     if (status == -1) {
-        //????hdf???
+        //hdf
         status = SDendaccess(sid);
         status = SDend(fid);
         return false;
     }
-    //д????????????
+    //д
     status = SDsetattr(sid, "DSResolution", DFNT_FLOAT64, 1, &m_Resolution);
     if (status == -1) {
-        //????hdf???
+        //hdf
         status = SDendaccess(sid);
         status = SDend(fid);
         return false;
     }
 
-    //????hdf???
+    //hdf
     status = SDendaccess(sid);
     status = SDend(fid);
     return true;
@@ -426,47 +425,47 @@ BOOL hdfOpt::WriteCustomHDF2DFile(string Filename, string m_ImageDate,
                                   long m_Cols, double m_MaxValue, double m_MinValue,
                                   double m_MeanValue, double m_StdValue, long m_FillValue,
                                   double m_Resolution, string m_Dimension) {
-    //???????     DFNT_CHAR8
-    //???????     DFNT_CHAR8
-    //????????     DFNT_CHAR8
-    //γ??	       DFNT_CHAR8
-    //???????     DFNT_INT32
-    //???????     DFNT_FLOAT64
-    //???????     DFNT_FLOAT64
-    //???????     DFNT_FLOAT64
-    //???????     DFNT_FLOAT64
-    //???γ??     DFNT_FLOAT64
-    //???γ??     DFNT_FLOAT64
-    //????	       DFNT_UINT16,
-    //????	       DFNT_UINT16
-    //????       DFNT_FLOAT64
-    //??С?       DFNT_FLOAT64
-    //???         DFNT_FLOAT64
-    //????         DFNT_FLOAT64
-    //???         DFNT_UINT16
-    //???????   DFNT_ FLOAT64
+    //     DFNT_CHAR8
+    //     DFNT_CHAR8
+    //     DFNT_CHAR8
+    //γ	       DFNT_CHAR8
+    //     DFNT_INT32
+    //     DFNT_FLOAT64
+    //     DFNT_FLOAT64
+    //     DFNT_FLOAT64
+    //     DFNT_FLOAT64
+    //γ     DFNT_FLOAT64
+    //γ     DFNT_FLOAT64
+    //	       DFNT_UINT16,
+    //	       DFNT_UINT16
+    //       DFNT_FLOAT64
+    //С       DFNT_FLOAT64
+    //         DFNT_FLOAT64
+    //         DFNT_FLOAT64
+    //         DFNT_UINT16
+    //   DFNT_ FLOAT64
 
     int fid = SDstart(Filename.c_str(), DFACC_CREATE);
     if (fid == -1)return false;
 
     int32 startWrite[2], dimesizeWrite[2];
 
-    //?????????id
+    //id
     dimesizeWrite[0] = m_Rows;
     dimesizeWrite[1] = m_Cols;
 
     int sid = SDcreate(fid, m_DsName.c_str(), DFNT_INT32, 2, dimesizeWrite);
     if (sid == -1) {
-        //????hdf???
+        //hdf
         status = SDend(fid);
         return false;
     }
 
-    //д???????
+    //д
     startWrite[0] = 0;
     startWrite[1] = 0;
 
-    //??????-9999
+    //-9999
     double dFactory = 1;// 0.001 / m_Scale;
     for (long i = 0; i < m_Rows * m_Cols; i++) {
         if (pBuffer[i] <= -9998) {
@@ -475,8 +474,8 @@ BOOL hdfOpt::WriteCustomHDF2DFile(string Filename, string m_ImageDate,
     }
 
 
-    //????product??Scale???0.01
-    //FillValue ???-9999
+    //productScale0.01
+    //FillValue -9999
     //m_Scale = 0.001;
     m_FillValue = -9999;
 
@@ -493,59 +492,59 @@ BOOL hdfOpt::WriteCustomHDF2DFile(string Filename, string m_ImageDate,
 
     status = SDwritedata(sid, startWrite, NULL, dimesizeWrite, (VOIDP) pBuffer);
     if (status == -1) {
-        //????hdf???
+        //hdf
         status = SDendaccess(sid);
         status = SDend(fid);
         return false;
     }
 
-    //д?????????
-    //?????????
+    //д
+    //
     const char *tagChar;
     tagChar = m_ImageDate.c_str();
     status = SDsetattr(fid, "ImageDate", DFNT_CHAR8, 50, (VOIDP) tagChar);
     if (status == -1) {
-        //????hdf???
+        //hdf
         status = SDendaccess(sid);
         status = SDend(fid);
         return false;
     }
 
-    //???????????
+    //
     tagChar = m_DataType.c_str();
     status = SDsetattr(fid, "DataType", DFNT_CHAR8, 50, (VOIDP) tagChar);
     if (status == -1) {
-        //????hdf???
+        //hdf
         status = SDendaccess(sid);
         status = SDend(fid);
         return false;
     }
 
-    //??????????
+    //
     tagChar = "Product";
     status = SDsetattr(fid, "ProductType", DFNT_CHAR8, 50, (VOIDP) tagChar);
     if (status == -1) {
-        //????hdf???
+        //hdf
         status = SDendaccess(sid);
         status = SDend(fid);
         return false;
     }
 
-    //??????
+    //
     tagChar = m_Dimension.c_str();
     status = SDsetattr(fid, "Dimension", DFNT_CHAR8, 50, (VOIDP) tagChar);
     if (status == -1) {
-        //????hdf???
+        //hdf
         status = SDendaccess(sid);
         status = SDend(fid);
         return false;
     }
 
-    //д????????????????
-    //???????????
+    //д
+    //
     status = SDsetattr(sid, "Scale", DFNT_FLOAT64, 1, &m_Scale);
     if (status == -1) {
-        //????hdf???
+        //hdf
         status = SDendaccess(sid);
         status = SDend(fid);
         return false;
@@ -553,24 +552,24 @@ BOOL hdfOpt::WriteCustomHDF2DFile(string Filename, string m_ImageDate,
 
     status = SDsetattr(sid, "Offsets", DFNT_FLOAT64, 1, &m_Offset);
     if (status == -1) {
-        //????hdf???
+        //hdf
         status = SDendaccess(sid);
         status = SDend(fid);
         return false;
     }
 
-    //?????γ??
-    status = SDsetattr(sid, "StartLog", DFNT_FLOAT64, 1, &m_StartLog);
+    //γ
+    status = SDsetattr(sid, "StartLon", DFNT_FLOAT64, 1, &m_StartLog);
     if (status == -1) {
-        //????hdf???
+        //hdf
         status = SDendaccess(sid);
         status = SDend(fid);
         return false;
     }
 
-    status = SDsetattr(sid, "EndLog", DFNT_FLOAT64, 1, &m_EndLog);
+    status = SDsetattr(sid, "EndLon", DFNT_FLOAT64, 1, &m_EndLog);
     if (status == -1) {
-        //????hdf???
+        //hdf
         status = SDendaccess(sid);
         status = SDend(fid);
         return false;
@@ -578,7 +577,7 @@ BOOL hdfOpt::WriteCustomHDF2DFile(string Filename, string m_ImageDate,
 
     status = SDsetattr(sid, "StartLat", DFNT_FLOAT64, 1, &m_StartLat);
     if (status == -1) {
-        //????hdf???
+        //hdf
         status = SDendaccess(sid);
         status = SDend(fid);
         return false;
@@ -586,16 +585,16 @@ BOOL hdfOpt::WriteCustomHDF2DFile(string Filename, string m_ImageDate,
 
     status = SDsetattr(sid, "EndLat", DFNT_FLOAT64, 1, &m_EndLat);
     if (status == -1) {
-        //????hdf???
+        //hdf
         status = SDendaccess(sid);
         status = SDend(fid);
         return false;
     }
 
-    //?????????????
+    //
     status = SDsetattr(sid, "Rows", DFNT_UINT16, 1, &m_Rows);
     if (status == -1) {
-        //????hdf???
+        //hdf
         status = SDendaccess(sid);
         status = SDend(fid);
         return false;
@@ -603,22 +602,22 @@ BOOL hdfOpt::WriteCustomHDF2DFile(string Filename, string m_ImageDate,
 
     status = SDsetattr(sid, "Cols", DFNT_UINT16, 1, &m_Cols);
     if (status == -1) {
-        //????hdf???
+        //hdf
         status = SDendaccess(sid);
         status = SDend(fid);
         return false;
     }
 
-    //????
+    //
     status = SDsetattr(sid, "FillValue", DFNT_INT32, 1, &m_FillValue);
     if (status == -1) {
-        //????hdf???
+        //hdf
         status = SDendaccess(sid);
         status = SDend(fid);
         return false;
     }
 
-    //???????????????С?
+    //С
     //double minValue, maxValue;
     //double  *tempValue = new double[2];
     //tempValue = opt::GetMin_Max(val, m_Rows, m_Cols);
@@ -626,7 +625,7 @@ BOOL hdfOpt::WriteCustomHDF2DFile(string Filename, string m_ImageDate,
 
     status = SDsetattr(sid, "MaxValue", DFNT_FLOAT64, 1, &m_MaxValue);
     if (status == -1) {
-        //????hdf???
+        //hdf
         status = SDendaccess(sid);
         status = SDend(fid);
         return false;
@@ -634,15 +633,15 @@ BOOL hdfOpt::WriteCustomHDF2DFile(string Filename, string m_ImageDate,
 
     status = SDsetattr(sid, "MinValue", DFNT_FLOAT64, 1, &m_MinValue);
     if (status == -1) {
-        //????hdf???
+        //hdf
         status = SDendaccess(sid);
         status = SDend(fid);
         return false;
     }
-    //?????????????????
+    //
     status = SDsetattr(sid, "MeanVaue", DFNT_FLOAT64, 1, &m_MeanValue);
     if (status == -1) {
-        //????hdf???
+        //hdf
         status = SDendaccess(sid);
         status = SDend(fid);
         return false;
@@ -650,21 +649,21 @@ BOOL hdfOpt::WriteCustomHDF2DFile(string Filename, string m_ImageDate,
 
     status = SDsetattr(sid, "StdValue", DFNT_FLOAT64, 1, &m_StdValue);
     if (status == -1) {
-        //????hdf???
+        //hdf
         status = SDendaccess(sid);
         status = SDend(fid);
         return false;
     }
-    //д????????????
+    //д
     status = SDsetattr(sid, "DSResolution", DFNT_FLOAT64, 1, &m_Resolution);
     if (status == -1) {
-        //????hdf???
+        //hdf
         status = SDendaccess(sid);
         status = SDend(fid);
         return false;
     }
 
-    //????hdf???
+    //hdf
     status = SDendaccess(sid);
     status = SDend(fid);
     return true;
@@ -700,76 +699,76 @@ BOOL hdfOpt::WriteCustomHDF2DFile(string Filename, string m_ImageDate, string m_
 
     int32 startWrite[2], dimesizeWrite[2];
 
-    //?????????id
+    //id
     dimesizeWrite[0] = m_Rows;
     dimesizeWrite[1] = m_Cols;
 
     const char *tagChar = m_DsName.c_str();
     int sid = SDcreate(fid, tagChar, DFNT_INT32, 2, dimesizeWrite);
     if (sid == -1) {
-        //????hdf???
+        //hdf
         status = SDend(fid);
         return false;
     }
 
-    //д???????
+    //д
     startWrite[0] = 0;
     startWrite[1] = 0;
 
     status = SDwritedata(sid, startWrite, NULL, dimesizeWrite, (VOIDP) pBuffer);
     if (status == -1) {
-        //????hdf???
+        //hdf
         status = SDendaccess(sid);
         status = SDend(fid);
         return false;
     }
 
-    //д?????????
-    //?????????
+    //д
+    //
     tagChar = m_ImageDate.c_str();
     status = SDsetattr(fid, "ImageDate", DFNT_CHAR8, 50, (VOIDP) tagChar);
     if (status == -1) {
-        //????hdf???
+        //hdf
         status = SDendaccess(sid);
         status = SDend(fid);
         return false;
     }
 
-    //???????????
+    //
     tagChar = m_DataType.c_str();
     status = SDsetattr(fid, "DataType", DFNT_CHAR8, 50, (VOIDP) tagChar);
     if (status == -1) {
-        //????hdf???
+        //hdf
         status = SDendaccess(sid);
         status = SDend(fid);
         return false;
     }
 
-    //??????????
+    //
     tagChar = "Product";
     status = SDsetattr(fid, "ProductType", DFNT_CHAR8, 50, (VOIDP) tagChar);
     if (status == -1) {
-        //????hdf???
+        //hdf
         status = SDendaccess(sid);
         status = SDend(fid);
         return false;
     }
 
-    //??????
+    //
     tagChar = m_Dimension.c_str();
     status = SDsetattr(fid, "Dimension", DFNT_CHAR8, 50, (VOIDP) tagChar);
     if (status == -1) {
-        //????hdf???
+        //hdf
         status = SDendaccess(sid);
         status = SDend(fid);
         return false;
     }
 
-    //д????????????????
-    //???????????
+    //д
+    //
     status = SDsetattr(sid, "Scale", DFNT_FLOAT64, 1, &m_Scale);
     if (status == -1) {
-        //????hdf???
+        //hdf
         status = SDendaccess(sid);
         status = SDend(fid);
         return false;
@@ -778,24 +777,24 @@ BOOL hdfOpt::WriteCustomHDF2DFile(string Filename, string m_ImageDate, string m_
     double mOffsets = 0.00;
     status = SDsetattr(sid, "Offsets", DFNT_FLOAT64, 1, &m_Offset);
     if (status == -1) {
-        //????hdf???
+        //hdf
         status = SDendaccess(sid);
         status = SDend(fid);
         return false;
     }
 
-    //?????γ??
-    status = SDsetattr(sid, "StartLog", DFNT_FLOAT64, 1, &m_StartLog);
+    //γ
+    status = SDsetattr(sid, "StartLon", DFNT_FLOAT64, 1, &m_StartLog);
     if (status == -1) {
-        //????hdf???
+        //hdf
         status = SDendaccess(sid);
         status = SDend(fid);
         return false;
     }
 
-    status = SDsetattr(sid, "EndLog", DFNT_FLOAT64, 1, &m_EndLog);
+    status = SDsetattr(sid, "EndLon", DFNT_FLOAT64, 1, &m_EndLog);
     if (status == -1) {
-        //????hdf???
+        //hdf
         status = SDendaccess(sid);
         status = SDend(fid);
         return false;
@@ -803,7 +802,7 @@ BOOL hdfOpt::WriteCustomHDF2DFile(string Filename, string m_ImageDate, string m_
 
     status = SDsetattr(sid, "StartLat", DFNT_FLOAT64, 1, &m_StartLat);
     if (status == -1) {
-        //????hdf???
+        //hdf
         status = SDendaccess(sid);
         status = SDend(fid);
         return false;
@@ -811,16 +810,16 @@ BOOL hdfOpt::WriteCustomHDF2DFile(string Filename, string m_ImageDate, string m_
 
     status = SDsetattr(sid, "EndLat", DFNT_FLOAT64, 1, &m_EndLat);
     if (status == -1) {
-        //????hdf???
+        //hdf
         status = SDendaccess(sid);
         status = SDend(fid);
         return false;
     }
 
-    //?????????????
+    //
     status = SDsetattr(sid, "Rows", DFNT_UINT16, 1, &m_Rows);
     if (status == -1) {
-        //????hdf???
+        //hdf
         status = SDendaccess(sid);
         status = SDend(fid);
         return false;
@@ -828,22 +827,22 @@ BOOL hdfOpt::WriteCustomHDF2DFile(string Filename, string m_ImageDate, string m_
 
     status = SDsetattr(sid, "Cols", DFNT_UINT16, 1, &m_Cols);
     if (status == -1) {
-        //????hdf???
+        //hdf
         status = SDendaccess(sid);
         status = SDend(fid);
         return false;
     }
 
-    //????
+    //
     status = SDsetattr(sid, "FillValue", DFNT_INT32, 1, &m_FillValue);
     if (status == -1) {
-        //????hdf???
+        //hdf
         status = SDendaccess(sid);
         status = SDend(fid);
         return false;
     }
 
-    //???????????????С?
+    //С
     /*double minValue, maxValue;
     double  *tempValue = new double[2];
     tempValue = opt::GetMin_Max(val, m_Rows, m_Cols);*/
@@ -851,7 +850,7 @@ BOOL hdfOpt::WriteCustomHDF2DFile(string Filename, string m_ImageDate, string m_
 
     status = SDsetattr(sid, "MaxValue", DFNT_FLOAT64, 1, &m_MaxValue);
     if (status == -1) {
-        //????hdf???
+        //hdf
         status = SDendaccess(sid);
         status = SDend(fid);
         return false;
@@ -859,15 +858,15 @@ BOOL hdfOpt::WriteCustomHDF2DFile(string Filename, string m_ImageDate, string m_
 
     status = SDsetattr(sid, "MinValue", DFNT_FLOAT64, 1, &m_MinValue);
     if (status == -1) {
-        //????hdf???
+        //hdf
         status = SDendaccess(sid);
         status = SDend(fid);
         return false;
     }
-    //???????????????С?
+    //С
     status = SDsetattr(sid, "MeanVaue", DFNT_FLOAT64, 1, &m_MeanValue);
     if (status == -1) {
-        //????hdf???
+        //hdf
         status = SDendaccess(sid);
         status = SDend(fid);
         return false;
@@ -875,21 +874,21 @@ BOOL hdfOpt::WriteCustomHDF2DFile(string Filename, string m_ImageDate, string m_
 
     status = SDsetattr(sid, "StdValue", DFNT_FLOAT64, 1, &m_StdValue);
     if (status == -1) {
-        //????hdf???
+        //hdf
         status = SDendaccess(sid);
         status = SDend(fid);
         return false;
     }
-    //д????????????
+    //д
     status = SDsetattr(sid, "DSResolution", DFNT_FLOAT64, 1, &m_Resolution);
     if (status == -1) {
-        //????hdf???
+        //hdf
         status = SDendaccess(sid);
         status = SDend(fid);
         return false;
     }
 
-    //????hdf???
+    //hdf
     status = SDendaccess(sid);
     status = SDend(fid);
     return true;
@@ -946,13 +945,13 @@ long *hdfOpt::getMaxandMinFromPRES(long *DepthData, long DataNum) {
     return 0;
 }
 
-//???????????С????
+//С
 void
 hdfOpt::quickSortForArgo(double *TimeData, long begin, long end, long *CycleIndex, long *DepthData, double *LonData,
                          double *LatData, double mJuldFillValue) {
-    //?????????????
+    //
     if (begin < end) {
-        double temp = TimeData[begin]; //?????????????????????
+        double temp = TimeData[begin]; //
         for (int index = begin; index < end; index++) {
             if (TimeData[index] != mJuldFillValue && !_isnan(TimeData[index])) {
                 temp = TimeData[index];
@@ -963,12 +962,12 @@ hdfOpt::quickSortForArgo(double *TimeData, long begin, long end, long *CycleInde
                 return;
         }
 
-        int i = begin; //????????в???????????????????λ??
-        int j = end; //?????????в???????????????????λ??
-        //?????????
+        int i = begin; //вλ
+        int j = end; //вλ
+        //
         while (i < j) {
-            //???????????????????????????????????
-            //?????????????????????????j??????????С????????
+            //
+            //jС
             RDebarTimeFillValue:
             while (i < j && TimeData[j] > temp)
                 j--;
@@ -976,19 +975,19 @@ hdfOpt::quickSortForArgo(double *TimeData, long begin, long end, long *CycleInde
                 j--;
                 goto RDebarTimeFillValue;
             }
-            //?????С???????????????????????λ??
+            //Сλ
             TimeData[i] = TimeData[j];
             CycleIndex[i] = CycleIndex[j];
             DepthData[i] = DepthData[j];
             LonData[i] = LonData[j];
             LatData[i] = LatData[j];
-            //????????С????????????????????????????
-            //(????????????????????)
-            //?????????????????????????i??????????????????????
+            //С
+            //()
+            //i
             LDebarTimeFillValue:
             while (i < j && TimeData[i] <= temp)
                 i++;
-            //??????????????????????????λ??
+            //λ
             if ((TimeData[i] == mJuldFillValue || _isnan(TimeData[i])) && i < j) {
                 i++;
                 goto LDebarTimeFillValue;
@@ -999,23 +998,23 @@ hdfOpt::quickSortForArgo(double *TimeData, long begin, long end, long *CycleInde
             LonData[j] = LonData[i];
             LatData[j] = LatData[i];
         }
-        //???????????????λ??
+        //λ
         TimeData[i] = temp;
-        //?????i??????????λ??
-        //????????????????????????????????
+        //iλ
+        //
         quickSortForArgo(TimeData, begin, i - 1, CycleIndex, DepthData, LonData, LatData, mJuldFillValue);
-        //????????????????????????????????
+        //
         quickSortForArgo(TimeData, i + 1, end, CycleIndex, DepthData, LonData, LatData, mJuldFillValue);
     }
-        //????????????????????
+        //
     else
         return;
 }
 
 void hdfOpt::quickSortForArgo(long begin, long end, long *CycleIndex, long *DepthData, double mFillValue) {
-    //?????????????
+    //
     if (begin < end) {
-        long temp = CycleIndex[begin]; //?????????????????????
+        long temp = CycleIndex[begin]; //
         for (int index = begin; index < end; index++) {
             if (CycleIndex[index] != mFillValue && !_isnan(CycleIndex[index])) {
                 temp = CycleIndex[index];
@@ -1026,12 +1025,12 @@ void hdfOpt::quickSortForArgo(long begin, long end, long *CycleIndex, long *Dept
                 return;
         }
 
-        int i = begin; //????????в???????????????????λ??
-        int j = end; //?????????в???????????????????λ??
-        //?????????
+        int i = begin; //вλ
+        int j = end; //вλ
+        //
         while (i < j) {
-            //???????????????????????????????????
-            //?????????????????????????j??????????С????????
+            //
+            //jС
             RDebarTimeFillValue:
             while (i < j && CycleIndex[j] > temp)
                 j--;
@@ -1039,18 +1038,18 @@ void hdfOpt::quickSortForArgo(long begin, long end, long *CycleIndex, long *Dept
                 j--;
                 goto RDebarTimeFillValue;
             }
-            //?????С???????????????????????λ??
+            //Сλ
             //TimeData[i] = CycleIndex[j];
             CycleIndex[i] = CycleIndex[j];
             DepthData[i] = DepthData[j];
 
-            //????????С????????????????????????????
-            //(????????????????????)
-            //?????????????????????????i??????????????????????
+            //С
+            //()
+            //i
             LDebarTimeFillValue:
             while (i < j && CycleIndex[i] <= temp)
                 i++;
-            //??????????????????????????λ??
+            //λ
             if ((CycleIndex[i] == mFillValue || _isnan(CycleIndex[i])) && i < j) {
                 i++;
                 goto LDebarTimeFillValue;
@@ -1059,24 +1058,24 @@ void hdfOpt::quickSortForArgo(long begin, long end, long *CycleIndex, long *Dept
             DepthData[j] = DepthData[i];
 
         }
-        //???????????????λ??
+        //λ
         CycleIndex[i] = temp;
-        //?????i??????????λ??
-        //????????????????????????????????
+        //iλ
+        //
         quickSortForArgo(begin, i - 1, CycleIndex, DepthData, mFillValue);
-        //????????????????????????????????
+        //
         quickSortForArgo(i + 1, end, CycleIndex, DepthData, mFillValue);
     }
-        //????????????????????
+        //
     else
         return;
 }
 
 void hdfOpt::quickSortForArgo(double *TimeData, long begin, long end, double *LonData, double *LatData,
                               double mJuldFillValue) {
-    //?????????????
+    //
     if (begin < end) {
-        double temp = TimeData[begin]; //?????????????????????
+        double temp = TimeData[begin]; //
         for (int index = begin; index < end; index++) {
             if (TimeData[index] != mJuldFillValue && !_isnan(TimeData[index])) {
                 temp = TimeData[index];
@@ -1087,12 +1086,12 @@ void hdfOpt::quickSortForArgo(double *TimeData, long begin, long end, double *Lo
                 return;
         }
 
-        int i = begin; //????????в???????????????????λ??
-        int j = end; //?????????в???????????????????λ??
-        //?????????
+        int i = begin; //вλ
+        int j = end; //вλ
+        //
         while (i < j) {
-            //???????????????????????????????????
-            //?????????????????????????j??????????С????????
+            //
+            //jС
             RDebarTimeFillValue:
             while (i < j && TimeData[j] > temp)
                 j--;
@@ -1100,17 +1099,17 @@ void hdfOpt::quickSortForArgo(double *TimeData, long begin, long end, double *Lo
                 j--;
                 goto RDebarTimeFillValue;
             }
-            //?????С???????????????????????λ??
+            //Сλ
             TimeData[i] = TimeData[j];
             LonData[i] = LonData[j];
             LatData[i] = LatData[j];
-            //????????С????????????????????????????
-            //(????????????????????)
-            //?????????????????????????i??????????????????????
+            //С
+            //()
+            //i
             LDebarTimeFillValue:
             while (i < j && TimeData[i] <= temp)
                 i++;
-            //??????????????????????????λ??
+            //λ
             if ((TimeData[i] == mJuldFillValue || _isnan(TimeData[i])) && i < j) {
                 i++;
                 goto LDebarTimeFillValue;
@@ -1119,15 +1118,15 @@ void hdfOpt::quickSortForArgo(double *TimeData, long begin, long end, double *Lo
             LonData[j] = LonData[i];
             LatData[j] = LatData[i];
         }
-        //???????????????λ??
+        //λ
         TimeData[i] = temp;
-        //?????i??????????λ??
-        //????????????????????????????????
+        //iλ
+        //
         quickSortForArgo(TimeData, begin, i - 1, LonData, LatData, mJuldFillValue);
-        //????????????????????????????????
+        //
         quickSortForArgo(TimeData, i + 1, end, LonData, LatData, mJuldFillValue);
     }
-        //????????????????????
+        //
     else
         return;
 }
@@ -1380,7 +1379,7 @@ double hdfOpt::GetDatasetsStartLog(string Filename, string Dsname) {
     //假定所有数据集的空间分辨率相等，从第一个数据集中获取
     int sid = SDselect(fid, 0);
     //获取数据集的名称 数据集的维数 数据集的大小 数据集中数据类型 数据集中数据属性的个数
-    const char *tagChar = "StartLog";
+    const char *tagChar = "StartLon";
     int32 tagIndex = SDfindattr(sid, tagChar);
     status = SDattrinfo(sid, tagIndex, filename, &datatype, &globleattr);
 
@@ -1491,7 +1490,7 @@ double hdfOpt::GetDatasetsEndLog(string Filename, string Dsname) {
 
     m_DataType = GetFileProductType(Filename);
 
-    const char *tagChar = "EndLog";
+    const char *tagChar = "EndLon";
     tagIndex = SDfindattr(sid, tagChar);
     status = SDattrinfo(sid, tagIndex, filename, &datatype, &globleattr);
 

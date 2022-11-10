@@ -463,7 +463,7 @@ void DcSTMC::Run(vector<string>& FileList, string outputPath, int in_mPerNum, in
 					//p.Rasterpixels = Rasterpixels; �����Ϊ���û�ָ��
 					p.drID = j; p.rsclusterId = rsclusterId;
 					p.mRows = mRows; p.mCols = mCols;
-					//thread(Param p)
+					//thread(RTreeParam p)
 					this->ExpandCluster1(Rasterpixels, p.drID, p.rsclusterId, p.mRows, p.mCols, Rasterpixels[p.drID].Attribute, 1);
 				}
 				rsclusterId++;

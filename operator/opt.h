@@ -8,20 +8,25 @@
 #include <iostream>
 #include <math.h>
 #include <vector>
+#include <list>
+#include <set>
+#include <queue>
 #include <array>
 #include <string>
 #include <algorithm>
 #include <hdfi.h>
 #include <gdal_priv.h>
 #include <gdal.h>
+#include <sidx_api.h>
 #include "_const.h"
-//gdal_wrap gdalconst_wrap geos_c ogr_wrap osr_wrap hdf mfhdf)
 
 using namespace std;
 
 class Range {
 public:
+    static const Range GLOBAL;
     int rowMin , rowMax, colMin , colMax ;
+    double latMin, latMax, lonMin, lonMax ;
 public:
     Range(){
         rowMin = INT_MAX;
@@ -30,30 +35,33 @@ public:
         colMax = 0;
     }
 
+    Range(double _latMin, double _latMax,double _lonMin,double _lonMax):
+    latMin(_latMin), latMax(_latMax), lonMin(_lonMin), lonMax(_lonMax){}
+
     bool checkEdge(int row, int col){
         bool check = false;
         if(row <= rowMin){
             rowMin = row;
+            latMin = Def.StartLat - (row + 0.5) * Def.Resolution;
             check = true;
         } else if(row >= rowMax){
             rowMax = row;
+            latMax = Def.StartLat - (row + 0.5) * Def.Resolution;
             check = true;
         }
         if(col <= colMin){
             colMin = col;
+            lonMin = Def.StartLon + (col + 0.5) * Def.Resolution;
             check = true;
         } else if(col >= colMax){
             colMax = col;
+            lonMax = Def.StartLon + (col + 0.5) * Def.Resolution;
             check = true;
         }
         return check;
     }
-
-    pair<double, double> getGeoCoordinates(){
-        pair<double, double> pr;
-        return pr;
-    }
 };
+
 
 class Node {
 private:
@@ -145,46 +153,6 @@ public:
     }
 };
 
-class Matrix{
-private:
-    vector<vector<Node *>> mat;
-    int rowOffset, rowLen, colOffset, colLen;
-public:
-    Matrix(Range& range, vector<Node>& nodeList){
-        rowOffset = range.rowMin;
-        rowLen = range.rowMax - range.rowMin + 2;
-        colOffset = range.colMin;
-        colLen = range.colMax - range.colMin + 2;
-        vector<Node*> emptyRow(colLen, nullptr);
-        mat.resize(rowLen, emptyRow);
-        for (int i = 0; i < nodeList.size(); ++i) {
-            int nr = nodeList[i].row - rowOffset + 1, nc = nodeList[i].col - colOffset + 1;
-            if(nr < 0 || nr >= rowLen || nc < 0 || nc >= colLen){
-                cout << "error: [Matrix] build matrix fail." << endl;
-                break;
-            }
-            mat[nr][nc] = &nodeList[i];
-        }
-        print();
-    }
-
-    void print(){
-        for(int i = 0; i < mat.size(); ++i){
-            for(int j = 0; j < mat[0].size(); ++j){
-                if(mat[i][j] == nullptr)
-                    cout << "  " << " ";
-                else
-                    cout << mat[i][j]->dir1 << mat[i][j]->dir2 << " ";
-            }
-            cout << endl;
-        }
-    }
-
-    Node* get(int row, int col){
-        return mat[row + 1][col + 1];
-    }
-};
-
 class Line {
 public:
     int id;//唯一标识
@@ -212,66 +180,8 @@ public:
             {"b", 0}
     };
 
-public:
-    Line(){}
 
-
-    bool sortNodes(){
-        int rowOffset = range.rowMin;
-        int rowLen = range.rowMax - range.rowMin + 1;
-        int colOffset = range.colMin;
-        int colLen = range.colMax - range.colMin + 1;
-        Node *head = nullptr;
-
-        // build mat of region
-        for (int i = 0; i < nodes.size(); ++i) {
-            if (head == nullptr && nodes[i].type != NodeType_LeftTopAndRightBot &&
-                    nodes[i].type != NodeType_RightTopAndLeftBot) {
-                head = &nodes[i];
-                break;
-            }
-        }
-
-        Matrix mat(range, nodes);
-
-        // search the line of edge
-        vector<Node> newNodeList;
-        Node *cur = head;
-        string direction = cur->dir1;
-        int r = cur->row - rowOffset, c = cur->col - colOffset;
-        cur->isVisited = true;
-        newNodeList.push_back(*head);
-        int cnt = 0;
-        do {
-            r += RowMove.at(direction);
-            c += ColMove.at(direction);
-            if(r < -1 || c < -1 || r >= rowLen || c >= colLen){
-                cout << "error: [sortNodes] out of range." << endl;
-                return false;
-            }
-
-            if (mat.get(r, c) == nullptr)
-                continue;
-
-            cur = mat.get(r, c);
-            if(cur->isVisited){
-                newNodeList.push_back(*cur);
-                break;
-            }
-
-            if(cur->type != NodeType_LeftTopAndRightBot && cur->type != NodeType_RightTopAndLeftBot) {
-                cur->isVisited = true;
-                newNodeList.push_back(*cur);
-            }
-            direction = cur->getNextDirection(direction);
-            cnt++;
-        } while (head != cur || cnt >= nodes.size());
-
-        nodes = newNodeList;
-        Matrix tmp(range, nodes); // just view the matrix of nodes
-        return true;
-    }
-
+    bool Line::sortNodes();
 };
 
 class myCircle {
@@ -382,8 +292,8 @@ public:
 
 class Poly {
 public:
-    int id;//唯一标识
-    int eventID;//事件id
+    int id;
+    int clusterId;
     vector<Line> lines;//所有线
     int minRow;//最小行数
     int minCol;//最小列数
@@ -410,10 +320,6 @@ public:
         minValue = DBL_MAX;
         sumValue = 0.0;
         pixelCount = 0;
-
-        centroidRow = POLYGON_FIELD_EMPTY;
-        centroidCol = POLYGON_FIELD_EMPTY;
-        area = POLYGON_FIELD_EMPTY;
     }
 
     void update(float v){
@@ -627,6 +533,8 @@ public:
 
 };
 
+enum AnomalyType {Positive, Negative};
+
 class gdalOpt {
 public:
     gdalOpt();
@@ -637,9 +545,10 @@ public:
 
     static bool readGeoTiff(const string file, int *pBuffer);
 
-    static void
-    save(string outPath, string startTime, string AbnormalType, const double startLog, const double startLat,
-         const double resolution, vector<Poly> polygons);
+    static void save(string outputPath, AnomalyType anomalyType, vector<Poly>& polygons);
+
+    static void save(string outPath, string startTime, string AbnormalType, const double startLog, const double startLat,
+         const double resolution, vector<Poly>& polygons);
 
     bool writeGeoTiff(string fileName, Meta meta, double *buf);
 
@@ -694,7 +603,6 @@ public:
     double *pMemData;
 
     long *pGeoData;
-
 
 };
 

@@ -50,14 +50,14 @@ bool AnomalyAnalysis::StandardAnomaly_OnePeriod(vector<string> Files, Meta meta,
 
 	hdfOpt ReadHDF;
 
-	//��ʼ��
+	//ʼ
 	double* pMeanBuffer = new double[meta.Size];
 	double* pStdBuffer = new double[meta.Size];
 	
 	hdfOpt::meanAndStandardDeviation(Files, pMeanBuffer, pStdBuffer);
 		
 
-	////����1-12�������㴦�ı�׼������
+	////1-12㴦ı׼
 	//for (long j = 0; j<mRows*mCols; j++)
 	//{
 	//	if (pValueNum[j] != 0 && pMeanBuffer[j] != 0.0&& pStdBuffer[j] != 0.0)
@@ -75,27 +75,27 @@ bool AnomalyAnalysis::StandardAnomaly_OnePeriod(vector<string> Files, Meta meta,
 	//	}
 	//}
 
-	//�����쳣ֵ
+	//쳣ֵ
 	for (long i = 0; i < Files.size(); i++)
 	{
 		string tStr = Files[i].c_str();
 		
-		//���建����,�洢�����ֵ
+		//建,洢ֵ
 		long *pBuffer = (long*)malloc(meta.Size * sizeof(long));
 
-		//��ȡ����
+		//ȡ
 		if (!ReadHDF.GetDsByDsnameFROMProduct(pBuffer, tStr, Def.DataSetName.c_str(), 0, meta.Rows, 0, meta.Cols))
 		{
-			//�ͷ��ڴ�
+			//ͷڴ
 			free(pBuffer);	
-			cout << "��ȡ���ݳ���" <<endl;
+			cout << "ȡݳ" <<endl;
 			return false;
 		}
 		
-		//����
+		//
 		for (long j = 0; j<meta.Size; j++)
 		{
-			//��ֵ��������һ��ʱ��ֵ-9999
+			//ֵһʱֵ-9999
 			//if (pValueNum[iMonth][j] * 1.0 / FileNum < 0.5)
 			//{
 			//	val[j] = mMissingValue;
@@ -104,7 +104,7 @@ bool AnomalyAnalysis::StandardAnomaly_OnePeriod(vector<string> Files, Meta meta,
 
 			if (pBuffer[j] != (long)meta.MissingValue
 				&& pStdBuffer[j] != 0.0)
-				pBuffer[j] = (long)(((pBuffer[j] * meta.Scale - pMeanBuffer[j]) / pStdBuffer[j]) / meta.Scale +0.5); //��0.5��Ϊ��ǿתΪlong��ʱ����������
+				pBuffer[j] = (long)(((pBuffer[j] * meta.Scale - pMeanBuffer[j]) / pStdBuffer[j]) / meta.Scale +0.5); //0.5ΪǿתΪlongʱ
 
 			if (pBuffer[j] != (long)meta.MissingValue && pStdBuffer[j] == 0.0)
 				pBuffer[j] = 0;
@@ -122,31 +122,31 @@ bool AnomalyAnalysis::StandardAnomaly_OnePeriod(vector<string> Files, Meta meta,
 		hdfOpt pHDF;// = new hdfOpt();
 		
 
-		//д���ļ�		
+		//дļ		
 		string date = opt::getDate(Files[i]);
 		string folder = mOutPath + "/" + date.substr(0, 4) + "/";
 		
-		if (_access(folder.c_str(), 0) == -1)	//����ļ��в�����
+		if (_access(folder.c_str(), 0) == -1)	//ļв
 			_mkdir(folder.c_str());
 
 		string mOutFileName =  folder + "StandAnomaly" + date + ".hdf";
 		//pReadHDF->WriteHDFFile(mOutFileName, mReDsName, mDsDate, mResolution, val, mStartLat, mEndLat, mStartLog, mEndLog, mRows, mCols, 0.001);
 		if (!ReadHDF.WriteCustomHDF2DFile(mOutFileName.c_str(), date.c_str(), Def.ProductType.c_str(), "0",
-			Def.DataSetName.c_str(), pBuffer, meta.Scale, meta.Offset, meta.StartLog, meta.EndLog, meta.StartLat, meta.EndLat,
-			meta.Rows, meta.Cols, mMaxValue, mMinValue, mMeanValue, mStdValue, meta.MissingValue, meta.Resolution, "2ά"))
+                                          Def.DataSetName.c_str(), pBuffer, meta.Scale, meta.Offset, meta.StartLon, meta.EndLon, meta.StartLat, meta.EndLat,
+                                          meta.Rows, meta.Cols, mMaxValue, mMinValue, mMeanValue, mStdValue, meta.MissingValue, meta.Resolution, "2ά"))
 		{			
 			free(pBuffer);
-			//�ͷ��ڴ�	
+			//ͷڴ	
 			delete[] pMeanBuffer;
 			delete[] pStdBuffer;
-			cout << "д���ļ�����!" << endl;
+			cout << "дļ!" << endl;
 			return false;
 		}
-		//�ͷ��ڴ�
+		//ͷڴ
 		free(pBuffer);		
 	}
 	
-	//�ͷ��ڴ�	
+	//ͷڴ	
 	delete[] pMeanBuffer;
 	delete[] pStdBuffer;
 	return true;
@@ -175,7 +175,7 @@ bool AnomalyAnalysis::SpatiotemporalAnomaly(vector<string> Files, string outputP
 
 	const char* folder = outputPath.c_str();
 
-	if (_access(folder, 0) == -1)	//����ļ��в�����
+	if (_access(folder, 0) == -1)	//ļв
 		_mkdir(folder);
 
 	for (long i = 0; i < Files.size(); i++)
@@ -190,8 +190,8 @@ bool AnomalyAnalysis::SpatiotemporalAnomaly(vector<string> Files, string outputP
 		unique_ptr<double[]> neg(new double[meta.Size]);
 		unique_ptr<long[]> pBuffer(new long[meta.Size]);
 
-		//���建����,�洢�����ֵ
-		//��ȡ����
+		//建,洢ֵ
+		//ȡ
 		if (!ho.GetDsByDsnameFROMProduct(pBuffer.get(), fileName, Def.DataSetName.c_str(), 0, meta.Rows, 0, meta.Cols))
 		{
 			/*
@@ -199,7 +199,7 @@ bool AnomalyAnalysis::SpatiotemporalAnomaly(vector<string> Files, string outputP
 			delete[] pos;
 			delete[] neg;
 			*/
-			cout << "��ȡ���ݳ���" << endl;
+			cout << "ȡݳ" << endl;
 			return false;
 		}
 
@@ -218,7 +218,7 @@ bool AnomalyAnalysis::SpatiotemporalAnomaly(vector<string> Files, string outputP
 
 		}
 
-		//�ռ�ƽ��
+		//ռƽ
 		SpatialSmooth(pos.get(), Def.Rows, Def.Cols, Def.FillValue);
 		SpatialSmooth(neg.get(), Def.Rows, Def.Cols, Def.FillValue);
 
@@ -261,7 +261,7 @@ void AnomalyAnalysis::SpatialSmooth(double* pResultBuffer, int mRows, int mCols,
 	{
 		for (int n = 1; n < mCols - 1; n++)
 		{
-			//ɾ��������
+			//ɾ
 			int count_delete = 0;
 			for (int mm = m - 1; mm < m + 2; mm++)
 			{
@@ -286,7 +286,7 @@ void AnomalyAnalysis::SpatialSmooth(double* pResultBuffer, int mRows, int mCols,
 			{
 				pResultBuffer[m * mCols + n] = 0;
 			}
-			//�������,��ֵ�˲���ȡ���� ?��ֵ��
+			//,ֵ˲ȡ ?ֵ
 			int count_fill = 0;
 			double fill_value = 0;
 			if (pResultBuffer[m * mCols + n] == 0 || pResultBuffer[m * mCols + n] == mFillValue)

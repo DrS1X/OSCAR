@@ -12,9 +12,33 @@
 
 using namespace std;
 
-int init();
+using TP = chrono::time_point<chrono::system_clock>;
+using duration_seconds = chrono::duration<float, ratio<60>>;
+using duration_hours = chrono::duration<float, std::ratio<3600>>;
+using duration_days = chrono::duration<float, ratio<86400>>;
+using duration_weeks = chrono::duration<float, std::ratio<604800>>;
+using duration_months = chrono::duration<float, std::ratio<2629746>>;
+using duration_years = chrono::duration<float, std::ratio<31556952>>;
 
-void BFS(const int windowSize, const int coreThreshold, const float valueThreshold, vector<string> &fileList, string outputPath);
+enum TimeUnit{
+    Day, Mon
+};
+
+struct RTreeParam{
+    int geoWindow;
+    int coreThreshold;
+    TimeUnit unit;
+    int durationThreshold;
+    float valueThreshold;
+};
+
+extern int GEO_WINDOW;
+extern int DUR_THRESHOLD;
+extern int CORE_THRESHOLD;
+extern int ATTRIBUTE_THRESHOLD;
+extern string OUTPUT_PATH;
+extern int CLUSTER_ID;
+extern TimeUnit UNIT;
 
 class RoSTCM
 {
@@ -136,5 +160,34 @@ public:
     void Run(vector<string>& FileList, string outputPath, int in_mPerNum, int in_T);
 };
 
+class Raster {
+public:
+    const int rowNum = Def.Rows;
+    const int colNum = Def.Cols;
+    const int sz = Def.Size;
+private:
+    int *val;
+    bool *vis;
+
+private:
+    int index(int row, int col) const;
+
+public:
+    explicit Raster(string file);
+
+    bool checkIndex(int row, int col);
+
+    int get(int row, int col);
+
+    void set(int row, int col, int value);
+
+    bool isVisited(int row, int col);
+
+    bool visit(int row, int col);
+
+    void getNode(std::set<Node>& nodeSet, const int r, const int c, Range &range);
+
+    static chrono::time_point<chrono::system_clock> getDay(string file);
+};
 
 #endif //CLUSTERING_ALGO_H

@@ -991,7 +991,7 @@ void Line2Polygon(const vector<vector<double>>& oriImg, const vector<vector<int>
 						area += rasterArea;//增加面积
 						double value = oriImg[_row][_col];
 
-						polygon.eventID = spImg[_row][_col];
+						polygon.clusterId = spImg[_row][_col];
 						if (value > maxValue) maxValue = value;//最大值
 						if (value < minValue) minValue = value;
 						double _volume = rasterArea * value;//
@@ -1004,7 +1004,7 @@ void Line2Polygon(const vector<vector<double>>& oriImg, const vector<vector<int>
 			}
 		}
 		//栅格矢量化有待完善,过滤掉小异常对象
-		if (polygon.eventID <= 0.1/* || area <= 20000*/)
+		if (polygon.clusterId <= 0.1/* || area <= 20000*/)
 			continue;
 		//平均
 		polygon.centroidRow = _rowCore / volume;
@@ -1031,9 +1031,9 @@ void RasterToVectorBasedonSpace(string oriPath, string spPath, string outPath, s
 	//打开hdf文件, 获取基本信息
 	int col = Def.Cols;
 	int row = Def.Rows;
-	const double startLog = Def.StartLog;//起始经度
+	const double startLog = Def.StartLon;//起始经度
 	const double startLat = Def.StartLat;//起始维度
-	const double endLog = Def.EndLog;//结束经度
+	const double endLog = Def.EndLon;//结束经度
 	const double endLat = Def.EndLat;//结束维度
 	double mScale = 1.0;//比例
 	string dataType = "";

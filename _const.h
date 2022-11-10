@@ -1,6 +1,7 @@
 #pragma once
 
 #include "string"
+#include <chrono>
 
 using namespace std;
 
@@ -14,9 +15,9 @@ struct Meta {
 	long Cols;
 	long Size;
 	double StartLat;
-	double StartLog; // -> -180 ?
+	double StartLon; // -> -180 ?
 	double EndLat;
-	double EndLog; // -> 180 ?
+	double EndLon; // -> 180 ?
 	double Offset;
 	string Date;
 	string DataSetName;

@@ -19,9 +19,9 @@ gdalOpt::gdalOpt(Meta meta)
 	CPLSetConfigOption("GDAL_FILENAME_IS_UTF8", "NO");
 	geoTiffDriver = GetGDALDriverManager()->GetDriverByName("GTiff");
 
-	startLog = meta.StartLog;
+	startLog = meta.StartLon;
 	startLat = meta.StartLat;
-	endLog = meta.EndLog;
+	endLog = meta.EndLon;
 	endLat = meta.EndLat;
 	mScale = meta.Scale; //转product HDF时 使用0.01即可
 	mOffsets = meta.Offset;
@@ -104,10 +104,10 @@ bool gdalOpt::writeGeoTiff(string fileName, Meta meta, int *buf) {
 		geoTiffDataset->SetMetadataItem("Offsets", tempChar);
 
 		sprintf_s(tempChar, "%f", startLog);
-		geoTiffDataset->SetMetadataItem("StartLog", tempChar);
+		geoTiffDataset->SetMetadataItem("StartLon", tempChar);
 
 		sprintf_s(tempChar, "%f", endLog);
-		geoTiffDataset->SetMetadataItem("EndLog", tempChar);
+		geoTiffDataset->SetMetadataItem("EndLon", tempChar);
 
 		sprintf_s(tempChar, "%f", startLat);
 		geoTiffDataset->SetMetadataItem("StartLat", tempChar);
@@ -207,10 +207,10 @@ bool gdalOpt::writeGeoTiff(string fileName, Meta meta, double *buf) {
 		geoTiffDataset->SetMetadataItem("Offsets", tempChar);
 
 		sprintf_s(tempChar, "%f", startLog);
-		geoTiffDataset->SetMetadataItem("StartLog", tempChar);
+		geoTiffDataset->SetMetadataItem("StartLon", tempChar);
 
 		sprintf_s(tempChar, "%f", endLog);
-		geoTiffDataset->SetMetadataItem("EndLog", tempChar);
+		geoTiffDataset->SetMetadataItem("EndLon", tempChar);
 
 		sprintf_s(tempChar, "%f", startLat);
 		geoTiffDataset->SetMetadataItem("StartLat", tempChar);
@@ -302,9 +302,9 @@ bool gdalOpt::ReadFileByGDAL(const char * mFileName)
 				else if (tempStr[0] == "Dimension")dimension = tempStr[1];
 				else if (tempStr[0] == "Scale")mScale = atof(tempStr[1].c_str());
 				else if (tempStr[0] == "Offsets")mOffsets = atof(tempStr[1].c_str());
-				else if (tempStr[0] == "StartLog")startLog = atof(tempStr[1].c_str());
+				else if (tempStr[0] == "StartLon")startLog = atof(tempStr[1].c_str());
 				else if (tempStr[0] == "StartLat")startLat = atof(tempStr[1].c_str());
-				else if (tempStr[0] == "EndLog")endLog = atof(tempStr[1].c_str());
+				else if (tempStr[0] == "EndLon")endLog = atof(tempStr[1].c_str());
 				else if (tempStr[0] == "EndLat")endLat = atof(tempStr[1].c_str());
 				else if (tempStr[0] == "Rows")Rows = atoi(tempStr[1].c_str());
 				else if (tempStr[0] == "Cols")Cols = atoi(tempStr[1].c_str());
@@ -407,9 +407,9 @@ bool gdalOpt::Convert_GeoTiff2HDF(const char* in_fileName, const char* out_fileN
 					mScale /= atof(tempStr[1].c_str());
 				}
 				else if (tempStr[0] == "Offsets")mOffsets = atof(tempStr[1].c_str());
-				else if (tempStr[0] == "StartLog")startLog = atof(tempStr[1].c_str());
+				else if (tempStr[0] == "StartLon")startLog = atof(tempStr[1].c_str());
 				else if (tempStr[0] == "StartLat")startLat = atof(tempStr[1].c_str());
-				else if (tempStr[0] == "EndLog")endLog = atof(tempStr[1].c_str());
+				else if (tempStr[0] == "EndLon")endLog = atof(tempStr[1].c_str());
 				else if (tempStr[0] == "EndLat")endLat = atof(tempStr[1].c_str());
 				else if (tempStr[0] == "Rows")Rows = atoi(tempStr[1].c_str());
 				else if (tempStr[0] == "Cols")Cols = atoi(tempStr[1].c_str());
@@ -505,7 +505,12 @@ double getArea(OGRGeometry* poGeom) {
     return 0.0;
 }
 
-void gdalOpt::save(string outPath, string startTime, string AbnormalType, const double startLog, const double startLat, const double resolution, vector<Poly> polygons) {
+void gdalOpt::save(string outputPath, AnomalyType anomalyType, vector<Poly>& polygons){
+    string anomalyTypeStr = anomalyType == AnomalyType::Positive ? "Positive" : "Negative";
+    save(outputPath, "", anomalyTypeStr, Def.StartLon, Def.StartLat, Def.Resolution, polygons);
+}
+
+void gdalOpt::save(string outPath, string startTime, string AbnormalType, const double startLog, const double startLat, const double resolution, vector<Poly>& polygons) {
     GDALAllRegister();
     //保存shp
     CPLSetConfigOption("GDAL_FILENAME_IS_UTF8", "NO");
@@ -668,7 +673,7 @@ void gdalOpt::save(string outPath, string startTime, string AbnormalType, const 
         {
             // calculate field of polygon
             poFeature->SetField(0, "pr");
-            poFeature->SetField(1, polygon.eventID);
+            poFeature->SetField(1, polygon.clusterId);
             poFeature->SetField(4, startTime.c_str());
             double minLog = startLog + (polygon.minCol + 1) * resolution;//最小经度
             double minLat = startLat - (polygon.maxRow + 1) * resolution;//最小纬度

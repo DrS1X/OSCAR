@@ -39,6 +39,6 @@ add_executable(Clustering
         process/AnomalyAnalysis.cpp
         process/Convertor.cpp
         algorithm/DcSTMC.cpp
-        algorithm/DBSCAN.cpp algorithm/BFS.cpp algorithm/algo.h algorithm/RTree.cpp)
+        algorithm/DBSCAN.cpp algorithm/RTree.cpp algorithm/algo.h algorithm/RTree.h)
 
 target_link_libraries(Clustering LibsGDAL LibsSpatialIndex)
