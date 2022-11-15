@@ -505,12 +505,12 @@ double getArea(OGRGeometry* poGeom) {
     return 0.0;
 }
 
-void gdalOpt::save(string outputPath, AnomalyType anomalyType, vector<Poly>& polygons){
+void gdalOpt::save(string outputPath, string startTime,AnomalyType anomalyType, vector<Poly>& polygons){
     string anomalyTypeStr = anomalyType == AnomalyType::Positive ? "Positive" : "Negative";
-    save(outputPath, "", anomalyTypeStr, Def.StartLon, Def.StartLat, Def.Resolution, polygons);
+    save(outputPath, startTime, anomalyTypeStr, Def.StartLon, Def.StartLat, Def.Resolution, polygons);
 }
 
-void gdalOpt::save(string outPath, string startTime, string AbnormalType, const double startLog, const double startLat, const double resolution, vector<Poly>& polygons) {
+void gdalOpt::save(string outPath, string startTime, string abnormalType, const double startLog, const double startLat, const double resolution, vector<Poly>& polygons) {
     GDALAllRegister();
     //保存shp
     CPLSetConfigOption("GDAL_FILENAME_IS_UTF8", "NO");
@@ -540,7 +540,9 @@ void gdalOpt::save(string outPath, string startTime, string AbnormalType, const 
     OGRSpatialReference * ref;
     ref = new OGRSpatialReference(Def.Projection.c_str());
 
-    poLayer = poDS->CreateLayer("PolygonLayer", ref, wkbPolygon, NULL);
+    string fileName = abnormalType + startTime;
+
+    poLayer = poDS->CreateLayer(fileName.c_str(), ref, wkbPolygon, NULL);
     if (poLayer == NULL)
     {
         printf("Layer creation failed.\n");
@@ -703,7 +705,7 @@ void gdalOpt::save(string outPath, string startTime, string AbnormalType, const 
             poFeature->SetField(13, centroidLog);
             poFeature->SetField(14, centroidLat);
             poFeature->SetField(15, polygon.power);
-            poFeature->SetField(16, AbnormalType.c_str());
+            poFeature->SetField(16, abnormalType.c_str());
         }
 
         poFeature->SetGeometryDirectly(poGeom);

@@ -11,13 +11,6 @@
 
 using namespace std;
 
-int GEO_WINDOW;
-int DUR_THRESHOLD;
-int CORE_THRESHOLD;
-int ATTRIBUTE_THRESHOLD;
-string OUTPUT_PATH;
-int CLUSTER_ID = 0;
-TimeUnit UNIT;
 
 void Test_RTreeCluster(){
     struct RTreeParam p{
@@ -35,17 +28,17 @@ void Test_RTreeCluster(){
     RTree::Run(p, fileList, outputPath);
 }
 void Test_RTree(){
-    Range r(20,30, 20,30);
+    GeoRegion r(20, 30, 20, 30);
     Poly poly;
     poly.range = r;
     RNode node(&poly);
 
     DUR_THRESHOLD = 5;
-    RTree t;
+    RTree t; // delete
     t.insert(&node);
 
-    Range r2(10,40, 10,40);
-    vector<RNode*> result = t.query(r2);
+    GeoRegion r2(10, 40, 10, 40);
+    list<RNode*> result = t.query(r2);
     cout << result.size() << endl;
 }
 int main(int argc,char *argv[])

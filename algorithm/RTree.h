@@ -6,15 +6,50 @@
 #define CLUSTERING_RTREE_H
 
 #include <chrono>
-#include "opt.h"
+#include <sidx_impl.h>
+#include <time.h>
 #include "algo.h"
+#include "opt.h"
+#include "_const.h"
+
+class Raster {
+public:
+    const int rowNum = Def.Rows;
+    const int colNum = Def.Cols;
+    const int sz = Def.Size;
+    TP timePoint;
+private:
+    int *val;
+    bool *vis;
+
+private:
+    int index(int row, int col) const;
+    chrono::time_point<chrono::system_clock> getTimePoint(string fileName);
+
+public:
+    explicit Raster(string file);
+
+    bool checkIndex(int row, int col);
+
+    int get(int row, int col);
+
+    void set(int row, int col, int value);
+
+    bool isVisited(int row, int col);
+
+    bool visit(int row, int col);
+
+    void getNode(std::set<Node>& nodeSet, const int r, const int c, GeoRegion &range);
+
+};
+
 
 class Matrix{
 private:
     vector<vector<Node *>> mat;
     int rowOffset, rowLen, colOffset, colLen;
 public:
-    Matrix(Range& range, vector<Node>& nodeList){
+    Matrix(GeoRegion& range, vector<Node>& nodeList){
         rowOffset = range.rowMin;
         rowLen = range.rowMax - range.rowMin + 2;
         colOffset = range.colMin;
@@ -69,7 +104,7 @@ private:
     IndexPropertyH prop;
     IndexH idx;
     int nodeId;
-    chrono::time_point<chrono::system_clock> time;
+    chrono::system_clock::time_point timePoint;
     int maxClusterDur;
 
 public:
@@ -77,11 +112,15 @@ public:
     static void Run(RTreeParam p,  vector<string> fileList, string outputPath);
     static Poly* BFS(Raster &rst, vector<pair<int, int>> &noZero) ;
     static bool flush();
-    static TP getCacheEarliestTime();
+    static void flushAll();
+    static RTree* Create(TP _timePoint);
 
-    RTree();
+
+    RTree(){};
+    RTree(TP _timePoint);
     void insert(RNode* node);
-    vector<RNode*> RTree::query(Range range) const;
+    list<RNode*> RTree::query(GeoRegion range) const;
+    void save();
     ~RTree();
 };
 

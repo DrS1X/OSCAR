@@ -7,6 +7,7 @@
 
 #include <string>
 #include <vector>
+#include <queue>
 #include "_const.h"
 #include "opt.h"
 
@@ -158,36 +159,6 @@ private:
     void OutputRasterpixels(vector<RoSTCM>& Rasterpixels, vector<string>& fileList, int mStartFileIndex, int mTempFileNum, string outputPath);
 public:
     void Run(vector<string>& FileList, string outputPath, int in_mPerNum, int in_T);
-};
-
-class Raster {
-public:
-    const int rowNum = Def.Rows;
-    const int colNum = Def.Cols;
-    const int sz = Def.Size;
-private:
-    int *val;
-    bool *vis;
-
-private:
-    int index(int row, int col) const;
-
-public:
-    explicit Raster(string file);
-
-    bool checkIndex(int row, int col);
-
-    int get(int row, int col);
-
-    void set(int row, int col, int value);
-
-    bool isVisited(int row, int col);
-
-    bool visit(int row, int col);
-
-    void getNode(std::set<Node>& nodeSet, const int r, const int c, Range &range);
-
-    static chrono::time_point<chrono::system_clock> getDay(string file);
 };
 
 #endif //CLUSTERING_ALGO_H

@@ -7,61 +7,72 @@
 
 #include <iostream>
 #include <math.h>
+#include <algorithm>
 #include <vector>
 #include <list>
 #include <set>
-#include <queue>
 #include <array>
 #include <string>
-#include <algorithm>
+#include <chrono>
 #include <hdfi.h>
 #include <gdal_priv.h>
 #include <gdal.h>
 #include <sidx_api.h>
+#include "Region.h"
 #include "_const.h"
 
 using namespace std;
 
-class Range {
+class GeoRegion : public SpatialIndex::Region {
 public:
-    static const Range GLOBAL;
+    static const GeoRegion GLOBAL;
+    static const int N_DIM = 2;
     int rowMin , rowMax, colMin , colMax ;
-    double latMin, latMax, lonMin, lonMax ;
 public:
-    Range(){
+    GeoRegion():Region(){
         rowMin = INT_MAX;
         rowMax = 0;
         colMin = INT_MAX;
         colMax = 0;
     }
 
-    Range(double _latMin, double _latMax,double _lonMin,double _lonMax):
-    latMin(_latMin), latMax(_latMax), lonMin(_lonMin), lonMax(_lonMax){}
+    GeoRegion(double latMin, double latMax, double lonMin, double lonMax){
+        double pLow[2];
+        double pHigh[2];
+        pLow[0] = lonMin;
+        pHigh[0] = lonMax;
+        pLow[1] = latMin;
+        pHigh[1] = latMax;
+        Region(pLow, pHigh, N_DIM);
+    }
 
     bool checkEdge(int row, int col){
         bool check = false;
         if(row <= rowMin){
             rowMin = row;
-            latMin = Def.StartLat - (row + 0.5) * Def.Resolution;
             check = true;
         } else if(row >= rowMax){
             rowMax = row;
-            latMax = Def.StartLat - (row + 0.5) * Def.Resolution;
             check = true;
         }
         if(col <= colMin){
             colMin = col;
-            lonMin = Def.StartLon + (col + 0.5) * Def.Resolution;
             check = true;
         } else if(col >= colMax){
             colMax = col;
-            lonMax = Def.StartLon + (col + 0.5) * Def.Resolution;
             check = true;
         }
         return check;
     }
-};
 
+    // row & col To lat & lon
+    bool updateGeo(){
+        m_pHigh[1] = Def.StartLat - (rowMin + 0.5) * Def.Resolution;
+        m_pLow[1] = Def.StartLat - (rowMax + 0.5) * Def.Resolution;
+        m_pLow[0] = Def.StartLon + (colMin + 0.5) * Def.Resolution;
+        m_pHigh[0] = Def.StartLon + (colMax + 0.5) * Def.Resolution;
+    }
+};
 
 class Node {
 private:
@@ -161,7 +172,7 @@ public:
     int minCol;//最小列数
     int maxRow;//最大行数
     int maxCol;//最大列数
-    Range range;
+    GeoRegion range;
     int type;//线类型，0为外环，1为内环
     int power;//强度
     int eventID;//事件id
@@ -299,7 +310,7 @@ public:
     int minCol;//最小列数
     int maxRow;//最大行数
     int maxCol;//最大列数
-    Range range;
+    GeoRegion range;
     double area;//实际面积
     double length;
     double avgValue;//平均距平值
@@ -314,6 +325,7 @@ public:
     myRectangle minRec;//最小面积外包矩形
     myCircle minOutCir;//最小面积外接圆
     myCircle maxInCir;//最大面积内接圆
+    chrono::time_point<chrono::system_clock> time;
 public:
     Poly(){
         maxValue = DBL_MIN;
@@ -333,11 +345,6 @@ public:
         avgValue = sumValue / pixelCount;
     }
 
-    void scale(float scale){
-        maxValue *= scale;
-        minValue *= scale;
-        avgValue *= scale;
-    }
 };
 
 class opt {
@@ -545,10 +552,10 @@ public:
 
     static bool readGeoTiff(const string file, int *pBuffer);
 
-    static void save(string outputPath, AnomalyType anomalyType, vector<Poly>& polygons);
+    static void save(string outputPath,string startTime, AnomalyType anomalyType, vector<Poly>& polygons);
 
-    static void save(string outPath, string startTime, string AbnormalType, const double startLog, const double startLat,
-         const double resolution, vector<Poly>& polygons);
+    static void save(string outPath, string startTime, string abnormalType, const double startLog, const double startLat,
+                     const double resolution, vector<Poly>& polygons);
 
     bool writeGeoTiff(string fileName, Meta meta, double *buf);
 

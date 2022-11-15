@@ -12,8 +12,8 @@ set_target_properties(spatialindex PROPERTIES
   IMPORTED_LOCATION_DEBUG "${_IMPORT_PREFIX}/bin/spatialindex-64.dll"
   )
 
-list(APPEND _cmake_import_check_targets spatialindex )
-list(APPEND _cmake_import_check_files_for_spatialindex "${_IMPORT_PREFIX}/lib/spatialindex-64.lib" "${_IMPORT_PREFIX}/bin/spatialindex-64.dll" )
+list(APPEND _IMPORT_CHECK_TARGETS spatialindex )
+list(APPEND _IMPORT_CHECK_FILES_FOR_spatialindex "${_IMPORT_PREFIX}/lib/spatialindex-64.lib" "${_IMPORT_PREFIX}/bin/spatialindex-64.dll" )
 
 # Import target "spatialindex_c" for configuration "Debug"
 set_property(TARGET spatialindex_c APPEND PROPERTY IMPORTED_CONFIGURATIONS DEBUG)
@@ -22,8 +22,8 @@ set_target_properties(spatialindex_c PROPERTIES
   IMPORTED_LOCATION_DEBUG "${_IMPORT_PREFIX}/bin/spatialindex_c-64.dll"
   )
 
-list(APPEND _cmake_import_check_targets spatialindex_c )
-list(APPEND _cmake_import_check_files_for_spatialindex_c "${_IMPORT_PREFIX}/lib/spatialindex_c-64.lib" "${_IMPORT_PREFIX}/bin/spatialindex_c-64.dll" )
+list(APPEND _IMPORT_CHECK_TARGETS spatialindex_c )
+list(APPEND _IMPORT_CHECK_FILES_FOR_spatialindex_c "${_IMPORT_PREFIX}/lib/spatialindex_c-64.lib" "${_IMPORT_PREFIX}/bin/spatialindex_c-64.dll" )
 
 # Commands beyond this point should not need to know the version.
 set(CMAKE_IMPORT_FILE_VERSION)
