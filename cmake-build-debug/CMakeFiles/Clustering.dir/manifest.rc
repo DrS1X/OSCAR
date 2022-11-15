@@ -1,0 +1,2 @@
+#pragma code_page(65001)
+1 /* CREATEPROCESS_MANIFEST_RESOURCE_ID */ 24 /* RT_MANIFEST */ "F:/CLion_Project/Clustering/cmake-build-debug/CMakeFiles/Clustering.dir/embed.manifest"
