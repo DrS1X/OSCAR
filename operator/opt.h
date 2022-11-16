@@ -18,7 +18,7 @@
 #include <gdal_priv.h>
 #include <gdal.h>
 #include <sidx_api.h>
-#include "Region.h"
+#include <sidx_impl.h>
 #include "_const.h"
 
 using namespace std;
@@ -26,10 +26,9 @@ using namespace std;
 class GeoRegion : public SpatialIndex::Region {
 public:
     static const GeoRegion GLOBAL;
-    static const int N_DIM = 2;
     int rowMin , rowMax, colMin , colMax ;
 public:
-    GeoRegion():Region(){
+    GeoRegion():GeoRegion(Def.EndLat, Def.StartLat, Def.StartLon, Def.EndLon){
         rowMin = INT_MAX;
         rowMax = 0;
         colMin = INT_MAX;
@@ -37,14 +36,12 @@ public:
     }
 
     GeoRegion(double latMin, double latMax, double lonMin, double lonMax){
-        double pLow[2];
-        double pHigh[2];
-        pLow[0] = lonMin;
-        pHigh[0] = lonMax;
-        pLow[1] = latMin;
-        pHigh[1] = latMax;
-        Region(pLow, pHigh, N_DIM);
+        double pLow[2] = {lonMin, latMin};
+        double pHigh[2]= {lonMax,latMax};
+        this->GeoRegion::GeoRegion(pLow, pHigh);
     }
+
+    GeoRegion(const double* pLow, const double* pHigh):Region(pLow, pHigh, N_DIM){}
 
     bool checkEdge(int row, int col){
         bool check = false;
@@ -66,7 +63,7 @@ public:
     }
 
     // row & col To lat & lon
-    bool updateGeo(){
+    void updateGeo(){
         m_pHigh[1] = Def.StartLat - (rowMin + 0.5) * Def.Resolution;
         m_pLow[1] = Def.StartLat - (rowMax + 0.5) * Def.Resolution;
         m_pLow[0] = Def.StartLon + (colMin + 0.5) * Def.Resolution;

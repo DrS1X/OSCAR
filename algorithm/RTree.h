@@ -29,6 +29,8 @@ private:
 public:
     explicit Raster(string file);
 
+    ~Raster();
+
     bool checkIndex(int row, int col);
 
     int get(int row, int col);
@@ -95,12 +97,11 @@ public:
     bool isDeleted;
 
     RNode(Poly *_pPoly);
-    int mergeCluster();
+    void mergeCluster();
 };
 
 class RTree{
 private:
-    static const int N_DIM = 2;
     IndexPropertyH prop;
     IndexH idx;
     int nodeId;

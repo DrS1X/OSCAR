@@ -153,7 +153,7 @@ RTree::~RTree() {
 
 // move polygons of a moment from memory to disk
 bool RTree::flush() {
-    if (RTree::Cache.size() < DUR_THRESHOLD)
+    if (RTree::Cache.size() <= DUR_THRESHOLD)
         return false;
 
     RTree* back = RTree::Cache.back();
@@ -220,9 +220,9 @@ void RTree::save(){
 
 void RTree::insert(RNode *node) {
     node->id = ++nodeId;
-    int clusterDuration = node->mergeCluster();
-    if(clusterDuration > this->maxClusterDur)
-        this->maxClusterDur = clusterDuration;
+    node->mergeCluster();
+    if(node->dur > this->maxClusterDur)
+        this->maxClusterDur = node->dur;
 
     GeoRegion range = node->poly->range;
     double pdMin[N_DIM] = {range.getLow(0), range.getLow(1)};
@@ -283,30 +283,31 @@ list<RNode *> RTree::query(GeoRegion range) const {
 RNode::RNode(Poly *_pPoly) {
     this->poly = _pPoly;
     this->isDeleted = true;
-    this->dur = 0;
+    this->dur = 1;
 }
 
 // update duration and cluster id following prev overlap region
-int RNode::mergeCluster() {
+void RNode::mergeCluster() {
     if (RTree::Cache.empty())
-        return this->dur;
+        return;
 
     // get overlap polygon(RNode) between this and previous
     RTree* prevTree = RTree::Cache.back();
     list<RNode*> overlap = prevTree->query(this->poly->range);
     if (overlap.empty()) {
-        return this->dur;
+        return;
     }
 
     double area = this->poly->range.getArea();
-    queue<RNode *> q;
+    queue<RNode *> keep;
     // get max dur of previous
     for (auto it = overlap.begin(); it != overlap.end(); ++it) {
         RNode* pNode = *it;
         double prevArea = (pNode->poly->range).getArea();
         double intersectArea = this->poly->range.getIntersectingArea(pNode->poly->range);
 
-        if(intersectArea / prevArea < 0.4 || intersectArea / area < 0.4){
+        const double th = 0.7;
+        if(intersectArea / prevArea < th && intersectArea / area < th){
             continue;
         }
 
@@ -316,7 +317,7 @@ int RNode::mergeCluster() {
             this->dur = pNode->dur;
 
         if(pNode->isDeleted)
-            q.push(pNode);
+            keep.push(pNode);
     }
     ++this->dur;
 
@@ -324,38 +325,38 @@ int RNode::mergeCluster() {
     if(this->dur >= DUR_THRESHOLD){
         //keep this cluster to save
         this->isDeleted = false;
-        while(!q.empty()){
-            RNode* top = q.front();
+        while(!keep.empty()){
+            RNode* top = keep.front();
             top->isDeleted = false;
-            q.pop();
+            keep.pop();
             for(auto prevNode: top->prev){
-                q.push(prevNode);
+                keep.push(prevNode);
             }
         }
     }
 
     // update cluste id
     if(this->prev.size() == 0)
-        this->poly->clusterId = ++CORE_THRESHOLD;
+        this->poly->clusterId = ++CLUSTER_ID;
     else if(this->prev.size() == 1)
         this->poly->clusterId = (this->prev).front()->poly->clusterId;
     else {
         this->poly->clusterId = (this->prev).front()->poly->clusterId;
-        queue< RNode * > q2 = q;
-        q2.pop();
 
-        while(!q2.empty()){
-            RNode* top = q2.front();
-            q2.pop();
+        queue<RNode *, list<RNode*>> cluster(prev);
+        cluster.pop();
+
+        while(!cluster.empty()){
+            RNode* top = cluster.front();
+            cluster.pop();
             top->poly->clusterId = this->poly->clusterId;
             for(auto prevNode: top->prev){
                 if(prevNode->poly->clusterId != this->poly->clusterId)
-                    q2.push(prevNode);
+                    cluster.push(prevNode);
             }
         }
     }
 
-    return this->dur;
 }
 
 int Raster::index(int row, int col) const {
@@ -369,6 +370,11 @@ Raster::Raster(string file) {
     gdalOpt::readGeoTiff(file, val);
 
     timePoint = getTimePoint(file);
+}
+
+Raster::~Raster(){
+    delete[] val;
+    delete[] vis;
 }
 
 TP Raster::getTimePoint(string fileName){

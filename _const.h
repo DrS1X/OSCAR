@@ -34,6 +34,8 @@ static const Meta Def{ 1.0, 0.001, -9999, -9999, 120, 360, 120 * 360, 60, -180, 
 
 const int Neighbor8[8][2] = {{0,1},{1,1},{1,0},{1,-1},{0,-1},{-1,-1},{-1,0},{-1,1}};
 
+const int N_DIM = 2;
+
 const int NodeType_LeftTop = 1;
 const int NodeType_RightTop = 2;
 const int NodeType_LeftBot = 3;
