@@ -4,16 +4,20 @@
   <component name="CidrRootsConfiguration">
     <sourceRoots>
       <file path="$PROJECT_DIR$/algorithm" />
-      <file path="$PROJECT_DIR$/operator" />
+      <file path="$PROJECT_DIR$/file-operator" />
+      <file path="$PROJECT_DIR$/model" />
       <file path="$PROJECT_DIR$/process" />
       <file path="$PROJECT_DIR$/thread" />
+      <file path="$PROJECT_DIR$/util" />
     </sourceRoots>
     <libraryRoots>
       <file path="$PROJECT_DIR$/lib" />
-      <file path="$PROJECT_DIR$/release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs" />
     </libraryRoots>
     <excludeRoots>
+      <file path="$PROJECT_DIR$/hdf5-1.13.3" />
       <file path="$PROJECT_DIR$/release-1930-x64-gdal-3-5-2-mapserver-8-0-0" />
+      <file path="$PROJECT_DIR$/release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs/hdf5-examples" />
+      <file path="$PROJECT_DIR$/sidx" />
       <file path="$PROJECT_DIR$/spatialindex" />
     </excludeRoots>
   </component>

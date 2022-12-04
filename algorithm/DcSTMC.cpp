@@ -421,7 +421,7 @@ void DcSTMC::Run(vector<string>& FileList, string outputPath, int in_mPerNum, in
 		for (int j = mStartFileIndex; j < mEndFileIndex; j++)
 		{
 			int* pBuffer = new int[mRows * mCols];//�ļ�����
-			gdalOpt::readGeoTiff(FileList[j], pBuffer);
+			tiffOpt::readGeoTiff(FileList[j], pBuffer);
 			for (int k = 0; k < mRows * mCols; k++)
 			{
 				//psBuffer[k + (j - mStartFileIndex) * mRows * mCols] = val[k] * mScale;
@@ -492,13 +492,13 @@ void DcSTMC::Run(vector<string>& FileList, string outputPath, int in_mPerNum, in
 				outt[j - ii * mRows * mCols] = Rasterpixels[j].rsclusterId;//�Ӵ��������������ļ�
 			}
 				
-			string mOutFileName = opt::generateFileName(FileList[mStartFileIndex + ii], otherFilePath, "_Tcluster.hdf");
+			string mOutFileName = opt::generateFileName(FileList[mStartFileIndex + ii], otherFilePath, "_Tcluster.hdfOpt");
 			if (mFileNum != mPerNum)
 			{
 				if (mTempFileNum - ii <= T * 2 && i != mFileNum / (mPerNum - T * 2))
-					mOutFileName = opt::generateFileName(FileList[mStartFileIndex + ii], repeatFilePath, "_Tcluster.hdf");
+					mOutFileName = opt::generateFileName(FileList[mStartFileIndex + ii], repeatFilePath, "_Tcluster.hdfOpt");
 				if (i != 0 && ii < T * 2)
-					mOutFileName = opt::generateFileName(FileList[mStartFileIndex + ii], repeatFilePath, "_Tcluster_2.hdf");
+					mOutFileName = opt::generateFileName(FileList[mStartFileIndex + ii], repeatFilePath, "_Tcluster_2.hdfOpt");
 			}
 
 			meta.Date = FileList[mStartFileIndex + ii].substr(FileList[mStartFileIndex + ii].find_last_of(".") - 8, 8);
@@ -516,7 +516,7 @@ void DcSTMC::OutputRasterpixels(vector<RoSTCM>& Rasterpixels, vector<string>& fi
 		{
 			outt[j - ii * mRows * mCols] = (int) Rasterpixels[j].GetrsClusterId();
 		}
-		string mOutFileName = opt::generateFileName(fileList[mStartFileIndex + ii], outputPath, "cluster", "hdf");
+		string mOutFileName = opt::generateFileName(fileList[mStartFileIndex + ii], outputPath, "cluster", "hdfOpt");
 		meta.Date = fileList[mStartFileIndex + ii].substr(fileList[mStartFileIndex + ii].find_last_of(".") - 8, 8);
 		ho.writeHDF(mOutFileName, meta, outt.get());
 	}

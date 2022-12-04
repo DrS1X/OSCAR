@@ -9,8 +9,12 @@
 #include <sidx_impl.h>
 #include <time.h>
 #include "algo.h"
-#include "opt.h"
+#include "util/util.h"
 #include "_const.h"
+#include "tiffOpt.h"
+#include "hdfOpt.h"
+
+using std::string;
 
 class Raster {
 public:
@@ -44,7 +48,6 @@ public:
     void getNode(std::set<Node>& nodeSet, const int r, const int c, GeoRegion &range);
 
 };
-
 
 class Matrix{
 private:
@@ -111,7 +114,7 @@ private:
 public:
     static queue<RTree*> Cache;
     static void Run(RTreeParam p,  vector<string> fileList, string outputPath);
-    static Poly* BFS(Raster &rst, vector<pair<int, int>> &noZero) ;
+    static Poly* BFS(Raster &rst, vector<pair<int, int>> &noZero);
     static bool flush();
     static void flushAll();
     static RTree* Create(TP _timePoint);

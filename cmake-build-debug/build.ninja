@@ -49,27 +49,35 @@ cmake_ninja_workdir = F$:\CLion_Project\Clustering\cmake-build-debug\
 
 build cmake_object_order_depends_target_LibsGDAL: phony || CMakeFiles\LibsGDAL.dir
 
-build CMakeFiles\LibsGDAL.dir\operator\gdalOpt.cpp.obj: CXX_COMPILER__LibsGDAL_Debug F$:\CLion_Project\Clustering\operator\gdalOpt.cpp || cmake_object_order_depends_target_LibsGDAL
+build CMakeFiles\LibsGDAL.dir\file-operator\tiffOpt.cpp.obj: CXX_COMPILER__LibsGDAL_Debug F$:\CLion_Project\Clustering\file-operator\tiffOpt.cpp || cmake_object_order_depends_target_LibsGDAL
   FLAGS = /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -MDd
-  INCLUDES = -IF:\CLion_Project\Clustering\. -IF:\CLion_Project\Clustering\operator -IF:\CLion_Project\Clustering\thread -IF:\CLion_Project\Clustering\algorithm -IF:\CLion_Project\Clustering\process -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include\hdf4 -IF:\CLion_Project\Clustering\sidx\include -IF:\CLion_Project\Clustering\sidx\include\spatialindex -IF:\CLion_Project\Clustering\sidx\include\spatialindex\capi -IF:\CLion_Project\Clustering\sidx\include\spatialindex\tools
+  INCLUDES = -IF:\CLion_Project\Clustering\. -IF:\CLion_Project\Clustering\file-operator -IF:\CLion_Project\Clustering\algorithm -IF:\CLion_Project\Clustering\process -IF:\CLion_Project\Clustering\model -IF:\CLion_Project\Clustering\util -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include\hdf4 -IF:\CLion_Project\Clustering\sidx\include -IF:\CLion_Project\Clustering\sidx\include\spatialindex -IF:\CLion_Project\Clustering\sidx\include\spatialindex\capi -IF:\CLion_Project\Clustering\sidx\include\spatialindex\tools
   OBJECT_DIR = CMakeFiles\LibsGDAL.dir
-  OBJECT_FILE_DIR = CMakeFiles\LibsGDAL.dir\operator
+  OBJECT_FILE_DIR = CMakeFiles\LibsGDAL.dir\file-operator
   TARGET_COMPILE_PDB = CMakeFiles\LibsGDAL.dir\LibsGDAL.pdb
   TARGET_PDB = LibsGDAL.pdb
 
-build CMakeFiles\LibsGDAL.dir\operator\hdfOpt.cpp.obj: CXX_COMPILER__LibsGDAL_Debug F$:\CLion_Project\Clustering\operator\hdfOpt.cpp || cmake_object_order_depends_target_LibsGDAL
+build CMakeFiles\LibsGDAL.dir\file-operator\hdfOpt.cpp.obj: CXX_COMPILER__LibsGDAL_Debug F$:\CLion_Project\Clustering\file-operator\hdfOpt.cpp || cmake_object_order_depends_target_LibsGDAL
   FLAGS = /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -MDd
-  INCLUDES = -IF:\CLion_Project\Clustering\. -IF:\CLion_Project\Clustering\operator -IF:\CLion_Project\Clustering\thread -IF:\CLion_Project\Clustering\algorithm -IF:\CLion_Project\Clustering\process -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include\hdf4 -IF:\CLion_Project\Clustering\sidx\include -IF:\CLion_Project\Clustering\sidx\include\spatialindex -IF:\CLion_Project\Clustering\sidx\include\spatialindex\capi -IF:\CLion_Project\Clustering\sidx\include\spatialindex\tools
+  INCLUDES = -IF:\CLion_Project\Clustering\. -IF:\CLion_Project\Clustering\file-operator -IF:\CLion_Project\Clustering\algorithm -IF:\CLion_Project\Clustering\process -IF:\CLion_Project\Clustering\model -IF:\CLion_Project\Clustering\util -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include\hdf4 -IF:\CLion_Project\Clustering\sidx\include -IF:\CLion_Project\Clustering\sidx\include\spatialindex -IF:\CLion_Project\Clustering\sidx\include\spatialindex\capi -IF:\CLion_Project\Clustering\sidx\include\spatialindex\tools
   OBJECT_DIR = CMakeFiles\LibsGDAL.dir
-  OBJECT_FILE_DIR = CMakeFiles\LibsGDAL.dir\operator
+  OBJECT_FILE_DIR = CMakeFiles\LibsGDAL.dir\file-operator
   TARGET_COMPILE_PDB = CMakeFiles\LibsGDAL.dir\LibsGDAL.pdb
   TARGET_PDB = LibsGDAL.pdb
 
-build CMakeFiles\LibsGDAL.dir\operator\opt.cpp.obj: CXX_COMPILER__LibsGDAL_Debug F$:\CLion_Project\Clustering\operator\opt.cpp || cmake_object_order_depends_target_LibsGDAL
+build CMakeFiles\LibsGDAL.dir\file-operator\hdf5Opt.cpp.obj: CXX_COMPILER__LibsGDAL_Debug F$:\CLion_Project\Clustering\file-operator\hdf5Opt.cpp || cmake_object_order_depends_target_LibsGDAL
   FLAGS = /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -MDd
-  INCLUDES = -IF:\CLion_Project\Clustering\. -IF:\CLion_Project\Clustering\operator -IF:\CLion_Project\Clustering\thread -IF:\CLion_Project\Clustering\algorithm -IF:\CLion_Project\Clustering\process -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include\hdf4 -IF:\CLion_Project\Clustering\sidx\include -IF:\CLion_Project\Clustering\sidx\include\spatialindex -IF:\CLion_Project\Clustering\sidx\include\spatialindex\capi -IF:\CLion_Project\Clustering\sidx\include\spatialindex\tools
+  INCLUDES = -IF:\CLion_Project\Clustering\. -IF:\CLion_Project\Clustering\file-operator -IF:\CLion_Project\Clustering\algorithm -IF:\CLion_Project\Clustering\process -IF:\CLion_Project\Clustering\model -IF:\CLion_Project\Clustering\util -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include\hdf4 -IF:\CLion_Project\Clustering\sidx\include -IF:\CLion_Project\Clustering\sidx\include\spatialindex -IF:\CLion_Project\Clustering\sidx\include\spatialindex\capi -IF:\CLion_Project\Clustering\sidx\include\spatialindex\tools
   OBJECT_DIR = CMakeFiles\LibsGDAL.dir
-  OBJECT_FILE_DIR = CMakeFiles\LibsGDAL.dir\operator
+  OBJECT_FILE_DIR = CMakeFiles\LibsGDAL.dir\file-operator
+  TARGET_COMPILE_PDB = CMakeFiles\LibsGDAL.dir\LibsGDAL.pdb
+  TARGET_PDB = LibsGDAL.pdb
+
+build CMakeFiles\LibsGDAL.dir\util\util.cpp.obj: CXX_COMPILER__LibsGDAL_Debug F$:\CLion_Project\Clustering\util\util.cpp || cmake_object_order_depends_target_LibsGDAL
+  FLAGS = /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -MDd
+  INCLUDES = -IF:\CLion_Project\Clustering\. -IF:\CLion_Project\Clustering\file-operator -IF:\CLion_Project\Clustering\algorithm -IF:\CLion_Project\Clustering\process -IF:\CLion_Project\Clustering\model -IF:\CLion_Project\Clustering\util -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include\hdf4 -IF:\CLion_Project\Clustering\sidx\include -IF:\CLion_Project\Clustering\sidx\include\spatialindex -IF:\CLion_Project\Clustering\sidx\include\spatialindex\capi -IF:\CLion_Project\Clustering\sidx\include\spatialindex\tools
+  OBJECT_DIR = CMakeFiles\LibsGDAL.dir
+  OBJECT_FILE_DIR = CMakeFiles\LibsGDAL.dir\util
   TARGET_COMPILE_PDB = CMakeFiles\LibsGDAL.dir\LibsGDAL.pdb
   TARGET_PDB = LibsGDAL.pdb
 
@@ -81,7 +89,7 @@ build CMakeFiles\LibsGDAL.dir\operator\opt.cpp.obj: CXX_COMPILER__LibsGDAL_Debug
 #############################################
 # Link the static library LibsGDAL.lib
 
-build LibsGDAL.lib: CXX_STATIC_LIBRARY_LINKER__LibsGDAL_Debug CMakeFiles\LibsGDAL.dir\operator\gdalOpt.cpp.obj CMakeFiles\LibsGDAL.dir\operator\hdfOpt.cpp.obj CMakeFiles\LibsGDAL.dir\operator\opt.cpp.obj
+build LibsGDAL.lib: CXX_STATIC_LIBRARY_LINKER__LibsGDAL_Debug CMakeFiles\LibsGDAL.dir\file-operator\tiffOpt.cpp.obj CMakeFiles\LibsGDAL.dir\file-operator\hdfOpt.cpp.obj CMakeFiles\LibsGDAL.dir\file-operator\hdf5Opt.cpp.obj CMakeFiles\LibsGDAL.dir\util\util.cpp.obj
   LANGUAGE_COMPILE_FLAGS = /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -MDd
   LINK_FLAGS = /machine:x64
   OBJECT_DIR = CMakeFiles\LibsGDAL.dir
@@ -102,7 +110,7 @@ build cmake_object_order_depends_target_LibsSpatialIndex: phony || CMakeFiles\Li
 
 build CMakeFiles\LibsSpatialIndex.dir\algorithm\RTree.cpp.obj: CXX_COMPILER__LibsSpatialIndex_Debug F$:\CLion_Project\Clustering\algorithm\RTree.cpp || cmake_object_order_depends_target_LibsSpatialIndex
   FLAGS = /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -MDd
-  INCLUDES = -IF:\CLion_Project\Clustering\. -IF:\CLion_Project\Clustering\operator -IF:\CLion_Project\Clustering\thread -IF:\CLion_Project\Clustering\algorithm -IF:\CLion_Project\Clustering\process -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include\hdf4 -IF:\CLion_Project\Clustering\sidx\include -IF:\CLion_Project\Clustering\sidx\include\spatialindex -IF:\CLion_Project\Clustering\sidx\include\spatialindex\capi -IF:\CLion_Project\Clustering\sidx\include\spatialindex\tools
+  INCLUDES = -IF:\CLion_Project\Clustering\. -IF:\CLion_Project\Clustering\file-operator -IF:\CLion_Project\Clustering\algorithm -IF:\CLion_Project\Clustering\process -IF:\CLion_Project\Clustering\model -IF:\CLion_Project\Clustering\util -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include\hdf4 -IF:\CLion_Project\Clustering\sidx\include -IF:\CLion_Project\Clustering\sidx\include\spatialindex -IF:\CLion_Project\Clustering\sidx\include\spatialindex\capi -IF:\CLion_Project\Clustering\sidx\include\spatialindex\tools
   OBJECT_DIR = CMakeFiles\LibsSpatialIndex.dir
   OBJECT_FILE_DIR = CMakeFiles\LibsSpatialIndex.dir\algorithm
   TARGET_COMPILE_PDB = CMakeFiles\LibsSpatialIndex.dir\LibsSpatialIndex.pdb
@@ -137,39 +145,39 @@ build cmake_object_order_depends_target_Clustering: phony || cmake_object_order_
 
 build CMakeFiles\Clustering.dir\main.cpp.obj: CXX_COMPILER__Clustering_Debug F$:\CLion_Project\Clustering\main.cpp || cmake_object_order_depends_target_Clustering
   FLAGS = /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -MDd
-  INCLUDES = -IF:\CLion_Project\Clustering\. -IF:\CLion_Project\Clustering\operator -IF:\CLion_Project\Clustering\thread -IF:\CLion_Project\Clustering\algorithm -IF:\CLion_Project\Clustering\process -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include\hdf4 -IF:\CLion_Project\Clustering\sidx\include -IF:\CLion_Project\Clustering\sidx\include\spatialindex -IF:\CLion_Project\Clustering\sidx\include\spatialindex\capi -IF:\CLion_Project\Clustering\sidx\include\spatialindex\tools
+  INCLUDES = -IF:\CLion_Project\Clustering\. -IF:\CLion_Project\Clustering\file-operator -IF:\CLion_Project\Clustering\algorithm -IF:\CLion_Project\Clustering\process -IF:\CLion_Project\Clustering\model -IF:\CLion_Project\Clustering\util -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include\hdf4 -IF:\CLion_Project\Clustering\sidx\include -IF:\CLion_Project\Clustering\sidx\include\spatialindex -IF:\CLion_Project\Clustering\sidx\include\spatialindex\capi -IF:\CLion_Project\Clustering\sidx\include\spatialindex\tools
   OBJECT_DIR = CMakeFiles\Clustering.dir
   OBJECT_FILE_DIR = CMakeFiles\Clustering.dir
   TARGET_COMPILE_PDB = CMakeFiles\Clustering.dir\
   TARGET_PDB = Clustering.pdb
 
-build CMakeFiles\Clustering.dir\operator\gdalOpt.cpp.obj: CXX_COMPILER__Clustering_Debug F$:\CLion_Project\Clustering\operator\gdalOpt.cpp || cmake_object_order_depends_target_Clustering
+build CMakeFiles\Clustering.dir\file-operator\tiffOpt.cpp.obj: CXX_COMPILER__Clustering_Debug F$:\CLion_Project\Clustering\file-operator\tiffOpt.cpp || cmake_object_order_depends_target_Clustering
   FLAGS = /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -MDd
-  INCLUDES = -IF:\CLion_Project\Clustering\. -IF:\CLion_Project\Clustering\operator -IF:\CLion_Project\Clustering\thread -IF:\CLion_Project\Clustering\algorithm -IF:\CLion_Project\Clustering\process -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include\hdf4 -IF:\CLion_Project\Clustering\sidx\include -IF:\CLion_Project\Clustering\sidx\include\spatialindex -IF:\CLion_Project\Clustering\sidx\include\spatialindex\capi -IF:\CLion_Project\Clustering\sidx\include\spatialindex\tools
+  INCLUDES = -IF:\CLion_Project\Clustering\. -IF:\CLion_Project\Clustering\file-operator -IF:\CLion_Project\Clustering\algorithm -IF:\CLion_Project\Clustering\process -IF:\CLion_Project\Clustering\model -IF:\CLion_Project\Clustering\util -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include\hdf4 -IF:\CLion_Project\Clustering\sidx\include -IF:\CLion_Project\Clustering\sidx\include\spatialindex -IF:\CLion_Project\Clustering\sidx\include\spatialindex\capi -IF:\CLion_Project\Clustering\sidx\include\spatialindex\tools
   OBJECT_DIR = CMakeFiles\Clustering.dir
-  OBJECT_FILE_DIR = CMakeFiles\Clustering.dir\operator
+  OBJECT_FILE_DIR = CMakeFiles\Clustering.dir\file-operator
   TARGET_COMPILE_PDB = CMakeFiles\Clustering.dir\
   TARGET_PDB = Clustering.pdb
 
-build CMakeFiles\Clustering.dir\operator\hdfOpt.cpp.obj: CXX_COMPILER__Clustering_Debug F$:\CLion_Project\Clustering\operator\hdfOpt.cpp || cmake_object_order_depends_target_Clustering
+build CMakeFiles\Clustering.dir\file-operator\hdfOpt.cpp.obj: CXX_COMPILER__Clustering_Debug F$:\CLion_Project\Clustering\file-operator\hdfOpt.cpp || cmake_object_order_depends_target_Clustering
   FLAGS = /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -MDd
-  INCLUDES = -IF:\CLion_Project\Clustering\. -IF:\CLion_Project\Clustering\operator -IF:\CLion_Project\Clustering\thread -IF:\CLion_Project\Clustering\algorithm -IF:\CLion_Project\Clustering\process -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include\hdf4 -IF:\CLion_Project\Clustering\sidx\include -IF:\CLion_Project\Clustering\sidx\include\spatialindex -IF:\CLion_Project\Clustering\sidx\include\spatialindex\capi -IF:\CLion_Project\Clustering\sidx\include\spatialindex\tools
+  INCLUDES = -IF:\CLion_Project\Clustering\. -IF:\CLion_Project\Clustering\file-operator -IF:\CLion_Project\Clustering\algorithm -IF:\CLion_Project\Clustering\process -IF:\CLion_Project\Clustering\model -IF:\CLion_Project\Clustering\util -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include\hdf4 -IF:\CLion_Project\Clustering\sidx\include -IF:\CLion_Project\Clustering\sidx\include\spatialindex -IF:\CLion_Project\Clustering\sidx\include\spatialindex\capi -IF:\CLion_Project\Clustering\sidx\include\spatialindex\tools
   OBJECT_DIR = CMakeFiles\Clustering.dir
-  OBJECT_FILE_DIR = CMakeFiles\Clustering.dir\operator
+  OBJECT_FILE_DIR = CMakeFiles\Clustering.dir\file-operator
   TARGET_COMPILE_PDB = CMakeFiles\Clustering.dir\
   TARGET_PDB = Clustering.pdb
 
-build CMakeFiles\Clustering.dir\operator\opt.cpp.obj: CXX_COMPILER__Clustering_Debug F$:\CLion_Project\Clustering\operator\opt.cpp || cmake_object_order_depends_target_Clustering
+build CMakeFiles\Clustering.dir\util\util.cpp.obj: CXX_COMPILER__Clustering_Debug F$:\CLion_Project\Clustering\util\util.cpp || cmake_object_order_depends_target_Clustering
   FLAGS = /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -MDd
-  INCLUDES = -IF:\CLion_Project\Clustering\. -IF:\CLion_Project\Clustering\operator -IF:\CLion_Project\Clustering\thread -IF:\CLion_Project\Clustering\algorithm -IF:\CLion_Project\Clustering\process -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include\hdf4 -IF:\CLion_Project\Clustering\sidx\include -IF:\CLion_Project\Clustering\sidx\include\spatialindex -IF:\CLion_Project\Clustering\sidx\include\spatialindex\capi -IF:\CLion_Project\Clustering\sidx\include\spatialindex\tools
+  INCLUDES = -IF:\CLion_Project\Clustering\. -IF:\CLion_Project\Clustering\file-operator -IF:\CLion_Project\Clustering\algorithm -IF:\CLion_Project\Clustering\process -IF:\CLion_Project\Clustering\model -IF:\CLion_Project\Clustering\util -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include\hdf4 -IF:\CLion_Project\Clustering\sidx\include -IF:\CLion_Project\Clustering\sidx\include\spatialindex -IF:\CLion_Project\Clustering\sidx\include\spatialindex\capi -IF:\CLion_Project\Clustering\sidx\include\spatialindex\tools
   OBJECT_DIR = CMakeFiles\Clustering.dir
-  OBJECT_FILE_DIR = CMakeFiles\Clustering.dir\operator
+  OBJECT_FILE_DIR = CMakeFiles\Clustering.dir\util
   TARGET_COMPILE_PDB = CMakeFiles\Clustering.dir\
   TARGET_PDB = Clustering.pdb
 
 build CMakeFiles\Clustering.dir\process\Postprocessor.cpp.obj: CXX_COMPILER__Clustering_Debug F$:\CLion_Project\Clustering\process\Postprocessor.cpp || cmake_object_order_depends_target_Clustering
   FLAGS = /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -MDd
-  INCLUDES = -IF:\CLion_Project\Clustering\. -IF:\CLion_Project\Clustering\operator -IF:\CLion_Project\Clustering\thread -IF:\CLion_Project\Clustering\algorithm -IF:\CLion_Project\Clustering\process -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include\hdf4 -IF:\CLion_Project\Clustering\sidx\include -IF:\CLion_Project\Clustering\sidx\include\spatialindex -IF:\CLion_Project\Clustering\sidx\include\spatialindex\capi -IF:\CLion_Project\Clustering\sidx\include\spatialindex\tools
+  INCLUDES = -IF:\CLion_Project\Clustering\. -IF:\CLion_Project\Clustering\file-operator -IF:\CLion_Project\Clustering\algorithm -IF:\CLion_Project\Clustering\process -IF:\CLion_Project\Clustering\model -IF:\CLion_Project\Clustering\util -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include\hdf4 -IF:\CLion_Project\Clustering\sidx\include -IF:\CLion_Project\Clustering\sidx\include\spatialindex -IF:\CLion_Project\Clustering\sidx\include\spatialindex\capi -IF:\CLion_Project\Clustering\sidx\include\spatialindex\tools
   OBJECT_DIR = CMakeFiles\Clustering.dir
   OBJECT_FILE_DIR = CMakeFiles\Clustering.dir\process
   TARGET_COMPILE_PDB = CMakeFiles\Clustering.dir\
@@ -177,7 +185,7 @@ build CMakeFiles\Clustering.dir\process\Postprocessor.cpp.obj: CXX_COMPILER__Clu
 
 build CMakeFiles\Clustering.dir\process\Vectorization.cpp.obj: CXX_COMPILER__Clustering_Debug F$:\CLion_Project\Clustering\process\Vectorization.cpp || cmake_object_order_depends_target_Clustering
   FLAGS = /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -MDd
-  INCLUDES = -IF:\CLion_Project\Clustering\. -IF:\CLion_Project\Clustering\operator -IF:\CLion_Project\Clustering\thread -IF:\CLion_Project\Clustering\algorithm -IF:\CLion_Project\Clustering\process -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include\hdf4 -IF:\CLion_Project\Clustering\sidx\include -IF:\CLion_Project\Clustering\sidx\include\spatialindex -IF:\CLion_Project\Clustering\sidx\include\spatialindex\capi -IF:\CLion_Project\Clustering\sidx\include\spatialindex\tools
+  INCLUDES = -IF:\CLion_Project\Clustering\. -IF:\CLion_Project\Clustering\file-operator -IF:\CLion_Project\Clustering\algorithm -IF:\CLion_Project\Clustering\process -IF:\CLion_Project\Clustering\model -IF:\CLion_Project\Clustering\util -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include\hdf4 -IF:\CLion_Project\Clustering\sidx\include -IF:\CLion_Project\Clustering\sidx\include\spatialindex -IF:\CLion_Project\Clustering\sidx\include\spatialindex\capi -IF:\CLion_Project\Clustering\sidx\include\spatialindex\tools
   OBJECT_DIR = CMakeFiles\Clustering.dir
   OBJECT_FILE_DIR = CMakeFiles\Clustering.dir\process
   TARGET_COMPILE_PDB = CMakeFiles\Clustering.dir\
@@ -185,7 +193,7 @@ build CMakeFiles\Clustering.dir\process\Vectorization.cpp.obj: CXX_COMPILER__Clu
 
 build CMakeFiles\Clustering.dir\process\AnomalyAnalysis.cpp.obj: CXX_COMPILER__Clustering_Debug F$:\CLion_Project\Clustering\process\AnomalyAnalysis.cpp || cmake_object_order_depends_target_Clustering
   FLAGS = /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -MDd
-  INCLUDES = -IF:\CLion_Project\Clustering\. -IF:\CLion_Project\Clustering\operator -IF:\CLion_Project\Clustering\thread -IF:\CLion_Project\Clustering\algorithm -IF:\CLion_Project\Clustering\process -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include\hdf4 -IF:\CLion_Project\Clustering\sidx\include -IF:\CLion_Project\Clustering\sidx\include\spatialindex -IF:\CLion_Project\Clustering\sidx\include\spatialindex\capi -IF:\CLion_Project\Clustering\sidx\include\spatialindex\tools
+  INCLUDES = -IF:\CLion_Project\Clustering\. -IF:\CLion_Project\Clustering\file-operator -IF:\CLion_Project\Clustering\algorithm -IF:\CLion_Project\Clustering\process -IF:\CLion_Project\Clustering\model -IF:\CLion_Project\Clustering\util -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include\hdf4 -IF:\CLion_Project\Clustering\sidx\include -IF:\CLion_Project\Clustering\sidx\include\spatialindex -IF:\CLion_Project\Clustering\sidx\include\spatialindex\capi -IF:\CLion_Project\Clustering\sidx\include\spatialindex\tools
   OBJECT_DIR = CMakeFiles\Clustering.dir
   OBJECT_FILE_DIR = CMakeFiles\Clustering.dir\process
   TARGET_COMPILE_PDB = CMakeFiles\Clustering.dir\
@@ -193,7 +201,7 @@ build CMakeFiles\Clustering.dir\process\AnomalyAnalysis.cpp.obj: CXX_COMPILER__C
 
 build CMakeFiles\Clustering.dir\process\Convertor.cpp.obj: CXX_COMPILER__Clustering_Debug F$:\CLion_Project\Clustering\process\Convertor.cpp || cmake_object_order_depends_target_Clustering
   FLAGS = /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -MDd
-  INCLUDES = -IF:\CLion_Project\Clustering\. -IF:\CLion_Project\Clustering\operator -IF:\CLion_Project\Clustering\thread -IF:\CLion_Project\Clustering\algorithm -IF:\CLion_Project\Clustering\process -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include\hdf4 -IF:\CLion_Project\Clustering\sidx\include -IF:\CLion_Project\Clustering\sidx\include\spatialindex -IF:\CLion_Project\Clustering\sidx\include\spatialindex\capi -IF:\CLion_Project\Clustering\sidx\include\spatialindex\tools
+  INCLUDES = -IF:\CLion_Project\Clustering\. -IF:\CLion_Project\Clustering\file-operator -IF:\CLion_Project\Clustering\algorithm -IF:\CLion_Project\Clustering\process -IF:\CLion_Project\Clustering\model -IF:\CLion_Project\Clustering\util -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include\hdf4 -IF:\CLion_Project\Clustering\sidx\include -IF:\CLion_Project\Clustering\sidx\include\spatialindex -IF:\CLion_Project\Clustering\sidx\include\spatialindex\capi -IF:\CLion_Project\Clustering\sidx\include\spatialindex\tools
   OBJECT_DIR = CMakeFiles\Clustering.dir
   OBJECT_FILE_DIR = CMakeFiles\Clustering.dir\process
   TARGET_COMPILE_PDB = CMakeFiles\Clustering.dir\
@@ -201,7 +209,7 @@ build CMakeFiles\Clustering.dir\process\Convertor.cpp.obj: CXX_COMPILER__Cluster
 
 build CMakeFiles\Clustering.dir\algorithm\DcSTMC.cpp.obj: CXX_COMPILER__Clustering_Debug F$:\CLion_Project\Clustering\algorithm\DcSTMC.cpp || cmake_object_order_depends_target_Clustering
   FLAGS = /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -MDd
-  INCLUDES = -IF:\CLion_Project\Clustering\. -IF:\CLion_Project\Clustering\operator -IF:\CLion_Project\Clustering\thread -IF:\CLion_Project\Clustering\algorithm -IF:\CLion_Project\Clustering\process -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include\hdf4 -IF:\CLion_Project\Clustering\sidx\include -IF:\CLion_Project\Clustering\sidx\include\spatialindex -IF:\CLion_Project\Clustering\sidx\include\spatialindex\capi -IF:\CLion_Project\Clustering\sidx\include\spatialindex\tools
+  INCLUDES = -IF:\CLion_Project\Clustering\. -IF:\CLion_Project\Clustering\file-operator -IF:\CLion_Project\Clustering\algorithm -IF:\CLion_Project\Clustering\process -IF:\CLion_Project\Clustering\model -IF:\CLion_Project\Clustering\util -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include\hdf4 -IF:\CLion_Project\Clustering\sidx\include -IF:\CLion_Project\Clustering\sidx\include\spatialindex -IF:\CLion_Project\Clustering\sidx\include\spatialindex\capi -IF:\CLion_Project\Clustering\sidx\include\spatialindex\tools
   OBJECT_DIR = CMakeFiles\Clustering.dir
   OBJECT_FILE_DIR = CMakeFiles\Clustering.dir\algorithm
   TARGET_COMPILE_PDB = CMakeFiles\Clustering.dir\
@@ -209,7 +217,7 @@ build CMakeFiles\Clustering.dir\algorithm\DcSTMC.cpp.obj: CXX_COMPILER__Clusteri
 
 build CMakeFiles\Clustering.dir\algorithm\DBSCAN.cpp.obj: CXX_COMPILER__Clustering_Debug F$:\CLion_Project\Clustering\algorithm\DBSCAN.cpp || cmake_object_order_depends_target_Clustering
   FLAGS = /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -MDd
-  INCLUDES = -IF:\CLion_Project\Clustering\. -IF:\CLion_Project\Clustering\operator -IF:\CLion_Project\Clustering\thread -IF:\CLion_Project\Clustering\algorithm -IF:\CLion_Project\Clustering\process -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include\hdf4 -IF:\CLion_Project\Clustering\sidx\include -IF:\CLion_Project\Clustering\sidx\include\spatialindex -IF:\CLion_Project\Clustering\sidx\include\spatialindex\capi -IF:\CLion_Project\Clustering\sidx\include\spatialindex\tools
+  INCLUDES = -IF:\CLion_Project\Clustering\. -IF:\CLion_Project\Clustering\file-operator -IF:\CLion_Project\Clustering\algorithm -IF:\CLion_Project\Clustering\process -IF:\CLion_Project\Clustering\model -IF:\CLion_Project\Clustering\util -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include\hdf4 -IF:\CLion_Project\Clustering\sidx\include -IF:\CLion_Project\Clustering\sidx\include\spatialindex -IF:\CLion_Project\Clustering\sidx\include\spatialindex\capi -IF:\CLion_Project\Clustering\sidx\include\spatialindex\tools
   OBJECT_DIR = CMakeFiles\Clustering.dir
   OBJECT_FILE_DIR = CMakeFiles\Clustering.dir\algorithm
   TARGET_COMPILE_PDB = CMakeFiles\Clustering.dir\
@@ -217,9 +225,17 @@ build CMakeFiles\Clustering.dir\algorithm\DBSCAN.cpp.obj: CXX_COMPILER__Clusteri
 
 build CMakeFiles\Clustering.dir\algorithm\RTree.cpp.obj: CXX_COMPILER__Clustering_Debug F$:\CLion_Project\Clustering\algorithm\RTree.cpp || cmake_object_order_depends_target_Clustering
   FLAGS = /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -MDd
-  INCLUDES = -IF:\CLion_Project\Clustering\. -IF:\CLion_Project\Clustering\operator -IF:\CLion_Project\Clustering\thread -IF:\CLion_Project\Clustering\algorithm -IF:\CLion_Project\Clustering\process -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include\hdf4 -IF:\CLion_Project\Clustering\sidx\include -IF:\CLion_Project\Clustering\sidx\include\spatialindex -IF:\CLion_Project\Clustering\sidx\include\spatialindex\capi -IF:\CLion_Project\Clustering\sidx\include\spatialindex\tools
+  INCLUDES = -IF:\CLion_Project\Clustering\. -IF:\CLion_Project\Clustering\file-operator -IF:\CLion_Project\Clustering\algorithm -IF:\CLion_Project\Clustering\process -IF:\CLion_Project\Clustering\model -IF:\CLion_Project\Clustering\util -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include\hdf4 -IF:\CLion_Project\Clustering\sidx\include -IF:\CLion_Project\Clustering\sidx\include\spatialindex -IF:\CLion_Project\Clustering\sidx\include\spatialindex\capi -IF:\CLion_Project\Clustering\sidx\include\spatialindex\tools
   OBJECT_DIR = CMakeFiles\Clustering.dir
   OBJECT_FILE_DIR = CMakeFiles\Clustering.dir\algorithm
+  TARGET_COMPILE_PDB = CMakeFiles\Clustering.dir\
+  TARGET_PDB = Clustering.pdb
+
+build CMakeFiles\Clustering.dir\file-operator\hdf5Opt.cpp.obj: CXX_COMPILER__Clustering_Debug F$:\CLion_Project\Clustering\file-operator\hdf5Opt.cpp || cmake_object_order_depends_target_Clustering
+  FLAGS = /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -MDd
+  INCLUDES = -IF:\CLion_Project\Clustering\. -IF:\CLion_Project\Clustering\file-operator -IF:\CLion_Project\Clustering\algorithm -IF:\CLion_Project\Clustering\process -IF:\CLion_Project\Clustering\model -IF:\CLion_Project\Clustering\util -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include\hdf4 -IF:\CLion_Project\Clustering\sidx\include -IF:\CLion_Project\Clustering\sidx\include\spatialindex -IF:\CLion_Project\Clustering\sidx\include\spatialindex\capi -IF:\CLion_Project\Clustering\sidx\include\spatialindex\tools
+  OBJECT_DIR = CMakeFiles\Clustering.dir
+  OBJECT_FILE_DIR = CMakeFiles\Clustering.dir\file-operator
   TARGET_COMPILE_PDB = CMakeFiles\Clustering.dir\
   TARGET_PDB = Clustering.pdb
 
@@ -231,10 +247,10 @@ build CMakeFiles\Clustering.dir\algorithm\RTree.cpp.obj: CXX_COMPILER__Clusterin
 #############################################
 # Link the executable Clustering.exe
 
-build Clustering.exe: CXX_EXECUTABLE_LINKER__Clustering_Debug CMakeFiles\Clustering.dir\main.cpp.obj CMakeFiles\Clustering.dir\operator\gdalOpt.cpp.obj CMakeFiles\Clustering.dir\operator\hdfOpt.cpp.obj CMakeFiles\Clustering.dir\operator\opt.cpp.obj CMakeFiles\Clustering.dir\process\Postprocessor.cpp.obj CMakeFiles\Clustering.dir\process\Vectorization.cpp.obj CMakeFiles\Clustering.dir\process\AnomalyAnalysis.cpp.obj CMakeFiles\Clustering.dir\process\Convertor.cpp.obj CMakeFiles\Clustering.dir\algorithm\DcSTMC.cpp.obj CMakeFiles\Clustering.dir\algorithm\DBSCAN.cpp.obj CMakeFiles\Clustering.dir\algorithm\RTree.cpp.obj | LibsGDAL.lib LibsSpatialIndex.lib || LibsGDAL.lib LibsSpatialIndex.lib
+build Clustering.exe: CXX_EXECUTABLE_LINKER__Clustering_Debug CMakeFiles\Clustering.dir\main.cpp.obj CMakeFiles\Clustering.dir\file-operator\tiffOpt.cpp.obj CMakeFiles\Clustering.dir\file-operator\hdfOpt.cpp.obj CMakeFiles\Clustering.dir\util\util.cpp.obj CMakeFiles\Clustering.dir\process\Postprocessor.cpp.obj CMakeFiles\Clustering.dir\process\Vectorization.cpp.obj CMakeFiles\Clustering.dir\process\AnomalyAnalysis.cpp.obj CMakeFiles\Clustering.dir\process\Convertor.cpp.obj CMakeFiles\Clustering.dir\algorithm\DcSTMC.cpp.obj CMakeFiles\Clustering.dir\algorithm\DBSCAN.cpp.obj CMakeFiles\Clustering.dir\algorithm\RTree.cpp.obj CMakeFiles\Clustering.dir\file-operator\hdf5Opt.cpp.obj | LibsGDAL.lib LibsSpatialIndex.lib || LibsGDAL.lib LibsSpatialIndex.lib
   FLAGS = /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -MDd
-  LINK_FLAGS = /machine:x64 /debug /INCREMENTAL /subsystem:console
-  LINK_LIBRARIES = LibsGDAL.lib  LibsSpatialIndex.lib  gdal_i.lib  mfhdf.lib  spatialindex-64.lib  spatialindex_c-64.lib  kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib
+  LINK_FLAGS = -Wl,--stack,1073741824 /debug /INCREMENTAL /subsystem:console
+  LINK_LIBRARIES = LibsGDAL.lib  LibsSpatialIndex.lib  gdal_i.lib  mfhdf.lib  hdf5.lib  hdf5_cpp.lib  hdf5_hl_cpp.lib  spatialindex-64.lib  spatialindex_c-64.lib  kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib
   LINK_PATH = -LIBPATH:F:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\lib   -LIBPATH:F:\CLion_Project\Clustering\sidx\lib
   OBJECT_DIR = CMakeFiles\Clustering.dir
   POST_BUILD = cd .

@@ -1,10 +1,10 @@
 #pragma once
+#pragma warning (disable:4819)
 
 #include "string"
 #include <chrono>
 
-using namespace std;
-
+using std::string;
 
 struct Meta {
 	double Resolution;
@@ -46,4 +46,7 @@ const int NodeType_LeftRight = 7;
 const int NodeType_TopBot = 8;
 
 const int POLYGON_FIELD_EMPTY = -1;
+
+enum AnomalyType {Positive, Negative};
+
 

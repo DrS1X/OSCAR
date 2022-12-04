@@ -3,12 +3,15 @@ project(Clustering)
 
 set(CMAKE_CXX_STANDARD 14)
 
+MATH(EXPR stack_size "1024*1024*1024")
+set(CMAKE_EXE_LINKER_FLAGS "-Wl,--stack,${stack_size}")
 
 include_directories(./)
-include_directories(operator)
-include_directories(thread)
+include_directories(file-operator)
 include_directories(algorithm)
 include_directories(process)
+include_directories(model)
+include_directories(util)
 include_directories(release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs/include)
 include_directories(release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs/include/hdf4)
 include_directories(sidx/include)
@@ -18,11 +21,16 @@ include_directories(sidx/include/spatialindex/tools)
 
 link_directories(release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs/lib)
 ADD_LIBRARY(LibsGDAL
-        operator/gdalOpt.cpp
-        operator/hdfOpt.cpp
-        operator/opt.cpp
+        file-operator/tiffOpt.cpp
+        file-operator/hdfOpt.cpp
+        file-operator/hdf5Opt.cpp
+        util/util.cpp
         )
-target_link_libraries(LibsGDAL gdal_i.lib mfhdf.lib)
+target_link_libraries(LibsGDAL gdal_i)
+target_link_libraries(LibsGDAL mfhdf)
+target_link_libraries(LibsGDAL hdf5)
+target_link_libraries(LibsGDAL hdf5_cpp)
+target_link_libraries(LibsGDAL hdf5_hl_cpp)
 
 link_directories(sidx/lib)
 ADD_LIBRARY(LibsSpatialIndex
@@ -30,18 +38,19 @@ ADD_LIBRARY(LibsSpatialIndex
 target_link_libraries(LibsSpatialIndex spatialindex-64)
 target_link_libraries(LibsSpatialIndex spatialindex_c-64)
 
-set(SIDX_SRC_DIR "sidx/src")
 
 add_executable(Clustering
         main.cpp
-        operator/gdalOpt.cpp
-        operator/hdfOpt.cpp
-        operator/opt.cpp
+        file-operator/tiffOpt.cpp
+        file-operator/hdfOpt.cpp
+        util/util.cpp
         process/Postprocessor.cpp
         process/Vectorization.cpp
         process/AnomalyAnalysis.cpp
         process/Convertor.cpp
         algorithm/DcSTMC.cpp
-        algorithm/DBSCAN.cpp algorithm/RTree.cpp algorithm/algo.h algorithm/RTree.h)
+        algorithm/DBSCAN.cpp
+        algorithm/RTree.cpp
+        file-operator/hdf5Opt.cpp)
 
 target_link_libraries(Clustering LibsGDAL LibsSpatialIndex)

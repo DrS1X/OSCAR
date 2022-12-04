@@ -3,6 +3,15 @@
 #include <vector>
 #include <array>
 #include <float.h>
+#include <cmath>
+#include <memory>
+#include <array>
+#include <ogrsf_frmts.h>
+#include <ogr_spatialref.h>
+#include "util/util.h"
+#include "tiffOpt.h"
+#include "_const.h"
+#include "hdfOpt.h"
 
 using namespace std;
 

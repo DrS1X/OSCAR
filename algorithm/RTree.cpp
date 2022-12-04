@@ -13,6 +13,7 @@ int ATTRIBUTE_THRESHOLD;
 string OUTPUT_PATH;
 int CLUSTER_ID;
 TimeUnit UNIT;
+float OVERLAP_THRESHOLD;
 
 
 void RTree::Run(RTreeParam p, vector<string> fileList, string outputPath) {
@@ -23,6 +24,7 @@ void RTree::Run(RTreeParam p, vector<string> fileList, string outputPath) {
     OUTPUT_PATH = outputPath;
     DUR_THRESHOLD = p.durationThreshold;
     UNIT = p.unit;
+    OVERLAP_THRESHOLD = p.overlapThreshold;
 
     for (int i = 1; i < fileList.size(); ++i) {
         Raster rst(fileList[i]);
@@ -214,8 +216,8 @@ void RTree::save(){
     }
     std::strftime(startTimeStr, 20, format.c_str(), localtime(&t_));
 
-    // save to shp file
-    gdalOpt::save(OUTPUT_PATH, startTimeStr, AnomalyType::Positive, polyList);
+    // save to shp file-operator
+    tiffOpt::save(OUTPUT_PATH, startTimeStr, AnomalyType::Positive, polyList);
 }
 
 void RTree::insert(RNode *node) {
@@ -306,8 +308,7 @@ void RNode::mergeCluster() {
         double prevArea = (pNode->poly->range).getArea();
         double intersectArea = this->poly->range.getIntersectingArea(pNode->poly->range);
 
-        const double th = 0.7;
-        if(intersectArea / prevArea < th && intersectArea / area < th){
+        if(intersectArea / prevArea < OVERLAP_THRESHOLD && intersectArea / area < OVERLAP_THRESHOLD){
             continue;
         }
 
@@ -367,7 +368,7 @@ Raster::Raster(string file) {
     val = new int[sz];
     vis = new bool[sz];
     memset(vis, 0, sz);
-    gdalOpt::readGeoTiff(file, val);
+    tiffOpt::readGeoTiff(file, val);
 
     timePoint = getTimePoint(file);
 }

@@ -1,6 +1,11 @@
 #ifndef ANOMALYANALYSIS_H
 #define ANOMALYANALYSIS_H
+
 #include "_const.h"
+#include "util.h"
+#include "ThreadPool.h"
+#include "tiffOpt.h"
+#include "hdfOpt.h"
 
 class AnomalyAnalysis
 {

@@ -9,7 +9,9 @@
 #include <vector>
 #include <queue>
 #include "_const.h"
-#include "opt.h"
+#include "util/util.h"
+#include "hdfOpt.h"
+#include "tiffOpt.h"
 
 using namespace std;
 
@@ -31,6 +33,7 @@ struct RTreeParam{
     TimeUnit unit;
     int durationThreshold;
     float valueThreshold;
+    float overlapThreshold;
 };
 
 extern int GEO_WINDOW;
@@ -40,6 +43,7 @@ extern int ATTRIBUTE_THRESHOLD;
 extern string OUTPUT_PATH;
 extern int CLUSTER_ID;
 extern TimeUnit UNIT;
+extern float OVERLAP_THRESHOLD;
 
 class RoSTCM
 {

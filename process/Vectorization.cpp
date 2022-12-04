@@ -1,12 +1,4 @@
-﻿#include <cmath>
-#include <memory>
-#include "Vectorization.h"
-#include <array>
-#include "ogrsf_frmts.h"
-#include "ogr_spatialref.h"
-#include "ogr_geometry.h"
-#include "opt.h"
-#include "_const.h"
+﻿#include "Vectorization.h"
 
 using namespace std;
 
@@ -1050,7 +1042,7 @@ void RasterToVectorBasedonSpace(string oriPath, string spPath, string outPath, s
 	unique_ptr<double[]> oriData(new double[row * col]);//存储
 	unique_ptr<int[]> spData(new int[row * col]);//存储
 
-	gdalOpt::readGeoTiff(oriPath.c_str(), oriData.get());
+	tiffOpt::readGeoTiff(oriPath.c_str(), oriData.get());
 	hdfOpt ho(Def);
 	ho.readHDF(spPath, spData.get());
 
@@ -1103,7 +1095,7 @@ void RasterToVectorBasedonSpace(string oriPath, string spPath, string outPath, s
 	Line2Polygon(oriImg, spImg, lines, polygons, row, startLat, resolution);
 	
 	//保存shp	
-	gdalOpt::save(outPath, startTime, AbnormalType, -180, startLat, resolution, polygons);
+	tiffOpt::save(outPath, startTime, AbnormalType, -180, startLat, resolution, polygons);
 }
 
 void Vectorization(vector<string>& oriFileNames, vector<string>& spFileNames, string outFolderPath) {

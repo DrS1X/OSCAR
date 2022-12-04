@@ -1,6 +1,13 @@
 #pragma once
 #include <vector>
 #include <string>
+#include "util/util.h"
+#include "Convertor.h"
+#include <direct.h>
+#include "_const.h"
+#include "hdfOpt.h"
+#include "tiffOpt.h"
+
 using namespace std;
 class Convertor {
 

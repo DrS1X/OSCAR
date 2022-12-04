@@ -464,7 +464,7 @@ void Postprocessor::Resort(vector<string> RepeatFileList, vector<string> OtherFi
 	{
 		HO.readHDF(OtherFileList[i], pBuffer1.get());
 		Fill(mSameList, pBuffer1.get(), mRows, mCols);
-		string mOutFileName = opt::generateFileName(OtherFileList[i], mSaveFilePath, ".hdf");
+		string mOutFileName = opt::generateFileName(OtherFileList[i], mSaveFilePath, ".hdfOpt");
 		meta.Date = HO.GetFileDateTime(OtherFileList[i].c_str());
 		HO.writeHDF(mOutFileName, meta, pBuffer1.get());
 	}
@@ -481,7 +481,7 @@ void Postprocessor::Resort(vector<string> RepeatFileList, vector<string> OtherFi
 		}
 		Fill(mSameList, pBuffer1.get(), mRows, mCols);
 
-		string mOutFileName = opt::generateFileName(RepeatFileList[2 * i], mSaveFilePath , ".hdf");
+		string mOutFileName = opt::generateFileName(RepeatFileList[2 * i], mSaveFilePath , ".hdfOpt");
 		meta.Date = HO.GetFileDateTime(RepeatFileList[2 * i].c_str());
 		HO.writeHDF(mOutFileName, meta, pBuffer1.get());
 	}

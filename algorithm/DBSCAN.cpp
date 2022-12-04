@@ -2,7 +2,7 @@
 #include <queue>
 #include <array>
 #include "algo.h"
-#include "opt.h"
+#include "util/util.h"
 #include <iostream>
 #include <vector>
 #include <string>
@@ -33,7 +33,7 @@ const int SUR[9][2] = { {-1,0}, {-1,1},{0,1},{1,1},{1,0},{1,-1},{0,-1},{-1,-1},{
 	for (int i = 0; i < files.size(); ++i) {
 		double* buf = new double[Def.Size];
 		data.push_back(buf);
-		gdalOpt::readGeoTiff(files[i].c_str(), buf);
+		tiffOpt::readGeoTiff(files[i].c_str(), buf);
 	}
 }*/
 
@@ -47,11 +47,11 @@ bool DBSCAN::core(vector<string> Files, string outputPath) {
 	for (int i = 0; i < n; ++i) {
 		double* buf = new double[size];
 		data.push_back(buf);
-		gdalOpt::readGeoTiff(Files[i].c_str(), buf);
+		tiffOpt::readGeoTiff(Files[i].c_str(), buf);
 		dateList.push_back(Files[i].substr(Files[i].find_last_of(".") - 8, 8));
 	}
 
-	//gdalOpt go(Def);
+	//tiffOpt go(Def);
 	hdfOpt ho(Def);
 	int t_interval = 1;
 	int threshold = (t_interval * 2 + 1) * 3;
@@ -86,7 +86,7 @@ bool DBSCAN::core(vector<string> Files, string outputPath) {
 			}
 		}	
 
-		string outputFileName = opt::generateFileName(Files[t], outputPath, "Core", "hdf");
+		string outputFileName = opt::generateFileName(Files[t], outputPath, "Core", "hdfOpt");
 		Meta meta = Def;
 		meta.Date = dateList[t];
 		if(!ho.writeHDF(outputFileName.c_str(), meta, buf)){

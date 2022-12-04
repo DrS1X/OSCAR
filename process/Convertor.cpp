@@ -1,11 +1,8 @@
-#include "opt.h"
 #include "Convertor.h"
-#include <direct.h>
-#include "_const.h"
 
 void Convertor::GeoTiff2HDF(vector<string> strFileList, string strSavePath, double startLat, double endLat, double startLog, double endLog)
 {
-	gdalOpt *gdalOP = new gdalOpt();
+	tiffOpt *gdalOP = new tiffOpt();
 
 	for (int i = 0; i < strFileList.size(); i++)
 	{
@@ -13,7 +10,7 @@ void Convertor::GeoTiff2HDF(vector<string> strFileList, string strSavePath, doub
 		int startPos = strFileList.at(i).find_last_of("/");
 		startPos = startPos != -1 ? startPos : strFileList.at(i).find_last_of("\\");
 		
-		string outFile = strSavePath + "\\" + strFileList.at(i).substr(startPos + 1, endPos - startPos) + "hdf";
+		string outFile = strSavePath + "\\" + strFileList.at(i).substr(startPos + 1, endPos - startPos) + "hdfOpt";
 		if (_access(strSavePath.c_str(), 0) == -1)	//����ļ��в�����
 			_mkdir(strSavePath.c_str());
 		if (_access(outFile.c_str(), 0) != -1)
@@ -46,8 +43,8 @@ bool Convertor::Resample(vector<string> strFileList, string strSavePath, double 
 		opt::DataSpatialConvertByMean(src, tar, meta.Rows, meta.Cols, newMeta.Rows, newMeta.Cols, ratio);
 
 		//newMeta.Date = f.substr(f.find_last_of("\\") + 26, 8).c_str();
-		//string fileName = opt::generateFileName(f, strSavePath, "resample","hdf", newMeta.Date);
-		string fileName = opt::generateFileName(f, strSavePath, "resample", "hdf");
+		//string fileName = opt::generateFileName(f, strSavePath, "resample","hdfOpt", newMeta.Date);
+		string fileName = opt::generateFileName(f, strSavePath, "resample", "hdfOpt");
 		if (!HDFIO.writeHDF(fileName, newMeta, tar))
 		{
 			delete[] src;
