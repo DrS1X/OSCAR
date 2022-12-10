@@ -8,4 +8,5 @@
 #include "Convertor.h"
 #include "Postprocessor.h"
 #include "Vectorization.h"
+#include "Reader.h"
 #endif //CLUSTERING_DATAPROCESS_H

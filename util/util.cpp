@@ -6,31 +6,22 @@
 #include <stdio.h>
 #include <vector>
 #include "float.h"
+#include "_const.h"
 
 using namespace std;
 
-int opt::getDayOfYear(string fileName) {
-	string dateStr = fileName.substr(fileName.find_last_of("\\") + 26, 8);
-	int year = stoi(dateStr.substr(0, 4));
-	int month = stoi(dateStr.substr(4, 2));
-	int day = stoi(dateStr.substr(6, 2));
+int util::getDayOfYear(string fileName) {
 
-	if (month == 2 && day == 29) return -1;
-	int DayNumber[12] = { 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365 };
-	if (month == 1)
-		return day - 1;
-	else
-		return DayNumber[month - 2] + day - 1;
 }
 
-void opt::checkFilePath(string filePath) {
+void util::checkFilePath(string filePath) {
 	const char* folder = filePath.c_str();
 
 	if (_access(folder, 0) == -1)	//如果文件夹不存在
 		_mkdir(folder);
 }
 
-string opt::generateFileName(string originFileName, string outputPath, string pre, string type, string date) {
+string util::generateFileName(string originFileName, string outputPath, string pre, string type, string date) {
 	string folder = outputPath + "\\";
 	/*
 	string folder = outputPath + "\\" + date + "\\";
@@ -42,7 +33,7 @@ string opt::generateFileName(string originFileName, string outputPath, string pr
 	return mOutFileName;
 }
 
-string opt::generateFileName(string originFileName, string outputPath, string pre, string type) {
+string util::generateFileName(string originFileName, string outputPath, string pre, string type) {
 	string date = originFileName.substr(originFileName.find_last_of(".") - 8, 8);
 	string folder = outputPath + "\\";
 	/*
@@ -55,7 +46,7 @@ string opt::generateFileName(string originFileName, string outputPath, string pr
 	return mOutFileName;
 }
 
-string opt::generateFileName(string originFilePath, string outputPath, string suffix) {
+string util::generateFileName(string originFilePath, string outputPath, string suffix) {
 	string fileName = originFilePath.substr(originFilePath.find_last_of("\\"),
 		originFilePath.find_last_of(".") - originFilePath.find_last_of("\\"));
 	string folder = outputPath + "\\";
@@ -69,12 +60,12 @@ string opt::generateFileName(string originFilePath, string outputPath, string su
 	return outFileName;
 }
 
-void opt::getFileList(string path, vector<string>& files) {
+void util::getFileList(string path, vector<string>& files) {
 	string empty = "";
-	opt::getFileList(path, files, empty);
+	util::getFileList(path, files, empty);
 }
 
-void opt::getFileList(string path, vector<string>& files, string fileType)
+void util::getFileList(string path, vector<string>& files, string fileType)
 {
 	//文件句柄
 	intptr_t   hFile = 0;
@@ -114,11 +105,29 @@ void opt::getFileList(string path, vector<string>& files, string fileType)
 		cout << "No file-operator is found" << endl;
 }
 
-string opt::getDate(string fileName) {
-	return fileName.substr(fileName.find_last_of("\\") + 26, 8);
+string util::getDate(string fileName) {
+    static const regex  pattern("19|20[0-9]{2}[0-1][0-9][0-3][0-9]");
+
+    string date = "";
+    int idx = fileName.find_last_of("\\");
+    if(idx == -1)
+        idx = fileName.find_last_of("/");
+    if(idx != -1)
+        fileName = fileName.substr(idx + 1);
+
+    smatch result;
+    string::const_iterator iter_begin = fileName.cbegin();
+    string::const_iterator iter_end = fileName.cend();
+    if (regex_search(iter_begin, iter_end,result, pattern)){
+        date = fileName.substr(result[0].first - iter_begin,result[0].second - result[0].first);
+    }else{
+        cout << "[getDate] failed to match date from file name." <<fileName<< endl;
+    }
+
+    return date;
 }
 
-int opt::GetMonthFromDays(int Days)
+int util::GetMonthFromDays(int Days)
 {
 	int year[2] = { 365,366 };
 
@@ -139,7 +148,7 @@ int opt::GetMonthFromDays(int Days)
 	return j + 1;
 }
 
-int opt::GetYearFromDays(int Days)
+int util::GetYearFromDays(int Days)
 {
 	int year[2] = { 365,366 };
 	int i;
@@ -150,7 +159,7 @@ int opt::GetYearFromDays(int Days)
 	return i;
 }
 
-int opt::LeapYear(int Year)
+int util::LeapYear(int Year)
 {
 	if (Year % 4 != 0 || (Year % 100 == 0 && Year % 400 != 0))
 		return 0;  //不是闰年
@@ -158,7 +167,7 @@ int opt::LeapYear(int Year)
 		return 1;   //闰年
 }
 
-double* opt::GetMin_Max(double *value, long * pBuffer, long m_Rows, long m_Cols, long DefaultValue)
+double* util::GetMin_Max(double *value, long * pBuffer, long m_Rows, long m_Cols, long DefaultValue)
 {
 	bool isGet = false;
 	for (int i = 0; i < m_Rows; i++)
@@ -182,7 +191,7 @@ double* opt::GetMin_Max(double *value, long * pBuffer, long m_Rows, long m_Cols,
 	return value;
 }
 
-double *opt::GetMin_Max(double *value, double * pBuffer, long m_Rows, long m_Cols, double DefaultValue)
+double *util::GetMin_Max(double *value, double * pBuffer, long m_Rows, long m_Cols, double DefaultValue)
 {
 	bool isGet = false;
 	for (int i = 0; i < m_Rows; i++)
@@ -206,7 +215,7 @@ double *opt::GetMin_Max(double *value, double * pBuffer, long m_Rows, long m_Col
 	return value;
 }
 
-double opt::GetMeanValue(long * pBuffer, long m_Rows, long m_Cols, long DefaultValue)
+double util::GetMeanValue(long * pBuffer, long m_Rows, long m_Cols, long DefaultValue)
 {
 	long count = 0;
 	double sum = 0;
@@ -227,7 +236,7 @@ double opt::GetMeanValue(long * pBuffer, long m_Rows, long m_Cols, long DefaultV
 
 }
 
-double opt::GetMeanValue(double * pBuffer, long m_Rows, long m_Cols, double DefaultValue)
+double util::GetMeanValue(double * pBuffer, long m_Rows, long m_Cols, double DefaultValue)
 {
 	long count = 0;
 	double sum = 0;
@@ -248,7 +257,7 @@ double opt::GetMeanValue(double * pBuffer, long m_Rows, long m_Cols, double Defa
 
 }
 
-double opt::GetStdValue(long * pBuffer, long m_Rows, long m_Cols, long DefaultValue)
+double util::GetStdValue(long * pBuffer, long m_Rows, long m_Cols, long DefaultValue)
 {
 	long count = 0;
 	double sum = 0;
@@ -268,7 +277,7 @@ double opt::GetStdValue(long * pBuffer, long m_Rows, long m_Cols, long DefaultVa
 	return sqrt(sum / count);
 }
 
-double opt::GetStdValue(double * pBuffer, long m_Rows, long m_Cols, double DefaultValue)
+double util::GetStdValue(double * pBuffer, long m_Rows, long m_Cols, double DefaultValue)
 {
 	long count = 0;
 	double sum = 0;
@@ -289,7 +298,7 @@ double opt::GetStdValue(double * pBuffer, long m_Rows, long m_Cols, double Defau
 	return sqrt(sum / count);
 }
 
-void opt::split(std::string & s, std::string & delim, std::vector<std::string>* ret)
+void util::split(std::string & s, std::string & delim, std::vector<std::string>* ret)
 {
 	{
 		size_t last = 0;
@@ -307,7 +316,7 @@ void opt::split(std::string & s, std::string & delim, std::vector<std::string>* 
 	}
 }
 
-double opt::STInterpolate(long *pTBuffer, double mScale, long mRows, long mCols, long m, long n, double mMissingValue, long *pBuffer1, long *pBuffer2, long size)
+double util::STInterpolate(long *pTBuffer, double mScale, long mRows, long mCols, long m, long n, double mMissingValue, long *pBuffer1, long *pBuffer2, long size)
 {
 	double reValue;
 	double dValue[3];
@@ -427,75 +436,7 @@ double opt::STInterpolate(long *pTBuffer, double mScale, long mRows, long mCols,
 	return reValue;
 }
 
-bool opt::DataSpatialConvertByMean(long *pSrcBuffer,/*原数据集*/long *pTarBuffer,/*目标数据集*/long mSrcRows, long mSrcCols, long mTarRows, long mTarCols, double reSize/*转换尺寸*/)
-{
-	double resampleSize;
-	//获取采样尺寸
-	if (reSize >1)
-		resampleSize = (int)(reSize + 0.5);
-	else
-		resampleSize = (int)(1 / reSize + 0.5);
-
-	resampleSize = reSize;
-
-	//转换
-	if (reSize >1)    //聚合
-	{
-		for (int i = 0;i<mTarRows;i++)
-		{
-			for (int j = 0;j<mTarCols;j++)
-			{
-				//聚合计算
-				long meanValue;
-				long sumValue = 0;
-				long num = 0;
-				long sumNum = 0;
-				for (int k = (long)(-resampleSize / 2 - 0.5);k<(long)(resampleSize / 2 + 0.5);k++)
-				{
-					for (int l = (long)(-resampleSize / 2 - 0.5);l<(long)(resampleSize / 2 + 0.5);l++)
-					{
-						sumNum += 1;
-						if ((int)(i*resampleSize + k) >= 0 && (int)(i*resampleSize + k) < mSrcRows && (int)(j*resampleSize + l) >= 0 && (int)(j*resampleSize + l) < mSrcCols && pSrcBuffer[(int)(i*resampleSize + k)*mSrcCols + (int)(j*resampleSize + l)] != -9999)
-						{
-							sumValue += pSrcBuffer[(int)(i*resampleSize + k)*mSrcCols + (int)(j*resampleSize + l)];
-							num += 1;
-						}
-					}
-				}
-
-				if (num != 0 )//&& num >= sumNum / 3)
-					meanValue = (long)(sumValue / num + 0.5);
-				else
-					meanValue = -9999;
-
-				pTarBuffer[i*mTarCols + j] = meanValue;
-
-			}
-		}
-	}
-	else           //插值
-	{
-		for (int i = 0;i<mTarRows;i++)
-		{
-			int k = (int)(i / resampleSize + 0.5);
-
-			for (int j = 0;j<mTarCols;j++)
-			{
-				int l = (int)(j / resampleSize + 0.5);
-
-				if (k<mSrcRows && l<mSrcCols)
-					pTarBuffer[i*mTarCols + j] = pSrcBuffer[k*mSrcCols + l];
-				else
-					pTarBuffer[i*mTarCols + j] = -9999;
-			}
-		}
-
-	}
-
-	return true;
-}
-
-double opt::CalMeanValueFromLongSeq(long *pBuffer, long mNum, long mFillValue, double mScale)
+double util::CalMeanValueFromLongSeq(long *pBuffer, long mNum, long mFillValue, double mScale)
 {
 	double tValue;
 	double mSumValue;
@@ -520,7 +461,7 @@ double opt::CalMeanValueFromLongSeq(long *pBuffer, long mNum, long mFillValue, d
 	return tValue;
 }
 
-double opt::CalMaxValueFromLongSeq(long *pBuffer, long mNum, long mFillValue, double mScale)
+double util::CalMaxValueFromLongSeq(long *pBuffer, long mNum, long mFillValue, double mScale)
 {
 	long tValueNum = 0;
 	long tValue = -1000000;
@@ -541,7 +482,7 @@ double opt::CalMaxValueFromLongSeq(long *pBuffer, long mNum, long mFillValue, do
 	return tValue*mScale;
 }
 
-double opt::CalMinValueFromLongSeq(long *pBuffer, long mNum, long mFillValue, double mScale)
+double util::CalMinValueFromLongSeq(long *pBuffer, long mNum, long mFillValue, double mScale)
 {
 	long tValueNum = 0;
 	long tValue = 1000000;
@@ -562,9 +503,9 @@ double opt::CalMinValueFromLongSeq(long *pBuffer, long mNum, long mFillValue, do
 }
 
 //基于纬度不均匀的重采样
-void opt::SpatialResampleBasedOnUnevenLat(long *pOriBuffer, long *pTarBuffer, double *pOriLatBuffer,
-                                          long mOriRows, long mOriCols, long mTarRows, long mTarCols,
-                                          double startlog, double endlog, double startlat, double endlat)
+void util::SpatialResampleBasedOnUnevenLat(long *pOriBuffer, long *pTarBuffer, double *pOriLatBuffer,
+                                           long mOriRows, long mOriCols, long mTarRows, long mTarCols,
+                                           double startlog, double endlog, double startlat, double endlat)
 {
 	//double startlog;
 	//double endlog;

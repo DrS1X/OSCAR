@@ -134,17 +134,16 @@ void GetSameEvent(string& str, const vector<string>& mIDList, vector<bool>& Even
 void Postprocessor::Resort(vector<string> RepeatFileList, vector<string> OtherFileList, string mSaveFilePath)
 {
 	int mOtherFileNum = OtherFileList.size();
-	int mCols = Def.Cols;
-	int mRows = Def.Rows;
-	string DataSetName = Def.DataSetName;
-	double mStartLog = Def.StartLon;
-	double mStartLat = Def.StartLat;
-	double mEndLog = Def.EndLon;
-	double mEndLat = Def.EndLat;
-	double mScale = Def.Scale;
-	string mDataType = Def.DataType;
-	double mResolution = Def.Resolution;
-	double mFillValue = Def.FillValue;
+	int mCols = META_DEF.nCol;
+	int mRows = META_DEF.nRow;
+	string DataSetName = META_DEF.DataSetName;
+	double mStartLog = META_DEF.startLon;
+	double mStartLat = META_DEF.startLat;
+	double mEndLog = META_DEF.endLon;
+	double mEndLat = META_DEF.endLat;
+	double mScale = META_DEF.scale;
+	double mResolution = META_DEF.resolution;
+	double mFillValue = META_DEF.fillValue;
 
 	//ͳ����ͬ�¼�
 	unique_ptr<int[]> pBuffer1(new int[mRows * mCols]);
@@ -459,13 +458,13 @@ void Postprocessor::Resort(vector<string> RepeatFileList, vector<string> OtherFi
 
 	//�������
 	//�����ļ�
-	Meta meta = Def;
+	Meta meta = META_DEF;
 	for (int i = 0; i < mOtherFileNum; i++)
 	{
 		HO.readHDF(OtherFileList[i], pBuffer1.get());
 		Fill(mSameList, pBuffer1.get(), mRows, mCols);
-		string mOutFileName = opt::generateFileName(OtherFileList[i], mSaveFilePath, ".hdfOpt");
-		meta.Date = HO.GetFileDateTime(OtherFileList[i].c_str());
+		string mOutFileName = util::generateFileName(OtherFileList[i], mSaveFilePath, ".hdfOpt");
+		meta.date = HO.GetFileDateTime(OtherFileList[i].c_str());
 		HO.writeHDF(mOutFileName, meta, pBuffer1.get());
 	}
 
@@ -481,8 +480,8 @@ void Postprocessor::Resort(vector<string> RepeatFileList, vector<string> OtherFi
 		}
 		Fill(mSameList, pBuffer1.get(), mRows, mCols);
 
-		string mOutFileName = opt::generateFileName(RepeatFileList[2 * i], mSaveFilePath , ".hdfOpt");
-		meta.Date = HO.GetFileDateTime(RepeatFileList[2 * i].c_str());
+		string mOutFileName = util::generateFileName(RepeatFileList[2 * i], mSaveFilePath , ".hdfOpt");
+		meta.date = HO.GetFileDateTime(RepeatFileList[2 * i].c_str());
 		HO.writeHDF(mOutFileName, meta, pBuffer1.get());
 	}
 }

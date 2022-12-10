@@ -4,7 +4,7 @@
 #include "_const.h"
 #include "util.h"
 #include "ThreadPool.h"
-#include "tiffOpt.h"
+#include "TifOpt.h"
 #include "hdfOpt.h"
 
 class AnomalyAnalysis
@@ -15,7 +15,7 @@ public:
 	static bool StandardAnomaly(vector<string> allFiles, string mOutPath, TimeScale timeScale);
 	static bool StandardAnomaly_OnePeriod(vector<string> Files, Meta meta, string mOutPath);
 
-	static bool SpatiotemporalAnomaly(vector<string> Files, string outputPath, float STDtime, bool generateHDF = true);
+	static bool Filter(vector<string> Files, string outputPath, float STDtime, bool generateHDF = true);
 	static void SpatialSmooth(double* pResultBuffer, int mRows, int mCols, double mFillValue);
 private:
 	const static int BUFFER_SCALE = 365;

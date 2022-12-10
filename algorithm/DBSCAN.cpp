@@ -31,9 +31,9 @@ const int SUR[9][2] = { {-1,0}, {-1,1},{0,1},{1,1},{1,0},{1,-1},{0,-1},{-1,-1},{
 /*double DBSCAN::calculateClusterParameter(vector<string> files, int K) {
 	vector<double *> data;
 	for (int i = 0; i < files.size(); ++i) {
-		double* buf = new double[Def.Size];
+		double* buf = new double[META_DEF.Size];
 		data.push_back(buf);
-		tiffOpt::readGeoTiff(files[i].c_str(), buf);
+		TifOpt::readGeoTiff(files[i].c_str(), buf);
 	}
 }*/
 
@@ -47,12 +47,12 @@ bool DBSCAN::core(vector<string> Files, string outputPath) {
 	for (int i = 0; i < n; ++i) {
 		double* buf = new double[size];
 		data.push_back(buf);
-		tiffOpt::readGeoTiff(Files[i].c_str(), buf);
+		TifOpt::readGeoTiff(Files[i].c_str(), buf);
 		dateList.push_back(Files[i].substr(Files[i].find_last_of(".") - 8, 8));
 	}
 
-	//tiffOpt go(Def);
-	hdfOpt ho(Def);
+	//TifOpt go(META_DEF);
+	hdfOpt ho(META_DEF);
 	int t_interval = 1;
 	int threshold = (t_interval * 2 + 1) * 3;
 	for (int t = t_interval; t < n - t_interval; ++t){
@@ -82,13 +82,13 @@ bool DBSCAN::core(vector<string> Files, string outputPath) {
 					//data[t][r * colNum + c] = CORE;
 					buf[r * cols + c] = CORE;
 				else
-					buf[r * cols + c] = data[t][r * cols + c] / Def.Scale;
+					buf[r * cols + c] = data[t][r * cols + c] / META_DEF.scale;
 			}
 		}	
 
-		string outputFileName = opt::generateFileName(Files[t], outputPath, "Core", "hdfOpt");
-		Meta meta = Def;
-		meta.Date = dateList[t];
+		string outputFileName = util::generateFileName(Files[t], outputPath, "Core", "hdfOpt");
+		Meta meta = META_DEF;
+		meta.date = dateList[t];
 		if(!ho.writeHDF(outputFileName.c_str(), meta, buf)){
 		//if (!go.writeGeoTiff(outputFileName.c_str(), meta, data[t])) {
 			cout << "Write Error" << endl;
@@ -103,12 +103,12 @@ bool DBSCAN::core(vector<string> Files, string outputPath) {
 }
 
 bool DBSCAN::cluster(vector<string> core, string outputPath) {
-	hdfOpt ho(Def);
+	hdfOpt ho(META_DEF);
 	vector<long*> data;
 	vector<long*> res;
 	vector<string> dateList;
 	for (string f : core) {
-		long* buf = new long[Def.Size];
+		long* buf = new long[META_DEF.nPixel];
 		data.push_back(buf);
 		if (!ho.readHDF(f, buf)) {
 			cout << "Read Error" << endl;
@@ -116,19 +116,19 @@ bool DBSCAN::cluster(vector<string> core, string outputPath) {
 		}
 		dateList.push_back(f.substr(f.find_last_of(".") - 8, 8));
 
-		long* tmp = new long[Def.Size];
-		for (int i = 0; i < Def.Size; ++i)
+		long* tmp = new long[META_DEF.nPixel];
+		for (int i = 0; i < META_DEF.nPixel; ++i)
 			tmp[i] = 0;
 		res.push_back(tmp);
 	}
-	int cs = Def.Cols;
+	int cs = META_DEF.nCol;
 	int t_interval = 1;
 	int threshold = (t_interval * 2 + 1) * 3;
 	int n = core.size();
 	int eventID = 2;
 	for (int t = t_interval; t < n - t_interval; ++t) {
-		for (int r = 1; r < Def.Rows - 1; ++r) {
-			for (int c = 1; c < Def.Cols - 1; ++c) {
+		for (int r = 1; r < META_DEF.nRow - 1; ++r) {
+			for (int c = 1; c < META_DEF.nCol - 1; ++c) {
 				if (data[t][r * cs + c] != CORE || data[t][r * cs + c] == BEG)
 					continue;
 

@@ -2,7 +2,7 @@
 
 using namespace std;
 
-const GeoRegion GeoRegion::GLOBAL( Def.EndLat,Def.StartLat, Def.StartLon, Def.EndLon);
+const GeoRegion GeoRegion::GLOBAL(META_DEF.endLat, META_DEF.startLat, META_DEF.startLon, META_DEF.endLon);
 
 queue<RTree*> RTree::Cache;
 
@@ -20,7 +20,7 @@ void RTree::Run(RTreeParam p, vector<string> fileList, string outputPath) {
     CLUSTER_ID = 0;
     GEO_WINDOW = p.geoWindow;
     CORE_THRESHOLD = p.coreThreshold;
-    ATTRIBUTE_THRESHOLD = p.valueThreshold / Def.Scale;
+    ATTRIBUTE_THRESHOLD = p.valueThreshold / META_DEF.scale;
     OUTPUT_PATH = outputPath;
     DUR_THRESHOLD = p.durationThreshold;
     UNIT = p.unit;
@@ -217,7 +217,7 @@ void RTree::save(){
     std::strftime(startTimeStr, 20, format.c_str(), localtime(&t_));
 
     // save to shp file-operator
-    tiffOpt::save(OUTPUT_PATH, startTimeStr, AnomalyType::Positive, polyList);
+    TifOpt::save(OUTPUT_PATH, startTimeStr, AnomalyType::Positive, polyList);
 }
 
 void RTree::insert(RNode *node) {
@@ -368,7 +368,7 @@ Raster::Raster(string file) {
     val = new int[sz];
     vis = new bool[sz];
     memset(vis, 0, sz);
-    tiffOpt::readGeoTiff(file, val);
+    TifOpt::readGeoTiff(file, val);
 
     timePoint = getTimePoint(file);
 }

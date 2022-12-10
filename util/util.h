@@ -15,17 +15,59 @@
 #include <array>
 #include <string>
 #include <chrono>
+#include <io.h>
+#include <direct.h>
+#include <stdio.h>
+#include <float.h>
+#include <regex>
 
 #include "_const.h"
-#include "model/shape.h"
+#include "DataModel.h"
 
 using std::cout;
 using std::endl;
 using std::string;
 using std::vector;
 
-class opt {
+template<class T>
+inline T*** initArr(int x, int y, int z){
+    T*** arr;
+    arr = new T**[x];
+    for(int i = 0; i < x; ++i){
+        arr[x] = new T*[y];
+        for(int j = 0; j < y; ++j){
+            arr[x][y] = new T[z];
+        }
+    }
+    return arr;
+}
+
+template<class T>
+inline T** initArr(int x, int y){
+    T** arr;
+    arr = new T*[x];
+    for(int i = 0; i < x; ++i){
+        arr[x] = new T[y];
+    }
+    return arr;
+}
+
+static inline bool isEqual(double a, double b) {
+    return fabs(a - b) < std::numeric_limits<double>::epsilon();
+}
+
+static inline bool isEqual(float a, float b) {
+    return fabs(a - b) < std::numeric_limits<float>::epsilon();
+}
+
+static inline bool isFillValue(float v){
+    return isEqual(v, FILL_VAL);
+}
+
+
+class util {
 public:
+
     static void checkFilePath(string filePath);
 
     static int getDayOfYear(string fileName);
@@ -63,11 +105,6 @@ public:
     static double
     STInterpolate(long *pTBuffer, double mScale, long mRows, long mCols, long m, long n, double mMissingValue,
                   long *pBuffer1, long *pBuffer2, long size);
-
-    //long GetDsNum(CString Filename);
-    static bool
-    DataSpatialConvertByMean(long *pSrcBuffer,/*原数据集*/long *pTarBuffer,/*目标数据集*/long mSrcRows, long mSrcCols,
-                             long mTarRows, long mTarCols, double reSize/*转换尺寸*/);
 
     static double CalMeanValueFromLongSeq(long *pBuffer, long mNum, long mFillValue, double mScale);
 

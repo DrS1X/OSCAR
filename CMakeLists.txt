@@ -21,9 +21,9 @@ include_directories(sidx/include/spatialindex/tools)
 
 link_directories(release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs/lib)
 ADD_LIBRARY(LibsGDAL
-        file-operator/tiffOpt.cpp
+        file-operator/TifOpt.cpp
         file-operator/hdfOpt.cpp
-        file-operator/hdf5Opt.cpp
+        file-operator/Hdf5Opt.cpp
         util/util.cpp
         )
 target_link_libraries(LibsGDAL gdal_i)
@@ -41,8 +41,9 @@ target_link_libraries(LibsSpatialIndex spatialindex_c-64)
 
 add_executable(Clustering
         main.cpp
-        file-operator/tiffOpt.cpp
+        file-operator/TifOpt.cpp
         file-operator/hdfOpt.cpp
+        file-operator/Hdf5Opt.cpp
         util/util.cpp
         process/Postprocessor.cpp
         process/Vectorization.cpp
@@ -51,6 +52,6 @@ add_executable(Clustering
         algorithm/DcSTMC.cpp
         algorithm/DBSCAN.cpp
         algorithm/RTree.cpp
-        file-operator/hdf5Opt.cpp)
+        process/Reader.cpp)
 
 target_link_libraries(Clustering LibsGDAL LibsSpatialIndex)

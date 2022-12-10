@@ -11,7 +11,7 @@
 #include "_const.h"
 #include "util/util.h"
 #include "hdfOpt.h"
-#include "tiffOpt.h"
+#include "TifOpt.h"
 
 using namespace std;
 
@@ -23,9 +23,6 @@ using duration_weeks = chrono::duration<float, std::ratio<604800>>;
 using duration_months = chrono::duration<float, std::ratio<2629746>>;
 using duration_years = chrono::duration<float, std::ratio<31556952>>;
 
-enum TimeUnit{
-    Day, Mon
-};
 
 struct RTreeParam{
     int geoWindow;
@@ -42,7 +39,6 @@ extern int CORE_THRESHOLD;
 extern int ATTRIBUTE_THRESHOLD;
 extern string OUTPUT_PATH;
 extern int CLUSTER_ID;
-extern TimeUnit UNIT;
 extern float OVERLAP_THRESHOLD;
 
 class RoSTCM
@@ -150,11 +146,11 @@ private:
     int MinNum = 100; // 400;//?????????8*((mRows*mCols)/20000)*mFileNum???????
     int CP = 15;//???????????????
 
-    int mRows = Def.Rows;
-    int mCols = Def.Cols;
-    double mScale = Def.Scale;
-    double mFillValue = Def.FillValue;
-    Meta meta = Def;
+    int mRows = META_DEF.nRow;
+    int mCols = META_DEF.nCol;
+    double mScale = META_DEF.scale;
+    double mFillValue = META_DEF.fillValue;
+    Meta meta = META_DEF;
     hdfOpt ho;
 
     void ExpandCluster1(vector<RoSTCM>& Rasterpixels, int drID, int rsclusterId, int row, int col, double avg, int num);

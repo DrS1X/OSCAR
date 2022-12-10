@@ -4,19 +4,18 @@ using namespace std;
 
 bool AnomalyAnalysis::StandardAnomaly(vector<string> allFiles, string outputPath, TimeScale timeScale) {
 
-	vector<string> fileGroup[BUFFER_SCALE];
+	vector<string> fileGroup[BUFFER_SCALE]; // array of vector
 	/*
 	for (int i = 0; i < BUFFER_SCALE; ++i) {
 		fileGroup[i] 
 	}
 	*/
 	for (int i = 0; i < allFiles.size(); ++i) {
-		int serialNum = opt::getDayOfYear(allFiles[i]);
+		int serialNum = util::getDayOfYear(allFiles[i]);
 		if (serialNum == -1) continue;
 		fileGroup[serialNum].push_back(allFiles[i]);
 		//cout << i << endl;
 	}
-
 	Meta meta = hdfOpt::getHDFMeta(fileGroup[0][0]);
 	
 	ThreadPool pool(5);
@@ -43,11 +42,10 @@ bool AnomalyAnalysis::StandardAnomaly_OnePeriod(vector<string> Files, Meta meta,
 {	
 	if (Files.size() == 0) return true;
 
-
 	hdfOpt ReadHDF;
 
-	double* pMeanBuffer = new double[meta.Size];
-	double* pStdBuffer = new double[meta.Size];
+	double* pMeanBuffer = new double[meta.nPixel];
+	double* pStdBuffer = new double[meta.nPixel];
 	
 	hdfOpt::meanAndStandardDeviation(Files, pMeanBuffer, pStdBuffer);
 		
@@ -56,10 +54,10 @@ bool AnomalyAnalysis::StandardAnomaly_OnePeriod(vector<string> Files, Meta meta,
 	{
 		string tStr = Files[i].c_str();
 		
-		long *pBuffer = (long*)malloc(meta.Size * sizeof(long));
+		long *pBuffer = (long*)malloc(meta.nPixel * sizeof(long));
 
 		//ȡ
-		if (!ReadHDF.GetDsByDsnameFROMProduct(pBuffer, tStr, Def.DataSetName.c_str(), 0, meta.Rows, 0, meta.Cols))
+		if (!ReadHDF.GetDsByDsnameFROMProduct(pBuffer, tStr, META_DEF.DataSetName.c_str(), 0, meta.nRow, 0, meta.nCol))
 		{
 			free(pBuffer);
 			cout << "ȡݳ" <<endl;
@@ -67,7 +65,7 @@ bool AnomalyAnalysis::StandardAnomaly_OnePeriod(vector<string> Files, Meta meta,
 		}
 		
 		//
-		for (long j = 0; j<meta.Size; j++)
+		for (long j = 0; j<meta.nPixel; j++)
 		{
 			//ֵһʱֵ-9999
 			//if (pValueNum[iMonth][j] * 1.0 / FileNum < 0.5)
@@ -78,25 +76,25 @@ bool AnomalyAnalysis::StandardAnomaly_OnePeriod(vector<string> Files, Meta meta,
 
 			if (pBuffer[j] != (long)meta.MissingValue
 				&& pStdBuffer[j] != 0.0)
-				pBuffer[j] = (long)(((pBuffer[j] * meta.Scale - pMeanBuffer[j]) / pStdBuffer[j]) / meta.Scale +0.5); //0.5ΪǿתΪlongʱ
+				pBuffer[j] = (long)(((pBuffer[j] * meta.scale - pMeanBuffer[j]) / pStdBuffer[j]) / meta.scale + 0.5); //0.5ΪǿתΪlongʱ
 
 			if (pBuffer[j] != (long)meta.MissingValue && pStdBuffer[j] == 0.0)
 				pBuffer[j] = 0;
 
 		}
-		opt pHDF4;// = new opt();
+		util pHDF4;// = new util();
 		double *Max_Min = new double[2];
-		Max_Min = pHDF4.GetMin_Max(Max_Min, pBuffer, meta.Rows, meta.Cols);
+		Max_Min = pHDF4.GetMin_Max(Max_Min, pBuffer, meta.nRow, meta.nCol);
 		double mMaxValue = Max_Min[1];
 		double mMinValue = Max_Min[0];
-		double mMeanValue = pHDF4.GetMeanValue(pBuffer, meta.Rows, meta.Cols);
-		double mStdValue = pHDF4.GetStdValue(pBuffer, meta.Rows, meta.Cols);
+		double mMeanValue = pHDF4.GetMeanValue(pBuffer, meta.nRow, meta.nCol);
+		double mStdValue = pHDF4.GetStdValue(pBuffer, meta.nRow, meta.nCol);
 		delete Max_Min;
 
 		hdfOpt pHDF;// = new hdfOpt();
 		
 
-		string date = opt::getDate(Files[i]);
+		string date = util::getDate(Files[i]);
 		string folder = mOutPath + "/" + date.substr(0, 4) + "/";
 		
 		if (_access(folder.c_str(), 0) == -1)	//ļв
@@ -104,9 +102,9 @@ bool AnomalyAnalysis::StandardAnomaly_OnePeriod(vector<string> Files, Meta meta,
 
 		string mOutFileName =  folder + "StandAnomaly" + date + ".hdfOpt";
 		//pReadHDF->WriteHDFFile(mOutFileName, mReDsName, mDsDate, mResolution, val, mStartLat, mEndLat, mStartLog, mEndLog, mRows, mCols, 0.001);
-		if (!ReadHDF.WriteCustomHDF2DFile(mOutFileName.c_str(), date.c_str(), Def.ProductType.c_str(), "0",
-                                          Def.DataSetName.c_str(), pBuffer, meta.Scale, meta.Offset, meta.StartLon, meta.EndLon, meta.StartLat, meta.EndLat,
-                                          meta.Rows, meta.Cols, mMaxValue, mMinValue, mMeanValue, mStdValue, meta.MissingValue, meta.Resolution, "2ά"))
+		if (!ReadHDF.WriteCustomHDF2DFile(mOutFileName.c_str(), date.c_str(), META_DEF.ProductType.c_str(), "0",
+                                          META_DEF.DataSetName.c_str(), pBuffer, meta.scale, meta.Offset, meta.startLon, meta.endLon, meta.startLat, meta.endLat,
+                                          meta.nRow, meta.nCol, mMaxValue, mMinValue, mMeanValue, mStdValue, meta.MissingValue, meta.resolution, "2ά"))
 		{			
 			free(pBuffer);
 			delete[] pMeanBuffer;
@@ -121,30 +119,30 @@ bool AnomalyAnalysis::StandardAnomaly_OnePeriod(vector<string> Files, Meta meta,
 	return true;
 }
 
-bool AnomalyAnalysis::SpatiotemporalAnomaly(vector<string> Files, string outputPath, float STDtime, bool generateHDF) {
+bool AnomalyAnalysis::Filter(vector<string> Files, string outputPath, float STDtime, bool generateHDF) {
 	string positiveOutputPath = outputPath +"\\pos";
 	string negativeOutputPath = outputPath + +"\\neg";
 	
-	Meta meta = Def;
+	Meta meta = META_DEF;
 
-	tiffOpt go(meta);
+	TifOpt go(meta);
 	hdfOpt ho(meta);
 
-	unique_ptr<double[]> mean(new double[meta.Size]);
-	unique_ptr<double[]> std(new double[meta.Size]);
-	unique_ptr<double[]> posThreshold(new double[meta.Size]);
-	unique_ptr<double[]> negThreshold(new double[meta.Size]);
+	unique_ptr<double[]> mean(new double[meta.nPixel]);
+	unique_ptr<double[]> std(new double[meta.nPixel]);
+	unique_ptr<double[]> posThreshold(new double[meta.nPixel]);
+	unique_ptr<double[]> negThreshold(new double[meta.nPixel]);
 
 	hdfOpt::meanAndStandardDeviation(Files, mean.get(), std.get());
 
-	for (long i = 0; i < meta.Size; ++i) {
+	for (long i = 0; i < meta.nPixel; ++i) {
 		posThreshold[i] = (mean[i] + std[i] * STDtime);
 		negThreshold[i] = (mean[i] - std[i] * STDtime);
 	}
 
 	const char* folder = outputPath.c_str();
 
-	if (_access(folder, 0) == -1)	//ļв
+	if (_access(folder, 0) == -1)
 		_mkdir(folder);
 
 	for (long i = 0; i < Files.size(); i++)
@@ -155,11 +153,11 @@ bool AnomalyAnalysis::SpatiotemporalAnomaly(vector<string> Files, string outputP
 		double *neg = new double[meta.Size];
 		long *val = new long[meta.Size];
 		*/
-		unique_ptr<double[]> pos(new double[meta.Size]);
-		unique_ptr<double[]> neg(new double[meta.Size]);
-		unique_ptr<long[]> pBuffer(new long[meta.Size]);
+		unique_ptr<double[]> pos(new double[meta.nPixel]);
+		unique_ptr<double[]> neg(new double[meta.nPixel]);
+		unique_ptr<long[]> pBuffer(new long[meta.nPixel]);
 
-		if (!ho.GetDsByDsnameFROMProduct(pBuffer.get(), fileName, Def.DataSetName.c_str(), 0, meta.Rows, 0, meta.Cols))
+		if (!ho.GetDsByDsnameFROMProduct(pBuffer.get(), fileName, META_DEF.DataSetName.c_str(), 0, meta.nRow, 0, meta.nCol))
 		{
 			/*
 			delete[] val;
@@ -170,8 +168,8 @@ bool AnomalyAnalysis::SpatiotemporalAnomaly(vector<string> Files, string outputP
 			return false;
 		}
 
-		for (long j = 0; j < meta.Size; ++j) {
-			double v = pBuffer[j] * meta.Scale;
+		for (long j = 0; j < meta.nPixel; ++j) {
+			double v = pBuffer[j] * meta.scale;
 			//tmp[j] = v;
 			if (v >= posThreshold[j])
 				pos[j] = pBuffer[j];
@@ -186,19 +184,19 @@ bool AnomalyAnalysis::SpatiotemporalAnomaly(vector<string> Files, string outputP
 		}
 
 		//ռƽ
-		SpatialSmooth(pos.get(), Def.Rows, Def.Cols, Def.FillValue);
-		SpatialSmooth(neg.get(), Def.Rows, Def.Cols, Def.FillValue);
+		SpatialSmooth(pos.get(), META_DEF.nRow, META_DEF.nCol, META_DEF.fillValue);
+		SpatialSmooth(neg.get(), META_DEF.nRow, META_DEF.nCol, META_DEF.fillValue);
 
 		string date = Files[i].substr(Files[i].size() - 12, 8);
-		meta.Date = date;
+		meta.date = date;
 		go.writeGeoTiff(positiveOutputPath + "\\Positive" + date + ".tif", meta, pos.get());
 		go.writeGeoTiff(negativeOutputPath + "\\Negative" + date + ".tif", meta, neg.get());
 
 		if(generateHDF)
 		{
-			unique_ptr<long[]> p(new long[meta.Size]);
-			unique_ptr<long[]> n(new long[meta.Size]);
-			for (long j = 0; j < meta.Size; ++j) {
+			unique_ptr<long[]> p(new long[meta.nPixel]);
+			unique_ptr<long[]> n(new long[meta.nPixel]);
+			for (long j = 0; j < meta.nPixel; ++j) {
 				p[j] = pos[j];
 				n[j] = neg[j];
 			}

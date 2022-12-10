@@ -4,10 +4,26 @@
 #include "algo.h"
 #include "RTree.h"
 #include "DataProcess.h"
-#include "hdf5Opt.h"
+#include "FileOperator.h"
+#include "DataModel.h"
+#include "_const.h"
 
 using namespace std;
 
+
+Meta Meta::DEF(
+        1.0,
+        1.0,
+        FILL_VAL,
+        1,
+        120,
+        360,
+        60,
+        -180,
+        -60,
+        180,
+        PROJECTION,
+);
 
 void Test_RTreeCluster(){
     struct RTreeParam p{
@@ -22,7 +38,7 @@ void Test_RTreeCluster(){
     string inputPath = "E:\\IMERG\\repetition\\anomaly2\\std_05\\pos";
     string outputPath = "E:\\IMERG\\repetition\\RTreeCluster";
     vector<string> fileList;
-    opt::getFileList(inputPath, fileList, fileType);
+    util::getFileList(inputPath, fileList, fileType);
     RTree::Run(p, fileList, outputPath);
 }
 void Test_RTree(){
@@ -40,11 +56,19 @@ void Test_RTree(){
     cout << result.size() << endl;
 }
 void Test_HDF5(){
-    string fileName = "";
-    hdf5Opt::read(fileName);
+    string fileFolder = "D:\\prData\\mon\\ori";
+    string fileType = ".HDF5";
+    std::vector<std::string> fileList;
+    util::getFileList(fileFolder, fileList, fileType);
+
+    string groupName = "Grid";
+    string datasetName = "precipitation";
+    Reader::ReadFile(fileList);
 }
 int main(int argc,char *argv[])
 {
+    DEBUG = true;
+
     if(argc <= 1){
         Test_HDF5();
         getchar();
@@ -57,11 +81,11 @@ int main(int argc,char *argv[])
     string fileType;
     vector<string> fileList;
 
-    if(functionName == "--HDF5Preprocess" || functionName == "-h"){
+    if(functionName == "--HDF5Preprocess" || functionName == "-hp"){
 
     }else if(functionName == "--GeoTiff2HDF" || functionName == "-g"){
         fileType = ".tif";
-        opt::getFileList(inputPath, fileList, fileType);
+        util::getFileList(inputPath, fileList, fileType);
 
         for (int i = 0; i < fileList.size(); ++i) {
             vector<string> filePath;
@@ -69,38 +93,38 @@ int main(int argc,char *argv[])
             string year = dir.substr(dir.size() - 4, 4);
             if (stoi(year) >= 2017 && stoi(year) < 2021) {
                 string savePath = outputPath + "\\" + year;
-                opt::getFileList(dir, filePath, fileType);
+                util::getFileList(dir, filePath, fileType);
                 Convertor::GeoTiff2HDF(filePath, savePath, 60, -60);
             }
         }
     }else if(functionName == "--StandAnomaly" || functionName == "-sa"){
-        fileType = ".hdfOpt";
-        opt::getFileList(inputPath, fileList, fileType);
+        fileType = ".hdf";
+        util::getFileList(inputPath, fileList, fileType);
         bool result = AnomalyAnalysis::StandardAnomaly(fileList, outputPath, AnomalyAnalysis::Test);
         cout << result;
-    }else if(functionName == "--Resample" || functionName == "-r"){
-        fileType = ".hdfOpt";
-        opt::getFileList(inputPath, fileList, fileType);
-        Convertor::Resample(fileList, outputPath, 1.0);
+    }else if(functionName == "--ResampleBatch" || functionName == "-d"){
+        fileType = ".hdf";
+        util::getFileList(inputPath, fileList, fileType);
+        Convertor::ResampleBatch(fileList, outputPath, 1.0);
     }else if(functionName == "--SpaceTransform" || functionName == "-st"){
-        fileType = ".hdfOpt";
-        opt::getFileList(inputPath, fileList, fileType);
+        fileType = ".hdf";
+        util::getFileList(inputPath, fileList, fileType);
         Convertor::SpaceTransform(fileList, outputPath);
     }else if(functionName == "--Cluster" || functionName == "-c"){
         fileType = ".tif";
-        opt::getFileList(inputPath, fileList, fileType);
+        util::getFileList(inputPath, fileList, fileType);
         DcSTMC a;
         a.Run(fileList, outputPath, 10, 1);
     }else if(functionName == "--Postprocess" || functionName == "-p"){
-        fileType = ".hdfOpt";
+        fileType = ".hdf";
         vector<string> fileList2;
-        opt::getFileList(inputPath, fileList, fileType);
-        opt::getFileList(argv[4], fileList2, fileType);
+        util::getFileList(inputPath, fileList, fileType);
+        util::getFileList(argv[4], fileList2, fileType);
         Postprocessor::Resort(fileList, fileList2, outputPath);
     }else if(functionName == "--Vectorization" || functionName == "-v"){
         vector<string> fileList2;
-        opt::getFileList(inputPath, fileList, string(".tif"));
-        opt::getFileList(argv[4], fileList2, string(".hdfOpt"));
+        util::getFileList(inputPath, fileList, string(".tif"));
+        util::getFileList(argv[4], fileList2, string(".hdf"));
         Vectorization(fileList, fileList2, outputPath);
     }else if( functionName == "RTreeCluster" || functionName == "-rc"){
         struct RTreeParam p{
@@ -111,14 +135,14 @@ int main(int argc,char *argv[])
                 5.0
         };
         fileType = ".tif";
-        opt::getFileList(inputPath, fileList, fileType);
+        util::getFileList(inputPath, fileList, fileType);
         RTree::Run(p, fileList, outputPath);
     }
     else{
         cout << "Following is all function:\n"
         << "1) -g / --GeoTiff2HDF\n"
         << "2) -sa / --StandAnomaly\n"
-        << "3) -r / --Resample\n"
+        << "3) -d / --ResampleBatch\n"
         << "4) -st / --SpaceTransform\n"
         << "5) -sta / --SpatioTemporalAnomaly\n"
         << "6) -c / --Cluster\n"

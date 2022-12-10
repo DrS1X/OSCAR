@@ -2,7 +2,7 @@
 
 void Convertor::GeoTiff2HDF(vector<string> strFileList, string strSavePath, double startLat, double endLat, double startLog, double endLog)
 {
-	tiffOpt *gdalOP = new tiffOpt();
+	TifOpt *gdalOP = new TifOpt();
 
 	for (int i = 0; i < strFileList.size(); i++)
 	{
@@ -20,31 +20,31 @@ void Convertor::GeoTiff2HDF(vector<string> strFileList, string strSavePath, doub
 	}
 }
 
-bool Convertor::Resample(vector<string> strFileList, string strSavePath, double targetResolution) {
+bool Convertor::ResampleBatch(vector<string> strFileList, string strSavePath, double targetResolution) {
 	Meta meta = hdfOpt::getHDFMeta(strFileList[0]);
-	double ratio = targetResolution / meta.Resolution;
+	double ratio = targetResolution / meta.resolution;
 
 	Meta newMeta = meta;
-	newMeta.Resolution = targetResolution;
-	newMeta.Rows = meta.Rows / ratio;
-	newMeta.Cols = meta.Cols / ratio;
+	newMeta.resolution = targetResolution;
+	newMeta.nRow = meta.nRow / ratio;
+	newMeta.nCol = meta.nCol / ratio;
 
 	hdfOpt HDFIO;
 	for (string f : strFileList) {
-		long* src = new long[meta.Size];
-		long* tar = new long[meta.Size];
-		if (!HDFIO.GetDsByDsnameFROMProduct(src, f.c_str(), Def.DataSetName.c_str(), 0,meta.Rows, 0, meta.Cols))
+		float* src = new float[meta.nPixel];
+        float* tar = new float[meta.nPixel];
+		if (!HDFIO.GetDsByDsnameFROMProduct(src, f.c_str(), META_DEF.DataSetName.c_str(), 0, meta.nRow, 0, meta.nCol))
 		{
 			delete[] src;
 			delete[] tar;
 			return false;
 		}
 
-		opt::DataSpatialConvertByMean(src, tar, meta.Rows, meta.Cols, newMeta.Rows, newMeta.Cols, ratio);
+        Resample(src, tar, meta.nRow, meta.nCol, newMeta.nRow, newMeta.nCol, ratio);
 
 		//newMeta.Date = f.substr(f.find_last_of("\\") + 26, 8).c_str();
-		//string fileName = opt::generateFileName(f, strSavePath, "resample","hdfOpt", newMeta.Date);
-		string fileName = opt::generateFileName(f, strSavePath, "resample", "hdfOpt");
+		//string fileName = util::generateFileName(f, strSavePath, "resample","hdfOpt", newMeta.Date);
+		string fileName = util::generateFileName(f, strSavePath, "resample", "hdfOpt");
 		if (!HDFIO.writeHDF(fileName, newMeta, tar))
 		{
 			delete[] src;
@@ -59,13 +59,75 @@ bool Convertor::Resample(vector<string> strFileList, string strSavePath, double 
 	return true;
 }
 
+void Convertor::Resample(float *src, float *tar, int srcRows, int srcCols, float ratio)
+{
+    int tarRows = srcRows / ratio;
+    int tarCols = srcCols / ratio;
+
+    int offset1 =  (int)(-ratio / 2 - 0.5);
+    int offset2 =  (int)(ratio / 2 + 0.5);
+
+    if (ratio > 1)    //聚合
+    {
+        for (int i = 0;i<tarRows;i++)
+        {
+            for (int j = 0;j<tarCols;j++)
+            {
+                //聚合计算
+                float meanValue;
+                double sumValue = 0;
+                long num = 0;
+                long sumNum = 0;
+                for (int k = offset1; k <= offset2; k++)
+                {
+                    for (int l = offset1; l <= offset2; l++)
+                    {
+                        sumNum += 1;
+                        int sr = (int)(i * ratio + k);
+                        int sc = (int)(j * ratio + l);
+                        if (sr >= 0 && sr < srcRows && sc >= 0 && sc < srcCols && !isFillValue(src[sr * srcCols + sc]))
+                        {
+                            sumValue += src[sr * srcCols + sc];
+                            num += 1;
+                        }
+                    }
+                }
+
+                if (num != 0 && num >= sumNum / 3)
+                    meanValue = sumValue / num;
+                else
+                    meanValue = FILL_VAL;
+
+                tar[i*tarCols + j] = meanValue;
+
+            }
+        }
+    }else           //插值
+    {
+        for (int i = 0;i<tarRows;i++)
+        {
+            int k = (int)(i / ratio + 0.5);
+
+            for (int j = 0;j<tarCols;j++)
+            {
+                int l = (int)(j / ratio + 0.5);
+
+                if (k<srcRows && l<srcCols)
+                    tar[i*tarCols + j] = src[k*srcCols + l];
+                else
+                    tar[i*tarCols + j] = FILL_VAL;
+            }
+        }
+    }
+}
+
 void Convertor::SpaceTransform(vector<string> strFileList, string strSavePath)
 {
 	hdfOpt *pReadHDF = new hdfOpt();
 	string tempStr = strFileList[0];
 	string DataType = pReadHDF->GetFileProductType((char*)tempStr.c_str());//
 
-	string mDsName = Def.DataSetName.c_str();
+	string mDsName = META_DEF.DataSetName.c_str();
 	for (int i = 0; i < strFileList.size(); i++)
 	{
 		string tName =strFileList[i].c_str();
@@ -125,7 +187,7 @@ void Convertor::SpaceTransform(vector<string> strFileList, string strSavePath)
 			delete[]temp;
 		}
 
-		opt *pHDF4 = new opt();
+		util *pHDF4 = new util();
 		double *Max_Min = new double[2];
 		Max_Min = pHDF4->GetMin_Max(Max_Min, pBuffer, Rows, Cols);
 		double mMaxValue = Max_Min[1];

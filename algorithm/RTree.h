@@ -11,16 +11,16 @@
 #include "algo.h"
 #include "util/util.h"
 #include "_const.h"
-#include "tiffOpt.h"
+#include "TifOpt.h"
 #include "hdfOpt.h"
 
 using std::string;
 
 class Raster {
 public:
-    const int rowNum = Def.Rows;
-    const int colNum = Def.Cols;
-    const int sz = Def.Size;
+    const int rowNum = META_DEF.nRow;
+    const int colNum = META_DEF.nCol;
+    const int sz = META_DEF.nPixel;
     TP timePoint;
 private:
     int *val;
