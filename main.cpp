@@ -4,7 +4,9 @@
 #include "algo.h"
 #include "RTree.h"
 #include "DataProcess.h"
-#include "FileOperator.h"
+#include "RFileOpt.h"
+#include "Hdf5Opt.h"
+#include "TifOpt.h"
 #include "DataModel.h"
 #include "_const.h"
 
@@ -14,15 +16,12 @@ using namespace std;
 Meta Meta::DEF(
         1.0,
         1.0,
-        FILL_VAL,
-        1,
         120,
         360,
         60,
         -180,
         -60,
-        180,
-        PROJECTION,
+        180
 );
 
 void Test_RTreeCluster(){
@@ -56,22 +55,20 @@ void Test_RTree(){
     cout << result.size() << endl;
 }
 void Test_HDF5(){
-    string fileFolder = "D:\\prData\\mon\\ori";
+    string fileFolder = "E:\\pr\\v2\\src";
     string fileType = ".HDF5";
-    std::vector<std::string> fileList;
-    util::getFileList(fileFolder, fileList, fileType);
+    std::vector<std::string> files;
+    util::getFileList(fileFolder, files, fileType);
 
-    string groupName = "Grid";
-    string datasetName = "precipitation";
-    Reader::ReadFile(fileList);
+    RFileOpt* fi = new Hdf5Opt("Grid", "precipitation");
+    RFileOpt* fo = new TifOpt();
+    Reader reader("E:\\pr\\v2\\", 1, fi, fo);
+    reader.readBatch(files, TimeUnit::Mon);
 }
 int main(int argc,char *argv[])
 {
-    DEBUG = true;
-
     if(argc <= 1){
         Test_HDF5();
-        getchar();
         return 0;
     }
 
@@ -83,33 +80,6 @@ int main(int argc,char *argv[])
 
     if(functionName == "--HDF5Preprocess" || functionName == "-hp"){
 
-    }else if(functionName == "--GeoTiff2HDF" || functionName == "-g"){
-        fileType = ".tif";
-        util::getFileList(inputPath, fileList, fileType);
-
-        for (int i = 0; i < fileList.size(); ++i) {
-            vector<string> filePath;
-            string dir = fileList[i];
-            string year = dir.substr(dir.size() - 4, 4);
-            if (stoi(year) >= 2017 && stoi(year) < 2021) {
-                string savePath = outputPath + "\\" + year;
-                util::getFileList(dir, filePath, fileType);
-                Convertor::GeoTiff2HDF(filePath, savePath, 60, -60);
-            }
-        }
-    }else if(functionName == "--StandAnomaly" || functionName == "-sa"){
-        fileType = ".hdf";
-        util::getFileList(inputPath, fileList, fileType);
-        bool result = AnomalyAnalysis::StandardAnomaly(fileList, outputPath, AnomalyAnalysis::Test);
-        cout << result;
-    }else if(functionName == "--ResampleBatch" || functionName == "-d"){
-        fileType = ".hdf";
-        util::getFileList(inputPath, fileList, fileType);
-        Convertor::ResampleBatch(fileList, outputPath, 1.0);
-    }else if(functionName == "--SpaceTransform" || functionName == "-st"){
-        fileType = ".hdf";
-        util::getFileList(inputPath, fileList, fileType);
-        Convertor::SpaceTransform(fileList, outputPath);
     }else if(functionName == "--Cluster" || functionName == "-c"){
         fileType = ".tif";
         util::getFileList(inputPath, fileList, fileType);

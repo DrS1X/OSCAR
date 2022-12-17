@@ -2,45 +2,6 @@
 
 using namespace std;
 
-void GetStatisticsValue(int* pBuffer, double* StatiValue, int mRows, int mCols)
-{
-	int sum = 0, count = 0;
-	double min = 100000, max = -9999, std = 0, mean = 0;
-	for (int i = 0; i < mRows * mCols; i++)
-	{
-		if (pBuffer[i] < 2)
-			continue;
-		if (pBuffer[i] < min)
-			min = pBuffer[i];
-		if (pBuffer[i] > max)
-			max = pBuffer[i];
-
-		sum += pBuffer[i];
-		std += pBuffer[i] * pBuffer[i];
-		count++;
-	}
-	if (count != 0)
-	{
-		mean = sum * 1.0 / count;
-		std = std / count - mean * mean;
-		if (std >= 0)
-			std = sqrt(std);
-		else
-			std = 0;
-		StatiValue[0] = max;
-		StatiValue[1] = min;
-		StatiValue[2] = mean;
-		StatiValue[3] = std;
-	}
-	else
-	{
-		StatiValue[0] = 0;
-		StatiValue[1] = 0;
-		StatiValue[2] = 0;
-		StatiValue[3] = 0;
-	}
-}
-
 int Split(const string& str, const char split, vector<string>& res)
 {
 	if (str == "")		return -1;
@@ -134,18 +95,16 @@ void GetSameEvent(string& str, const vector<string>& mIDList, vector<bool>& Even
 void Postprocessor::Resort(vector<string> RepeatFileList, vector<string> OtherFileList, string mSaveFilePath)
 {
 	int mOtherFileNum = OtherFileList.size();
-	int mCols = META_DEF.nCol;
-	int mRows = META_DEF.nRow;
-	string DataSetName = META_DEF.DataSetName;
-	double mStartLog = META_DEF.startLon;
-	double mStartLat = META_DEF.startLat;
-	double mEndLog = META_DEF.endLon;
-	double mEndLat = META_DEF.endLat;
-	double mScale = META_DEF.scale;
-	double mResolution = META_DEF.resolution;
-	double mFillValue = META_DEF.fillValue;
+	int mCols = Meta::DEF.nCol;
+	int mRows = Meta::DEF.nRow;
+	double mStartLog = Meta::DEF.startLon;
+	double mStartLat = Meta::DEF.startLat;
+	double mEndLog = Meta::DEF.endLon;
+	double mEndLat = Meta::DEF.endLat;
+	double mScale = Meta::DEF.scale;
+	double mResolution = Meta::DEF.resolution;
+	double mFillValue = Meta::DEF.fillValue;
 
-	//ͳ����ͬ�¼�
 	unique_ptr<int[]> pBuffer1(new int[mRows * mCols]);
 	unique_ptr<int[]> pBuffer2(new int[mRows * mCols]);
 	vector<string> mIDList;//�ظ��ļ���ͬλ���ϵ�ͳ��
@@ -157,8 +116,7 @@ void Postprocessor::Resort(vector<string> RepeatFileList, vector<string> OtherFi
 		vector<int> tmp(mCols);
 		Image[i] = tmp;
 	}
-	hdfOpt HO;
-	
+
 	int mRepeatFileNum = RepeatFileList.size();
 	
 	if (mRepeatFileNum != 0)
@@ -168,8 +126,8 @@ void Postprocessor::Resort(vector<string> RepeatFileList, vector<string> OtherFi
 		//ͳ��2���ظ��ļ��ϵ��ص�cluster
 		for (int i = 0; i < mRepeatFileNum / 2; i++)
 		{
-			HO.readHDF(RepeatFileList[2 * i], pBuffer1.get());
-			HO.readHDF(RepeatFileList[2 * i + 1], pBuffer2.get());
+            TifOpt::readFlatten(RepeatFileList[2 * i], pBuffer1.get());
+            TifOpt::readFlatten(RepeatFileList[2 * i + 1], pBuffer2.get());
 			for (int j = 0; j < mRows * mCols; j++)
 			{
 				if (pBuffer1[j] != pBuffer2[j] && pBuffer1[j] > 1 && pBuffer2[j] > 1)
@@ -203,8 +161,8 @@ void Postprocessor::Resort(vector<string> RepeatFileList, vector<string> OtherFi
 		//ͳ��2���ظ��ļ��пռ����ڵ�cluster
 		for (int i = 0; i < mRepeatFileNum / 2; i++)
 		{
-			HO.readHDF(RepeatFileList[2 * i], pBuffer1.get());
-			HO.readHDF(RepeatFileList[2 * i + 1], pBuffer2.get());
+            TifOpt::readFlatten(RepeatFileList[2 * i], pBuffer1.get());
+            TifOpt::readFlatten(RepeatFileList[2 * i + 1], pBuffer2.get());
 			for (int j = 0; j < mRows * mCols; j++)
 			{
 				if (pBuffer1[j] < 2 && pBuffer2[j] >= 2)
@@ -283,7 +241,7 @@ void Postprocessor::Resort(vector<string> RepeatFileList, vector<string> OtherFi
 		//ͳ��1���ظ��ļ�������cluster
 		for (int i = 0; i < mRepeatFileNum; i++)
 		{
-			HO.readHDF(RepeatFileList[i], pBuffer1.get());
+            TifOpt::readFlatten(RepeatFileList[i], pBuffer1.get());
 			for (int j = 0; j < mRows * mCols; j++)
 			{
 				int row = j / mCols;
@@ -360,7 +318,7 @@ void Postprocessor::Resort(vector<string> RepeatFileList, vector<string> OtherFi
 	//�����ļ���ͳ�����ڵ�cluster
 	for (int i = 0; i < mOtherFileNum; i++)
 	{
-		HO.readHDF(OtherFileList[i], pBuffer2.get());
+        TifOpt::readFlatten(OtherFileList[i], pBuffer2.get());
 		for (int j = 0; j < mRows * mCols; j++)
 		{
 			int row = j / mCols;
@@ -456,23 +414,20 @@ void Postprocessor::Resort(vector<string> RepeatFileList, vector<string> OtherFi
 		mSameList.push_back(mSameEvent);
 	}
 
-	//�������
-	//�����ļ�
-	Meta meta = META_DEF;
+	Meta meta = Meta::DEF;
 	for (int i = 0; i < mOtherFileNum; i++)
 	{
-		HO.readHDF(OtherFileList[i], pBuffer1.get());
+        TifOpt::readFlatten(OtherFileList[i], pBuffer1.get());
 		Fill(mSameList, pBuffer1.get(), mRows, mCols);
 		string mOutFileName = util::generateFileName(OtherFileList[i], mSaveFilePath, ".hdfOpt");
-		meta.date = HO.GetFileDateTime(OtherFileList[i].c_str());
-		HO.writeHDF(mOutFileName, meta, pBuffer1.get());
+		meta.date = GetDate(OtherFileList[i]);
+        TifOpt::writeFlatten(mOutFileName, meta, pBuffer1.get());
 	}
 
-	//�ϲ��ظ��ļ�
 	for (int i = 0; i < mRepeatFileNum / 2; i++)
 	{
-		HO.readHDF(RepeatFileList[2 * i], pBuffer1.get());
-		HO.readHDF(RepeatFileList[2 * i + 1], pBuffer2.get());
+        TifOpt::readFlatten(RepeatFileList[2 * i], pBuffer1.get());
+        TifOpt::readFlatten(RepeatFileList[2 * i + 1], pBuffer2.get());
 		for (int j = 0; j < mRows * mCols; j++)
 		{
 			if (pBuffer1[j] < 2 && pBuffer2[j] > 2)
@@ -481,7 +436,7 @@ void Postprocessor::Resort(vector<string> RepeatFileList, vector<string> OtherFi
 		Fill(mSameList, pBuffer1.get(), mRows, mCols);
 
 		string mOutFileName = util::generateFileName(RepeatFileList[2 * i], mSaveFilePath , ".hdfOpt");
-		meta.date = HO.GetFileDateTime(RepeatFileList[2 * i].c_str());
-		HO.writeHDF(mOutFileName, meta, pBuffer1.get());
+		meta.date = GetDate(RepeatFileList[2 * i]);
+		TifOpt::writeFlatten(mOutFileName, meta, pBuffer1.get());
 	}
 }

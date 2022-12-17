@@ -10,8 +10,8 @@
 #include <ogr_spatialref.h>
 #include "util/util.h"
 #include "TifOpt.h"
+#include "SFileOpt.h"
 #include "_const.h"
-#include "hdfOpt.h"
 
 using namespace std;
 

@@ -1021,17 +1021,17 @@ void Line2Polygon(const vector<vector<double>>& oriImg, const vector<vector<int>
 void RasterToVectorBasedonSpace(string oriPath, string spPath, string outPath, string AbnormalType)
 {
 	//打开hdf文件, 获取基本信息
-	int col = META_DEF.nCol;
-	int row = META_DEF.nRow;
-	const double startLog = META_DEF.startLon;//起始经度
-	const double startLat = META_DEF.startLat;//起始维度
-	const double endLog = META_DEF.endLon;//结束经度
-	const double endLat = META_DEF.endLat;//结束维度
+	int col = Meta::DEF.nCol;
+	int row = Meta::DEF.nRow;
+	const double startLog = Meta::DEF.startLon;//起始经度
+	const double startLat = Meta::DEF.startLat;//起始维度
+	const double endLog = Meta::DEF.endLon;//结束经度
+	const double endLat = Meta::DEF.endLat;//结束维度
 	double mScale = 1.0;//比例
 	string dataType = "";
 	string imgDate = "";
 	double fillValue = 0.0;
-	const double resolution = META_DEF.resolution;
+	const double resolution = Meta::DEF.resolution;
 	string oriFileName = oriPath.substr(oriPath.find_last_of('\\') + 1);
 	int TimeStringStartIndex = oriFileName.size() - 12;
 	string startTime = oriFileName.substr(TimeStringStartIndex, 4)
@@ -1042,9 +1042,8 @@ void RasterToVectorBasedonSpace(string oriPath, string spPath, string outPath, s
 	unique_ptr<double[]> oriData(new double[row * col]);//存储
 	unique_ptr<int[]> spData(new int[row * col]);//存储
 
-	TifOpt::readGeoTiff(oriPath.c_str(), oriData.get());
-	hdfOpt ho(META_DEF);
-	ho.readHDF(spPath, spData.get());
+    TifOpt::readFlatten(oriPath.c_str(), oriData.get());
+    TifOpt::readFlatten(spPath, spData.get());
 
 	vector<vector<double>> oriImg(row);//二维数组，边缘不处理
 	vector<vector<int>> spImg(row);//二维数组，边缘不处理
@@ -1095,7 +1094,7 @@ void RasterToVectorBasedonSpace(string oriPath, string spPath, string outPath, s
 	Line2Polygon(oriImg, spImg, lines, polygons, row, startLat, resolution);
 	
 	//保存shp	
-	TifOpt::save(outPath, startTime, AbnormalType, -180, startLat, resolution, polygons);
+	SFileOpt::write(outPath, startTime, AbnormalType, polygons);
 }
 
 void Vectorization(vector<string>& oriFileNames, vector<string>& spFileNames, string outFolderPath) {

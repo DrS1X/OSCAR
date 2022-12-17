@@ -16,23 +16,28 @@
 #include <hdf5.h>
 #include <H5Cpp.h>
 
-#include "FileOperator.h"
+#include "util.h"
+#include "RFileOpt.h"
 #include "DataModel.h"
 #include "_const.h"
 
 using std::string;
 
-class Hdf5Opt : public FileOperator{
+class Hdf5Opt : public RFileOpt{
 public:
     string groupName, datasetName;
     H5::DataType dataType;
 
     Hdf5Opt(string _groupName, string _datasetName);
-    void getMeta(string fileName, Meta& meta);
 
     static std::unordered_map<string, string> parseAttribute(char* attText);
 
-    bool read(RFile file);
+    bool read(RFile file) override;
+
+    bool write(RFile file) override;
+
+    void getMeta(string fileName, Meta& meta) override;
+
 };
 
 #endif //CLUSTERING_HDF5OPT_H

@@ -10,7 +10,6 @@
 #include <queue>
 #include "_const.h"
 #include "util/util.h"
-#include "hdfOpt.h"
 #include "TifOpt.h"
 
 using namespace std;
@@ -146,12 +145,12 @@ private:
     int MinNum = 100; // 400;//?????????8*((mRows*mCols)/20000)*mFileNum???????
     int CP = 15;//???????????????
 
-    int mRows = META_DEF.nRow;
-    int mCols = META_DEF.nCol;
-    double mScale = META_DEF.scale;
-    double mFillValue = META_DEF.fillValue;
-    Meta meta = META_DEF;
-    hdfOpt ho;
+    int mRows = Meta::DEF.nRow;
+    int mCols = Meta::DEF.nCol;
+    double mScale = Meta::DEF.scale;
+    double mFillValue = Meta::DEF.fillValue;
+    Meta meta = Meta::DEF;
+    TifOpt tifOpt;
 
     void ExpandCluster1(vector<RoSTCM>& Rasterpixels, int drID, int rsclusterId, int row, int col, double avg, int num);
     void ClusterFilter(vector<RoSTCM>& Rasterpixels, int startID, int endID, int mTempFileNum, int size);

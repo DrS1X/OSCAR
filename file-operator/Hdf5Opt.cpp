@@ -63,11 +63,9 @@ void Hdf5Opt::getMeta(string fileName, Meta& meta){
     {
         error.printErrorStack();
     }
-
-    return meta;
 }
 
-bool Hdf5Opt::read(RFile file){
+bool Hdf5Opt::read(RFile file) {
     try {
     
          // Turn off the auto-printing when failure occurs so that we can
@@ -127,6 +125,10 @@ bool Hdf5Opt::read(RFile file){
     }
 
     return true; // successfully terminated
+}
+
+bool Hdf5Opt::write(RFile file) {
+    return true;
 }
 
 std::unordered_map<string, string> Hdf5Opt::parseAttribute(char* attText){

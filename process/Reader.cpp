@@ -6,10 +6,13 @@
 
 using std::string;
 
-Reader::Reader(FileOperator _fo): fi(_fo){
-    mean = initArr<float>(timeScale, Meta::DEF.nRow, Meta::DEF.nCol);
-    standard = initArr<float>(timeScale, Meta::DEF.nRow, Meta::DEF.nCol);
-    cnt = initArr<int>(timeScale, Meta::DEF.nRow, Meta::DEF.nCol);
+Reader::Reader(string _prefix, int _stdTimeOfThreshold, RFileOpt *_fi, RFileOpt *_fo):
+        fi(_fi), fo(_fo), stdTimeOfThreshold(_stdTimeOfThreshold), prefix(_prefix)
+{
+    meta = Meta::DEF;
+    mean = initArr<float>(timeScale, Meta::DEF.nRow, Meta::DEF.nCol, 0.0F);
+    standard = initArr<float>(timeScale, Meta::DEF.nRow, Meta::DEF.nCol, 0);
+    cnt = initArr<int>(timeScale, Meta::DEF.nRow, Meta::DEF.nCol, 0);
 }
 
 Reader::~Reader(){
@@ -33,35 +36,35 @@ void Reader::init(string file, TimeUnit timeUnit){
     else if(timeUnit == TimeUnit::Day)
         meta.timeScale = 365;
 
-    fi.getMeta(file, meta);
+    fi->getMeta(file, meta);
 }
 
-bool Reader::ReadBatch(std::vector<std::string>& fileList, TimeUnit timeUnit) {
-    if(fileList.size() == 0){
-        cerr << "[ReadFile] no file" << endl;
+bool Reader::readBatch(std::vector<std::string>& fileInList, TimeUnit timeUnit) {
+    std::vector<std::string> fileOutList;
+
+    if(fileInList.size() == 0){
+        cerr << "[readBatch] folder is empty" << endl;
         return false;
     }
 
-    init(fileList[0], timeUnit);
+    init(fileInList[0], timeUnit);
 
-    float** src = initArr<float>(meta.nRow, meta.nCol);
-    float** data = initArr<float>(Meta::DEF.nRow, Meta::DEF.nCol);
+    RFile fileIn(meta);
+    RFile fileOut(Meta::DEF);
 
-    for(auto f : fileList){
-        if(!fi.read(f, meta, src)) {
-            delete[] src;
-            delete[] data;
+    // 1. traverse all source file
+    for(auto name : fileInList){
+        if(!fi->read(fileIn)) {
             return false;
         }
 
-        Reader::ResampleAndStatistics(src, data);
-
-        string fileNameOut = "D:\\prData\\ori-mon-" + meta.date + ".tiff";
-
-       ho.writeHDF(fileNameOut, h4Meta, dataInt);
+        resampleAndStatistics(fileIn, fileOut);
+        fileOut.name = prefix + RESAMPLE_FOLDER + meta.date;
+        fileOutList.push_back(fileOut.name);
+        fo->write(fileOut);
     }
 
-    // mean and standard
+    // 2. mean and standard
     for(int k = 0 ; k < timeScale; ++k) {
         for (int i = 0; i < Meta::DEF.nRow; ++i) {
             for (int j = 0; j < Meta::DEF.nCol; ++j) {
@@ -82,13 +85,41 @@ bool Reader::ReadBatch(std::vector<std::string>& fileList, TimeUnit timeUnit) {
         }
     }
 
+    // 3. anomaly analyze
+    RFile pos(meta);
+    RFile neg(meta);
+    for(auto name : fileOutList){
+        if(!fo->read(fileIn)) {
+            return false;
+        }
 
-    delete[] src;
-    delete[] data;
+        int order = fileIn.meta.getOrder();
+        for (int i = 0; i < Meta::DEF.nRow; ++i) {
+            for (int j = 0; j < Meta::DEF.nCol; ++j) {
+                float v;
+                if(fileIn.data[i][j] == fileIn.meta.fillValue)
+                    v = fileIn.meta.fillValue;
+                else
+                    v = (fileIn.data[i][j] - mean[order][i][j]) / standard[order][i][j];
+                fileOut.updateData(v, i ,j);
+            }
+        }
+        fileOut.meta.statisticsFinish();
+
+        splitFile(fileOut.meta.mean - stdTimeOfThreshold * fileOut.meta.standard,
+                       fileOut.meta.mean + stdTimeOfThreshold * fileOut.meta.standard,
+                       fileIn, pos, neg);
+
+        pos.name = prefix + POSITIVE_FOLDER + meta.date;
+        neg.name = prefix + NEGATIVE_FOLDER + meta.date;
+        fo->write(pos);
+        fo->write(neg);
+    }
+
     return true;
 }
 
-bool Reader::ResampleAndStatistics(float **src, float** data) {
+void Reader::resampleAndStatistics(RFile& src, RFile& tar) {
     // 1.down sample to 1 degree resolution
     int srcRows = meta.nRow, srcCols = meta.nCol;
     int tarRows = Meta::DEF.nRow, tarCols = Meta::DEF.nCol;
@@ -97,60 +128,68 @@ bool Reader::ResampleAndStatistics(float **src, float** data) {
     int offset1 =  (int)(-ratio / 2 - 0.5);
     int offset2 =  (int)(ratio / 2 + 0.5);
 
-    for (int i = 0;i <tarRows;i++)
-    {
-        for (int j = 0;j<tarCols;j++)
-        {
-            // 1. Down sample
+    for (int i = 0;i <tarRows;i++){
+        for (int j = 0;j<tarCols;j++){
+            // 1. down sample
             double sum = 0;
             int regionValidCnt = 0;
             int regionCnt = 0;
-            for (int k = offset1; k <= offset2; k++)
-            {
-                for (int l = offset1; l <= offset2; l++)
-                {
+            for (int k = offset1; k <= offset2; k++){
+                for (int l = offset1; l <= offset2; l++){
                     ++cnt;
                     int sr = (int)(i * ratio + k);
                     int sc = (int)(j * ratio + l);
-                    if (sr >= 0 && sr < srcRows && sc >= 0 && sc < srcCols && !isFillValue(src[sr][sc]))
-                    {
-                        sum += src[sr][sc];
+                    if (sr >= 0 && sr < srcRows && sc >= 0 && sc < srcCols && src.isFillValue(sr,sc)){
+                        sum += src.data[sr][sc];
                         regionValidCnt += 1;
                     }
                 }
             }
 
+            // 2. statistic
             if (regionValidCnt != 0 && regionValidCnt >= regionCnt / 3) {
-                data[i][j] = sum / regionValidCnt;
+                float v = sum / regionValidCnt;
+                tar.data[i][j] = v;
 
-                // 2. compute mean and standard for anomaly analyze
-                int order = Reader::getOrder(meta.date);
-                mean[order][i][j] += data[i][j];
-                standard[order][i][j] += data[i][j] * data[i][j];
+                // 2.1 compute mean and standard for anomaly analyze
+                int order = meta.getOrder();
+                mean[order][i][j] += v;
+                standard[order][i][j] += v * v;
                 cnt[order][i][j] += 1;
+
+                // 2.2 compute mean and standard of single image
+                tar.meta.statisticsComputing(v);
             }else{
-                data[i][j] = FILL_VAL;
+                tar.data[i][j] = tar.meta.fillValue;
             }
         }
     }
-
-    //
+    tar.meta.statisticsFinish();
 }
 
-int Reader::getOrder(string date){
-    static const int DayAccumulate[12] = {31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365 };
+void Reader::splitFile(float downLimit,float upLimit, RFile file, RFile pos, RFile neg){
+    file.meta.mean = 0;
+    file.meta.standard = 0;
+    file.meta.minV = FLT_MAX;
+    file.meta.maxV = FLT_MIN;
 
-    int order = -1;
-    if(UNIT == TimeUnit::Mon){
-        order = stoi(date.substr(4, 2)) - 1;
-    }else if(UNIT == TimeUnit::Day){
-        int month = stoi(date.substr(4, 2));
-        int day = stoi(date.substr(6, 2));
+    for(int i = 0; i < file.meta.nRow; ++i){
+        for(int j = 0; j < file.meta.nCol; ++j){
+            float v = file.data[i][j];
+            if(v == file.meta.fillValue) continue;
 
-        if (month == 1)
-            order = day - 1;
-        else
-            order = DayAccumulate[month - 2] + day - 1;
+            if(v > upLimit){
+                pos.updateData(v, i, j);
+                neg.updateData(0, i, j);
+            } else if(v < downLimit){
+                pos.updateData(0, i, j);
+                neg.updateData(v, i, j);
+            }else{
+                pos.updateData(0, i, j);
+                neg.updateData(0, i, j);
+            }
+        }
     }
-    return order;
+    pos.meta.statisticsFinish();
+    neg.meta.statisticsFinish();
 }

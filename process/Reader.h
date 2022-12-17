@@ -8,23 +8,30 @@
 #include <vector>
 #include <string>
 #include <util.h>
-#include "FileOperator.h"
+#include "RFileOpt.h"
+#include "SFileOpt.h"
 
 class Reader {
 public:
-    FileOperator fi;
-    FileOperator fo;
+    int stdTimeOfThreshold;
+    RFileOpt *fi, *fo;
     Meta meta;
     int timeScale;
     float ***mean, ***standard;
     int ***cnt;
+    string prefix;
+    string const RESAMPLE_FOLDER = "resample-";
+    string const POSITIVE_FOLDER = "posAnomaly-";
+    string const NEGATIVE_FOLDER = "negAnomaly-";
 
-    Reader(FileOperator _fo);
-    bool ReadBatch(std::vector<std::string>& fileList, TimeUnit timeUnit);
-    bool ResampleAndStatistics(float **src, float **data);
+
+    Reader(string _prefix, int _stdTimeOfThreshold, RFileOpt* _fi, RFileOpt* _fo);
+    bool readBatch(std::vector<std::string>& fileInList, TimeUnit timeUnit);
+    void resampleAndStatistics(RFile& src, RFile& tar);
+    void splitFile(float downLimit,float upLimit, RFile file, RFile pos, RFile neg);
+
     ~Reader();
 private:
-    static int getOrder(std::string date);
     void init(string file, TimeUnit timeUnit);
 };
 

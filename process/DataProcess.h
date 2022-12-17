@@ -4,8 +4,6 @@
 
 #ifndef CLUSTERING_DATAPROCESS_H
 #define CLUSTERING_DATAPROCESS_H
-#include "AnomalyAnalysis.h"
-#include "Convertor.h"
 #include "Postprocessor.h"
 #include "Vectorization.h"
 #include "Reader.h"

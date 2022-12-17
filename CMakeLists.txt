@@ -10,10 +10,8 @@ include_directories(./)
 include_directories(file-operator)
 include_directories(algorithm)
 include_directories(process)
-include_directories(model)
 include_directories(util)
 include_directories(release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs/include)
-include_directories(release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs/include/hdf4)
 include_directories(sidx/include)
 include_directories(sidx/include/spatialindex)
 include_directories(sidx/include/spatialindex/capi)
@@ -22,7 +20,6 @@ include_directories(sidx/include/spatialindex/tools)
 link_directories(release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs/lib)
 ADD_LIBRARY(LibsGDAL
         file-operator/TifOpt.cpp
-        file-operator/hdfOpt.cpp
         file-operator/Hdf5Opt.cpp
         util/util.cpp
         )
@@ -42,16 +39,13 @@ target_link_libraries(LibsSpatialIndex spatialindex_c-64)
 add_executable(Clustering
         main.cpp
         file-operator/TifOpt.cpp
-        file-operator/hdfOpt.cpp
         file-operator/Hdf5Opt.cpp
         util/util.cpp
         process/Postprocessor.cpp
         process/Vectorization.cpp
-        process/AnomalyAnalysis.cpp
-        process/Convertor.cpp
         algorithm/DcSTMC.cpp
-        algorithm/DBSCAN.cpp
         algorithm/RTree.cpp
-        process/Reader.cpp)
+        process/Reader.cpp
+        file-operator/SFileOpt.cpp)
 
 target_link_libraries(Clustering LibsGDAL LibsSpatialIndex)

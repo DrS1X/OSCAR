@@ -6,21 +6,22 @@
 #define CLUSTERING_RTREE_H
 
 #include <chrono>
-#include <sidx_impl.h>
 #include <time.h>
+#include <sidx_impl.h>
+#include <sidx_api.h>
 #include "algo.h"
 #include "util/util.h"
 #include "_const.h"
 #include "TifOpt.h"
-#include "hdfOpt.h"
+#include "SFileOpt.h"
 
 using std::string;
 
 class Raster {
 public:
-    const int rowNum = META_DEF.nRow;
-    const int colNum = META_DEF.nCol;
-    const int sz = META_DEF.nPixel;
+    const int rowNum = Meta::DEF.nRow;
+    const int colNum = Meta::DEF.nCol;
+    const int sz = Meta::DEF.nPixel;
     TP timePoint;
 private:
     int *val;

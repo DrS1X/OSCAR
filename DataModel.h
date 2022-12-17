@@ -5,11 +5,9 @@
 #ifndef CLUSTERING_DATAMODEL_H
 #define CLUSTERING_DATAMODEL_H
 
-#include "release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs/include/hdf4/hdfi.h"
-#include "release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs/include/gdal_priv.h"
-#include "release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs/include/gdal.h"
-#include "sidx/include/spatialindex/capi/sidx_api.h"
+
 #include "sidx/include/spatialindex/capi/sidx_impl.h"
+#include "util.h"
 #include "_const.h"
 
 using namespace std;
@@ -22,8 +20,8 @@ extern TimeUnit UNIT;
 
 class Meta {
 public:
-    float resolution, scale, fillValue;
-    int nBand, nRow, nCol, nPixel;
+    float resolution, scale = 1.0, fillValue = -9999.9;
+    int nBand = 1, nRow, nCol, nPixel;
     float startLat, startLon, endLat, endLon;
     string projection = "GEOGCS[\"GCS_WGS_1984\",DATUM[\"D_WGS_1984\",SPHEROID[\"WGS_1984\",6378137.0,298.257223563]],PRIMEM[\"Greenwich\",180.0],UNIT[\"Degree\",0.0174532925199433]]";
     TimeUnit timeUnit;
@@ -36,9 +34,11 @@ public:
 
     static Meta DEF;
 
-    Meta(float _resolution, float _scale, float _fillValue, int _nBand, int _nRow, int _nCol,
+    Meta(){};
+
+    Meta(float _resolution, float _scale, int _nRow, int _nCol,
          float _startLat, float _startLon, float _endLat, float _endLon):
-            resolution(_resolution), scale( _scale), fillValue( _fillValue), nBand( _nBand), nRow( _nRow), nCol( _nCol),
+            resolution(_resolution), scale( _scale), nRow( _nRow), nCol( _nCol),
             startLat( _startLat), startLon( _startLon), endLat(_endLat), endLon( _endLon){};
 
     void statisticsComputing(float v){
@@ -53,7 +53,30 @@ public:
 
     void statisticsFinish(){
         mean /= cnt;
-        standard = sqrt(standard / cnt);
+
+        float tmp1, tmp2;
+        tmp1 = standard / cnt;
+        tmp2 = mean * mean;
+        assert(tmp1 >= tmp2);
+        standard = sqrt(tmp1 - tmp2);
+    }
+
+    int getOrder(){
+        static const int DayAccumulate[12] = {31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365 };
+
+        int order = -1;
+        if(UNIT == TimeUnit::Mon){
+            order = stoi(date.substr(4, 2)) - 1;
+        }else if(UNIT == TimeUnit::Day){
+            int month = stoi(date.substr(4, 2));
+            int day = stoi(date.substr(6, 2));
+
+            if (month == 1)
+                order = day - 1;
+            else
+                order = DayAccumulate[month - 2] + day - 1;
+        }
+        return order;
     }
 
 };
@@ -64,14 +87,45 @@ public:
     string name;
     float** data;
 
+    RFile(){};
+
     RFile(Meta _meta, string _name, float** _data):
     meta(_meta), name(_name), data(_data){};
+
+    RFile(Meta _meta, string _name, int* _data):
+    meta(_meta), name(_name){
+        data = initArr<float>(meta.nRow, meta.nCol, 0.0f);
+        for(int i = 0; i < meta.nRow; ++i){
+            for(int j = 0; j < meta.nCol; ++j){
+                data[i][j] = _data[i * meta.nCol + j];
+            }
+        }
+    };
+
+
+    RFile(Meta _meta): meta(_meta){
+        data = initArr<float>(meta.nRow, meta.nCol, 0.0f);
+    };
+
+    bool isFillValue(int r, int c){
+        return isEqual(data[r][c], meta.fillValue);
+    }
+
+    void updateData(float v, int r, int c){
+        data[r][c] = v;
+        if(v != meta.fillValue)
+            meta.statisticsComputing(v);
+    }
+
+    ~RFile(){
+        delete[] data;
+    }
 };
 
 class GeoRegion : public SpatialIndex::Region {
 public:
     static const GeoRegion GLOBAL;
-    int rowMin , rowMax, colMin , colMax ;
+    int rowMin , rowMax, colMin , colMax;
 public:
     GeoRegion():GeoRegion(Meta::DEF.endLat, Meta::DEF.startLat, Meta::DEF.startLon, Meta::DEF.endLon){
         rowMin = INT_MAX;

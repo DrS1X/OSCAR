@@ -4,7 +4,8 @@
 #include "_const.h"
 #include <cmath>
 #include <memory>
-#include "hdfOpt.h"
+#include "DataModel.h"
+#include "TifOpt.h"
 
 class Postprocessor {
 public:

@@ -421,7 +421,7 @@ void DcSTMC::Run(vector<string>& FileList, string outputPath, int in_mPerNum, in
 		for (int j = mStartFileIndex; j < mEndFileIndex; j++)
 		{
 			int* pBuffer = new int[mRows * mCols];//�ļ�����
-			TifOpt::readGeoTiff(FileList[j], pBuffer);
+            TifOpt::readFlatten(FileList[j], pBuffer);
 			for (int k = 0; k < mRows * mCols; k++)
 			{
 				//psBuffer[k + (j - mStartFileIndex) * mRows * mCols] = val[k] * mScale;
@@ -502,7 +502,9 @@ void DcSTMC::Run(vector<string>& FileList, string outputPath, int in_mPerNum, in
 			}
 
 			meta.date = FileList[mStartFileIndex + ii].substr(FileList[mStartFileIndex + ii].find_last_of(".") - 8, 8);
-			ho.writeHDF(mOutFileName, meta, outt.get());
+
+			RFile fileOut(meta, mOutFileName, outt.get());
+            tifOpt.write(fileOut);
 		}
 		Rasterpixels.clear();
 	}
@@ -518,6 +520,8 @@ void DcSTMC::OutputRasterpixels(vector<RoSTCM>& Rasterpixels, vector<string>& fi
 		}
 		string mOutFileName = util::generateFileName(fileList[mStartFileIndex + ii], outputPath, "cluster", "hdfOpt");
 		meta.date = fileList[mStartFileIndex + ii].substr(fileList[mStartFileIndex + ii].find_last_of(".") - 8, 8);
-		ho.writeHDF(mOutFileName, meta, outt.get());
+
+        RFile fileOut(meta, mOutFileName, outt.get());
+        tifOpt.write(fileOut);
 	}
 }

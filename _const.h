@@ -8,8 +8,6 @@
 
 using std::string;
 
-const float FILL_VAL = -9999.9;
-
 const int Neighbor8[8][2] = {{0,1},{1,1},{1,0},{1,-1},{0,-1},{-1,-1},{-1,0},{-1,1}};
 
 const int N_DIM = 2;
