@@ -8,31 +8,28 @@
 #include <vector>
 #include <string>
 #include <util.h>
-#include "RFileOpt.h"
+#include "Rst.h"
+#include "Hdfv.h"
+#include "Tif.h"
 #include "SFileOpt.h"
 
 class Reader {
 public:
-    int stdTimeOfThreshold;
-    RFileOpt *fi, *fo;
-    Meta meta;
-    int timeScale;
-    float ***mean, ***standard;
-    int ***cnt;
-    string prefix;
-    string const RESAMPLE_FOLDER = "resample-";
-    string const POSITIVE_FOLDER = "posAnomaly-";
-    string const NEGATIVE_FOLDER = "negAnomaly-";
+    string outputPath;
+    string const RESAMPLE_PREFIX = "\\resample";
+    string const ANOMALY_PREFIX = "\\anomaly";
+    string const POSITIVE_PREFIX = "\\posAnomaly";
+    string const NEGATIVE_PREFIX = "\\negAnomaly";
+    string const POSITIVE_S_PREFIX = "\\posAnomalyS";
+    string const NEGATIVE_S_PREFIX = "\\negAnomalyS";
 
-
-    Reader(string _prefix, int _stdTimeOfThreshold, RFileOpt* _fi, RFileOpt* _fo);
-    bool readBatch(std::vector<std::string>& fileInList, TimeUnit timeUnit);
-    void resampleAndStatistics(RFile& src, RFile& tar);
-    void splitFile(float downLimit,float upLimit, RFile file, RFile pos, RFile neg);
-
+    Reader(string _outputPath);
+    vector<string> readBatch(std::vector<std::string>& fileInList, Meta srcMeta = Meta::DEF);
+    pair<vector<string>,vector<string>> filter(vector<string>& anomalyFileList, float stdTimeOfThreshold);
+    bool smooth(vector<string> &fileInList, string fileOutPrefix);
     ~Reader();
 private:
-    void init(string file, TimeUnit timeUnit);
+    void resampleAndStatistics(Tif* src, Tif* tar, double *** mean, double*** stdDev, int*** cnt);
 };
 
 

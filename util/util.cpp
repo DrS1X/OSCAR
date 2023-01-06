@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <vector>
 #include "float.h"
-#include "_const.h"
+#include "Cst.h"
 
 using namespace std;
 
@@ -19,7 +19,7 @@ void util::checkFilePath(string filePath) {
 
 
 string util::generateFileName(string originFileName, string outputPath, string pre, string type) {
-	string date = originFileName.substr(originFileName.find_last_of(".") - 8, 8);
+	string date = GetDate(originFileName);
 	string folder = outputPath + "\\";
 	/*
 	string folder = outputPath + "\\" + date + "\\";
@@ -27,7 +27,7 @@ string util::generateFileName(string originFileName, string outputPath, string p
 	if (_access(folder.c_str(), 0) == -1)	//如果文件夹不存在
 		_mkdir(folder.c_str());
 	*/
-	string mOutFileName = folder + pre + date + "." + type;
+	string mOutFileName = folder + pre + date + type;
 	return mOutFileName;
 }
 
@@ -46,18 +46,20 @@ string util::generateFileName(string originFilePath, string outputPath, string s
 }
 
 bool CheckFolderExist(string folder){
-    if (_access(folder.c_str(), 0) == 0){
-        if(!remove(folder.c_str())) {
-            std::cerr << "[CheckFolderExist] fail to delete folder " << folder << endl;
+    error_code err;
+    if (filesystem::exists(folder)){
+        if(!filesystem::remove_all(folder,err)){
+            std::cerr << "[CheckFolderExist] fail to remove the old folder: " << folder
+            << ", err code: " << err.message() << endl;
             return false;
         }
     }
 
-    if(_mkdir(folder.c_str())  == -1) {
-        std::cerr << "[CheckFolderExist] fail to create folder " << folder << endl;
+    if(!filesystem::create_directories(folder, err)) {
+        std::cerr << "[CheckFolderExist] fail to create new folder " << folder
+                << ", err code: " << err.message() << endl;
         return false;
     }
-
     return true;
 }
 
@@ -102,7 +104,7 @@ void util::getFileList(string path, vector<string>& files, string fileType)
 }
 
 string GetDate(string fileName) {
-    static const regex  pattern("19|20[0-9]{2}[0-1][0-9][0-3][0-9]");
+    static const regex  pattern("19|20[0-9]{2}[0-1][0-9]([0-3][0-9]|)");
 
     string date = "";
     int idx = fileName.find_last_of("\\");
@@ -117,7 +119,7 @@ string GetDate(string fileName) {
     if (regex_search(iter_begin, iter_end,result, pattern)){
         date = fileName.substr(result[0].first - iter_begin,result[0].second - result[0].first);
     }else{
-        cout << "[GetDate] failed to match date from file name." <<fileName<< endl;
+        cout << "[GetDate] failed to match date from file name: " <<fileName<< endl;
     }
 
     return date;

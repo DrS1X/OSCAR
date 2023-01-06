@@ -1,26 +1,20 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include "algo.h"
+#include "Algo.h"
 #include "RTree.h"
 #include "DataProcess.h"
-#include "RFileOpt.h"
-#include "Hdf5Opt.h"
-#include "TifOpt.h"
 #include "DataModel.h"
-#include "_const.h"
 
 using namespace std;
 
-
 Meta Meta::DEF(
-        1.0,
         1.0,
         120,
         360,
-        60,
-        -180,
         -60,
+        -180,
+        60,
         180
 );
 
@@ -40,13 +34,23 @@ void Test_RTreeCluster(){
     util::getFileList(inputPath, fileList, fileType);
     RTree::Run(p, fileList, outputPath);
 }
+
+void Test_ReadTiff(){
+    string fn = "E:\\pr\\pos2015_2016\\mon\\pos\\posAnomaly-201501.tiff";
+
+    int* pInt = new int[Meta::DEF.nPixel];
+    Tif::readInt(fn, pInt);
+
+    Tif* f = new Tif( Meta::DEF,fn);
+    f->read();
+}
+
 void Test_RTree(){
     GeoRegion r(20, 30, 20, 30);
     Poly poly;
     poly.range = r;
     RNode node(&poly);
 
-    DUR_THRESHOLD = 5;
     RTree t; // delete
     t.insert(&node);
 
@@ -54,21 +58,23 @@ void Test_RTree(){
     list<RNode*> result = t.query(r2);
     cout << result.size() << endl;
 }
-void Test_HDF5(){
-    string fileFolder = "E:\\pr\\v2\\src";
-    string fileType = ".HDF5";
-    std::vector<std::string> files;
-    util::getFileList(fileFolder, files, fileType);
 
-    RFileOpt* fi = new Hdf5Opt("Grid", "precipitation");
-    RFileOpt* fo = new TifOpt();
-    Reader reader("E:\\pr\\v2\\", 1, fi, fo);
-    reader.readBatch(files, TimeUnit::Mon);
+void Test_Vec(){
+    string fileType = ".tiff";
+    string inputPath = "E:\\pr\\pos2015_2016\\mon\\pos";
+    string inputPath2 = "E:\\pr\\pos2015_2016\\mon\\old\\sorted";
+    string outputPath = "E:\\pr\\pos2015_2016\\mon\\old";
+    vector<string> fileList,fileList2;
+    util::getFileList(inputPath, fileList, fileType);
+    util::getFileList(inputPath2, fileList2, fileType);
+    Vectorization(fileList, fileList2, outputPath);
 }
+
+
 int main(int argc,char *argv[])
 {
     if(argc <= 1){
-        Test_HDF5();
+        Test_Vec();
         return 0;
     }
 
@@ -78,46 +84,67 @@ int main(int argc,char *argv[])
     string fileType;
     vector<string> fileList;
 
-    if(functionName == "--HDF5Preprocess" || functionName == "-hp"){
+    if(functionName == "--Preprocess" || functionName == "-p"){
+        Meta::DEF.scale = 1.0f;
 
-    }else if(functionName == "--Cluster" || functionName == "-c"){
-        fileType = ".tif";
+        std::vector<std::string> files;
+        util::getFileList("I:\\IMERGE\\day\\negAnomaly", files, ".tiff");
+
+        Reader rd("I:\\IMERGE\\day");
+        Meta srcMeta = Meta::DEF;
+        srcMeta.timeUnit = TimeUnit::Day;
+        srcMeta.fillValue = 29999;
+        srcMeta.scale = 0.001f;
+        srcMeta.nRow = 1800;
+        srcMeta.nCol = 3600;
+        srcMeta.nPixel = srcMeta.nRow * srcMeta.nCol;
+        srcMeta.resolution = 0.1;
+        srcMeta.startLat = -90;
+        srcMeta.endLat = 90;
+        srcMeta.startLon = -180;
+        srcMeta.endLon = 180;
+
+        vector<string> fls = rd.readBatch(files, srcMeta);
+
+        pair<vector<string>, vector<string>> lsPr = rd.filter(files,0.5);
+
+        rd.smooth(files, rd.POSITIVE_S_PREFIX);
+        rd.smooth(files, rd.NEGATIVE_S_PREFIX);
+    }
+    else if(functionName == "--Cluster" || functionName == "-c"){
+        Meta::DEF.scale = 0.001f;
+
+        fileType = ".tiff";
         util::getFileList(inputPath, fileList, fileType);
+
         DcSTMC a;
-        a.Run(fileList, outputPath, 10, 1);
-    }else if(functionName == "--Postprocess" || functionName == "-p"){
-        fileType = ".hdf";
-        vector<string> fileList2;
-        util::getFileList(inputPath, fileList, fileType);
-        util::getFileList(argv[4], fileList2, fileType);
-        Postprocessor::Resort(fileList, fileList2, outputPath);
-    }else if(functionName == "--Vectorization" || functionName == "-v"){
-        vector<string> fileList2;
-        util::getFileList(inputPath, fileList, string(".tif"));
-        util::getFileList(argv[4], fileList2, string(".hdf"));
-        Vectorization(fileList, fileList2, outputPath);
-    }else if( functionName == "RTreeCluster" || functionName == "-rc"){
+        a.V_THRESHOLD = 5.0;
+
+        pair<vector<string>, vector<string>> pr = a.Run(fileList, outputPath, 10, 2);
+
+        vector<string> sorted = Resort(pr.first, pr.second, outputPath);
+
+        Vectorization(fileList, sorted, outputPath);
+
+    }
+    else if( functionName == "RTreeCluster" || functionName == "-rc"){
+        Meta::DEF.scale = 1.0f;
+
         struct RTreeParam p{
                 3,
                 8,
-                TimeUnit::Day,
+                TimeUnit::Mon,
                 5,
-                5.0
+                5.0,
+                0.7,
         };
-        fileType = ".tif";
+        fileType = ".tiff";
         util::getFileList(inputPath, fileList, fileType);
         RTree::Run(p, fileList, outputPath);
     }
     else{
         cout << "Following is all function:\n"
-        << "1) -g / --GeoTiff2HDF\n"
-        << "2) -sa / --StandAnomaly\n"
-        << "3) -d / --ResampleBatch\n"
-        << "4) -st / --SpaceTransform\n"
-        << "5) -sta / --SpatioTemporalAnomaly\n"
         << "6) -c / --Cluster\n"
-        << "7) -p / --Postprocess\n"
-        << "8) -v / --Vectorization\n"
         << "9) -rc / --RTreeCluster\n"
         << endl;
     }

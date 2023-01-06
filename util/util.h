@@ -21,8 +21,8 @@
 #include <stdio.h>
 #include <float.h>
 #include <regex>
-
-#include "_const.h"
+#include <filesystem>
+#include "Cst.h"
 
 using std::cout;
 using std::endl;
@@ -30,7 +30,7 @@ using std::string;
 using std::vector;
 
 template<class T>
-inline T*** initArr(int x, int y, int z, T initValue){
+inline T*** InitArr(int x, int y, int z, T initValue){
     T*** arr;
     arr = new T**[x];
     for(int i = 0; i < x; ++i){
@@ -46,7 +46,7 @@ inline T*** initArr(int x, int y, int z, T initValue){
 }
 
 template<class T>
-inline T** initArr(int x, int y, T initValue){
+inline T** InitArr(int x, int y, T initValue){
     T** arr;
     arr = new T*[x];
     for(int i = 0; i < x; ++i){
@@ -60,12 +60,12 @@ inline T** initArr(int x, int y, T initValue){
 
 bool CheckFolderExist(string folder);
 
-static inline bool isEqual(double a, double b) {
-    return fabs(a - b) < std::numeric_limits<double>::epsilon();
+inline bool IsEqual(float a, float b) {
+    return fabs(a - b) < std::numeric_limits<float>::epsilon();
 }
 
-inline bool isEqual(float a, float b) {
-    return fabs(a - b) < std::numeric_limits<float>::epsilon();
+inline bool IsEqual(double a, double b) {
+    return fabs(a - b) < std::numeric_limits<double>::epsilon();
 }
 
 string GetDate(string fileName);

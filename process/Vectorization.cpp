@@ -858,7 +858,7 @@ void Point2Line(const vector<vector<int>>& spImg, vector<Node> & nodes, vector<L
 			else
 			{//横线
 				const double equatorLength = 40076.0;//赤道周长，单位km
-				double lineLat = startLat + (row - tailNode.row) * resolution;//纬度
+				double lineLat = startLat + tailNode.row * resolution;//纬度
 				double equatorLengthNow = equatorLength * cos(lineLat * M_PI / 180.0);//当前纬线周长
 				double _length = equatorLengthNow * logInterval / 360.0;
 				lineLength += _length;
@@ -968,9 +968,10 @@ void Line2Polygon(const vector<vector<double>>& oriImg, const vector<vector<int>
 		double _colCore = 0.0;//重心列号中间量
 		for (int _row = polygon.minRow + 1; _row <= polygon.maxRow; _row++)
 		{//行循环，行列号对应节点左上角栅格
-			double rasterStartLat = startLat + (row - _row - 1) * resolution;//栅格下边缘纬度
-			double rasterEndLat = rasterStartLat + resolution;//栅格上边缘纬度
-			double rasterArea = GetRasterArea(rasterStartLat, rasterEndLat, resolution);//计算一个网格面积
+            double rasterCenLat = Meta::DEF.getLat(_row);
+			double rasterStartLat = rasterCenLat - Meta::DEF.latLonOffset;
+			double rasterEndLat = rasterCenLat + Meta::DEF.latLonOffset;
+			double rasterArea = GetRasterArea(rasterStartLat, rasterEndLat, resolution);
 			for (int _col = polygon.minCol + 1; _col <= polygon.maxCol; _col++)
 			{//列循环
 			 //if (idImg[_row, _col] == polygon.stormID)
@@ -1027,10 +1028,10 @@ void RasterToVectorBasedonSpace(string oriPath, string spPath, string outPath, s
 	const double startLat = Meta::DEF.startLat;//起始维度
 	const double endLog = Meta::DEF.endLon;//结束经度
 	const double endLat = Meta::DEF.endLat;//结束维度
-	double mScale = 1.0;//比例
+	double mScale = Meta::DEF.scale;
 	string dataType = "";
 	string imgDate = "";
-	double fillValue = 0.0;
+	double fillValue = Meta::DEF.fillValue / Meta::DEF.scale;
 	const double resolution = Meta::DEF.resolution;
 	string oriFileName = oriPath.substr(oriPath.find_last_of('\\') + 1);
 	int TimeStringStartIndex = oriFileName.size() - 12;
@@ -1039,11 +1040,11 @@ void RasterToVectorBasedonSpace(string oriPath, string spPath, string outPath, s
 		+ "-" + oriFileName.substr(TimeStringStartIndex + 6, 2)
 		+ " 00:00:00";
 
-	unique_ptr<double[]> oriData(new double[row * col]);//存储
-	unique_ptr<int[]> spData(new int[row * col]);//存储
+	unique_ptr<int[]> oriData(new int[row * col]);
+	unique_ptr<int[]> spData(new int[row * col]);
 
-    TifOpt::readFlatten(oriPath.c_str(), oriData.get());
-    TifOpt::readFlatten(spPath, spData.get());
+    Tif::readInt(oriPath, oriData.get());
+    Tif::readInt(spPath, spData.get());
 
 	vector<vector<double>> oriImg(row);//二维数组，边缘不处理
 	vector<vector<int>> spImg(row);//二维数组，边缘不处理
@@ -1061,13 +1062,12 @@ void RasterToVectorBasedonSpace(string oriPath, string spPath, string outPath, s
 		int _colNow = i % col;//列号
 		if (_rowNow == 0 || _colNow == 0 || _rowNow == row - 1 || _colNow == col - 1) continue;//边界点不添加
 
-		//oriImg[_rowNow, _colNow] = oriData[i] * mScale;//乘以系数
 		if (oriData[i] != fillValue)
 		{
 			oriImg[_rowNow][_colNow] = oriData[i] * mScale;//乘以系数
 		}
 		else
-		{//将0和负值赋值为0
+		{
 			oriImg[_rowNow][_colNow] = 0.0;
 		}
 		if (spData[i] > 0)
@@ -1098,6 +1098,14 @@ void RasterToVectorBasedonSpace(string oriPath, string spPath, string outPath, s
 }
 
 void Vectorization(vector<string>& oriFileNames, vector<string>& spFileNames, string outFolderPath) {
+    if(oriFileNames.size() != spFileNames.size()){
+        cerr << "[Vectorization] the number of src file is not equal to the number of spatial file" << endl;
+        return;
+    }
+
+    outFolderPath += "\\vec";
+    CheckFolderExist(outFolderPath);
+
 	for (int i = 0; i < spFileNames.size(); i++) {
 		string oriPath = oriFileNames[i];//原始图像路径
 		string spPath = spFileNames[i];//空间图像路径

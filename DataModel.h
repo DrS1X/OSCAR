@@ -6,9 +6,9 @@
 #define CLUSTERING_DATAMODEL_H
 
 
-#include "sidx/include/spatialindex/capi/sidx_impl.h"
+#include "sidx_impl.h"
 #include "util.h"
-#include "_const.h"
+#include "Cst.h"
 
 using namespace std;
 
@@ -16,14 +16,13 @@ enum AnomalyType {Positive, Negative, None};
 
 enum TimeUnit{Day, Mon};
 
-extern TimeUnit UNIT;
 
 class Meta {
 public:
-    float resolution, scale = 1.0, fillValue = -9999.9;
+    float resolution, latLonOffset, scale = 1.0, fillValue = -9999;
     int nBand = 1, nRow, nCol, nPixel;
     float startLat, startLon, endLat, endLon;
-    string projection = "GEOGCS[\"GCS_WGS_1984\",DATUM[\"D_WGS_1984\",SPHEROID[\"WGS_1984\",6378137.0,298.257223563]],PRIMEM[\"Greenwich\",180.0],UNIT[\"Degree\",0.0174532925199433]]";
+    string projection = "GEOGCRS[\"My_GCS_WGS_1984\",DATUM[\"World Geodetic System 1984\",ELLIPSOID[\"WGS 84\",6378137,298.257223563,LENGTHUNIT[\"metre\",1]],ID[\"EPSG\",6326]],PRIMEM[\"Greenwich\",180,ANGLEUNIT[\"Degree\",0.0174532925199433]],CS[ellipsoidal,2],AXIS[\"longitude\",east,ORDER[1],ANGLEUNIT[\"Degree\",0.0174532925199433]],AXIS[\"latitude\",north,ORDER[2],ANGLEUNIT[\"Degree\",0.0174532925199433]]]";
     TimeUnit timeUnit;
     int timeScale;
 
@@ -36,89 +35,42 @@ public:
 
     Meta(){};
 
-    Meta(float _resolution, float _scale, int _nRow, int _nCol,
-         float _startLat, float _startLon, float _endLat, float _endLon):
-            resolution(_resolution), scale( _scale), nRow( _nRow), nCol( _nCol),
-            startLat( _startLat), startLon( _startLon), endLat(_endLat), endLon( _endLon){};
-
-    void statisticsComputing(float v){
-        if(v < minV) minV = v;
-        if(v > maxV) maxV = v;
-        if(v != fillValue) {
-            mean += v;
-            standard += v * v;
-            ++cnt;
-        }
-    }
-
-    void statisticsFinish(){
-        mean /= cnt;
-
-        float tmp1, tmp2;
-        tmp1 = standard / cnt;
-        tmp2 = mean * mean;
-        assert(tmp1 >= tmp2);
-        standard = sqrt(tmp1 - tmp2);
-    }
+    Meta(float _resolution, int _nRow, int _nCol,float _startLat, float _startLon, float _endLat, float _endLon):
+        resolution(_resolution), nRow( _nRow), nCol( _nCol),startLat( _startLat), startLon( _startLon), endLat(_endLat), endLon( _endLon)
+    {
+        nPixel = _nRow * _nCol;
+        latLonOffset = _resolution * 0.5;
+    };
 
     int getOrder(){
-        static const int DayAccumulate[12] = {31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365 };
+        // keep the place for February 29
+        static const int DayAccumulate[13] = {-1,30, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365 };
 
         int order = -1;
-        if(UNIT == TimeUnit::Mon){
+        if(date == ""){
+            cerr << "[getOrder] date is null." << endl;
+            return order;
+        }
+        if(timeUnit == TimeUnit::Mon){
             order = stoi(date.substr(4, 2)) - 1;
-        }else if(UNIT == TimeUnit::Day){
+        }else if(timeUnit == TimeUnit::Day){
             int month = stoi(date.substr(4, 2));
             int day = stoi(date.substr(6, 2));
-
-            if (month == 1)
-                order = day - 1;
-            else
-                order = DayAccumulate[month - 2] + day - 1;
+            order = DayAccumulate[month - 1] + day;
+            if(order >= 366){
+                cerr << "[getOrder] order of year greater than 365. month: " << month << ", day: " << day << endl;
+                return order;
+            }
         }
         return order;
     }
 
-};
-
-class RFile{
-public:
-    Meta meta;
-    string name;
-    float** data;
-
-    RFile(){};
-
-    RFile(Meta _meta, string _name, float** _data):
-    meta(_meta), name(_name), data(_data){};
-
-    RFile(Meta _meta, string _name, int* _data):
-    meta(_meta), name(_name){
-        data = initArr<float>(meta.nRow, meta.nCol, 0.0f);
-        for(int i = 0; i < meta.nRow; ++i){
-            for(int j = 0; j < meta.nCol; ++j){
-                data[i][j] = _data[i * meta.nCol + j];
-            }
-        }
-    };
-
-
-    RFile(Meta _meta): meta(_meta){
-        data = initArr<float>(meta.nRow, meta.nCol, 0.0f);
-    };
-
-    bool isFillValue(int r, int c){
-        return isEqual(data[r][c], meta.fillValue);
+    inline double getLat(int r){
+        return (nRow - r - 1) * resolution + startLat;
     }
 
-    void updateData(float v, int r, int c){
-        data[r][c] = v;
-        if(v != meta.fillValue)
-            meta.statisticsComputing(v);
-    }
-
-    ~RFile(){
-        delete[] data;
+    inline double getLon(int c){
+        return (c + 1) * resolution + startLon;
     }
 };
 
@@ -127,7 +79,7 @@ public:
     static const GeoRegion GLOBAL;
     int rowMin , rowMax, colMin , colMax;
 public:
-    GeoRegion():GeoRegion(Meta::DEF.endLat, Meta::DEF.startLat, Meta::DEF.startLon, Meta::DEF.endLon){
+    GeoRegion():GeoRegion(Meta::DEF.startLat, Meta::DEF.endLat, Meta::DEF.startLon, Meta::DEF.endLon){
         rowMin = INT_MAX;
         rowMax = 0;
         colMin = INT_MAX;
@@ -163,8 +115,8 @@ public:
 
     // row & col To lat & lon
     void updateGeo(){
-        m_pHigh[1] = Meta::DEF.startLat - (rowMin + 0.5) * Meta::DEF.resolution;
-        m_pLow[1] = Meta::DEF.startLat - (rowMax + 0.5) * Meta::DEF.resolution;
+        m_pLow[1] = Meta::DEF.startLat + (rowMin + 0.5) * Meta::DEF.resolution;
+        m_pHigh[1] = Meta::DEF.startLat + (rowMax + 0.5) * Meta::DEF.resolution;
         m_pLow[0] = Meta::DEF.startLon + (colMin + 0.5) * Meta::DEF.resolution;
         m_pHigh[0] = Meta::DEF.startLon + (colMax + 0.5) * Meta::DEF.resolution;
     }
@@ -423,23 +375,9 @@ public:
     myCircle maxInCir;//最大面积内接圆
     chrono::time_point<chrono::system_clock> time;
 public:
-    Poly(){
-        maxValue = DBL_MIN;
-        minValue = DBL_MAX;
-        sumValue = 0.0;
-        pixelCount = 0;
-    }
+    Poly();
 
-    void update(float v){
-        if(v > maxValue){
-            maxValue = v;
-        }else if( v < minValue){
-            minValue = v;
-        }
-        sumValue += v;
-        ++pixelCount;
-        avgValue = sumValue / pixelCount;
-    }
+    void update(float v);
 
 };
 

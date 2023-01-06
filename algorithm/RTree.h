@@ -9,10 +9,10 @@
 #include <time.h>
 #include <sidx_impl.h>
 #include <sidx_api.h>
-#include "algo.h"
+#include "Algo.h"
 #include "util/util.h"
-#include "_const.h"
-#include "TifOpt.h"
+#include "Cst.h"
+#include "Tif.h"
 #include "SFileOpt.h"
 
 using std::string;
@@ -108,7 +108,7 @@ class RTree{
 private:
     IndexPropertyH prop;
     IndexH idx;
-    int nodeId;
+    int nodeId = 2;
     chrono::system_clock::time_point timePoint;
     int maxClusterDur;
 

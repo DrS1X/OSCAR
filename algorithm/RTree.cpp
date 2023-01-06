@@ -2,7 +2,7 @@
 
 using namespace std;
 
-const GeoRegion GeoRegion::GLOBAL(Meta::DEF.endLat, Meta::DEF.startLat,
+const GeoRegion GeoRegion::GLOBAL(Meta::DEF.startLat, Meta::DEF.endLat,
                                   Meta::DEF.startLon, Meta::DEF.endLon);
 
 queue<RTree*> RTree::Cache;
@@ -13,21 +13,24 @@ int CORE_THRESHOLD;
 int ATTRIBUTE_THRESHOLD;
 string OUTPUT_PATH;
 int CLUSTER_ID;
-TimeUnit UNIT;
 float OVERLAP_THRESHOLD;
+float ATTRIBUTE_RATIO_THRESHOLD;
 
 
 void RTree::Run(RTreeParam p, vector<string> fileList, string outputPath) {
-    CLUSTER_ID = 0;
+    CheckFolderExist(outputPath);
+
+    CLUSTER_ID = 2;
     GEO_WINDOW = p.geoWindow;
     CORE_THRESHOLD = p.coreThreshold;
-    ATTRIBUTE_THRESHOLD = p.valueThreshold / Meta::DEF.scale;
+    ATTRIBUTE_THRESHOLD = p.valueThreshold;
     OUTPUT_PATH = outputPath;
     DUR_THRESHOLD = p.durationThreshold;
-    UNIT = p.unit;
+    Meta::DEF.timeUnit = p.unit;
     OVERLAP_THRESHOLD = p.overlapThreshold;
+    ATTRIBUTE_RATIO_THRESHOLD = 0.3;
 
-    for (int i = 1; i < fileList.size(); ++i) {
+    for (int i = 0; i < fileList.size(); ++i) {
         Raster rst(fileList[i]);
         RTree* tree = RTree::Create(rst.timePoint);
         vector<Poly> polyList;
@@ -93,7 +96,7 @@ Poly* RTree::BFS(Raster &rst, vector<pair<int, int>> &noZero) {
                 int v = rst.get(r2, c2);
                 if (!rst.isVisited(r2, c2) && v != 0) {
                     // threshold
-                    if(abs(v - pPoly->avgValue) > ATTRIBUTE_THRESHOLD)
+                    if(fabs(v - pPoly->avgValue) > ATTRIBUTE_THRESHOLD)
                         continue;
 
                     rst.visit(r2, c2);
@@ -142,7 +145,6 @@ RTree* RTree::Create(TP _timePoint){
 
 RTree::RTree(TP _timePoint) {
     timePoint = _timePoint;
-    nodeId = 0;
     maxClusterDur = 0;
     // init index
     this->prop = IndexProperty_Create();
@@ -162,7 +164,7 @@ bool RTree::flush() {
     RTree* back = RTree::Cache.back();
     RTree* front = RTree::Cache.front();
     int diff;
-    switch (UNIT) {
+    switch (Meta::DEF.timeUnit) {
         case TimeUnit::Day:
             diff = chrono::duration_cast<duration_days>(back->timePoint - front->timePoint).count();
             break;
@@ -210,7 +212,7 @@ void RTree::save(){
 
     char startTimeStr[20];
     string format;
-    if(UNIT == TimeUnit::Day){
+    if(Meta::DEF.timeUnit == TimeUnit::Day){
         format = "%Y%m%d";
     }else {
         format = "%Y%m";
@@ -308,8 +310,12 @@ void RNode::mergeCluster() {
         RNode* pNode = *it;
         double prevArea = (pNode->poly->range).getArea();
         double intersectArea = this->poly->range.getIntersectingArea(pNode->poly->range);
+        double valDiff = fabs(this->poly->avgValue - pNode->poly->avgValue);
+        double greaterVal = this->poly->avgValue > pNode->poly->avgValue ? this->poly->avgValue : pNode->poly->avgValue;
 
-        if(intersectArea / prevArea < OVERLAP_THRESHOLD && intersectArea / area < OVERLAP_THRESHOLD){
+        if(intersectArea / prevArea < OVERLAP_THRESHOLD &&
+            intersectArea / area < OVERLAP_THRESHOLD ||
+            valDiff / greaterVal > ATTRIBUTE_RATIO_THRESHOLD){
             continue;
         }
 
@@ -339,26 +345,28 @@ void RNode::mergeCluster() {
 
     // update cluste id
     if(this->prev.size() == 0)
-        this->poly->clusterId = ++CLUSTER_ID;
-    else if(this->prev.size() == 1)
-        this->poly->clusterId = (this->prev).front()->poly->clusterId;
+        this->poly->clusterId = CLUSTER_ID++;
     else {
-        this->poly->clusterId = (this->prev).front()->poly->clusterId;
+        if(this->prev.front()->poly->clusterId == 0){
+            this->poly->clusterId = CLUSTER_ID++;
+            this->prev.front()->poly->clusterId = this->poly->clusterId;
+        }else
+            this->poly->clusterId = this->prev.front()->poly->clusterId;
 
-        queue<RNode *, list<RNode*>> cluster(prev);
-        cluster.pop();
+        if (this->prev.size() > 1){
+            queue<RNode *, list<RNode *>> cluster(prev);
 
-        while(!cluster.empty()){
-            RNode* top = cluster.front();
-            cluster.pop();
-            top->poly->clusterId = this->poly->clusterId;
-            for(auto prevNode: top->prev){
-                if(prevNode->poly->clusterId != this->poly->clusterId)
-                    cluster.push(prevNode);
+            while (!cluster.empty()) {
+                RNode *top = cluster.front();
+                cluster.pop();
+                top->poly->clusterId = this->poly->clusterId;
+                for (auto prevNode: top->prev) {
+                    if (prevNode->poly->clusterId != this->poly->clusterId)
+                        cluster.push(prevNode);
+                }
             }
         }
     }
-
 }
 
 int Raster::index(int row, int col) const {
@@ -369,7 +377,7 @@ Raster::Raster(string file) {
     val = new int[sz];
     vis = new bool[sz];
     memset(vis, 0, sz);
-    TifOpt::readFlatten(file, val);
+    Tif::readInt(file, val);
 
     timePoint = getTimePoint(file);
 }
@@ -380,7 +388,8 @@ Raster::~Raster(){
 }
 
 TP Raster::getTimePoint(string fileName){
-    int startIndex = fileName.size() - 12;
+    string dateStr = GetDate(fileName);
+
     tm tm_ = {0};
     tm_.tm_isdst = 0;                          // 非夏令时。
     tm_.tm_sec = 0;
@@ -389,14 +398,14 @@ TP Raster::getTimePoint(string fileName){
     tm_.tm_mday = 1;
 
     int year, month;
-    year = stoi(fileName.substr(startIndex,4));
-    month = stoi(fileName.substr(startIndex + 4,2));
+    year = stoi(dateStr.substr(0,4));
+    month = stoi(dateStr.substr(4,2));
 
     tm_.tm_year = year - 1900;                 // 年，由于tm结构体存储的是从1900年开始的时间，所以tm_year为int临时变量减去1900。
     tm_.tm_mon = month - 1;                    // 月，由于tm结构体的月份存储范围为0-11，所以tm_mon为int临时变量减去1。
 
-     if(UNIT == TimeUnit::Day){
-         tm_.tm_mday = stoi(fileName.substr(startIndex + 6,2));
+     if(Meta::DEF.timeUnit == TimeUnit::Day){
+         tm_.tm_mday = stoi(fileName.substr(6,2));
      }
 
     time_t t_ = mktime(&tm_);                  // 将tm结构体转换成time_t格式，将tm时间转换为秒时间

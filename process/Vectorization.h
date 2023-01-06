@@ -9,9 +9,9 @@
 #include <ogrsf_frmts.h>
 #include <ogr_spatialref.h>
 #include "util/util.h"
-#include "TifOpt.h"
+#include "Tif.h"
 #include "SFileOpt.h"
-#include "_const.h"
+#include "Cst.h"
 
 using namespace std;
 

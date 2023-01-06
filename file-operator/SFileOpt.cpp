@@ -5,7 +5,7 @@
 #include "SFileOpt.h"
 
 void SFileOpt::write(string outPath, string startTime, string abnormalType, vector<Poly>& polygons) {
-    const float startLog = Meta::DEF.startLon;
+    const float startLon = Meta::DEF.startLon;
     const float startLat = Meta::DEF.startLat;
     const float resolution = Meta::DEF.resolution;
 
@@ -35,12 +35,32 @@ void SFileOpt::write(string outPath, string startTime, string abnormalType, vect
 
     OGRLayer *poLayer;
 
-    OGRSpatialReference * ref;
-    ref = new OGRSpatialReference(Meta::DEF.projection.c_str());
+    OGRErr err;
+
+    OGRSpatialReference * poSRS = new OGRSpatialReference();
+
+    err = poSRS->SetGeogCS( "My geographic CRS",
+                    "World Geodetic System 1984",
+                    "My WGS84 Spheroid",
+                    SRS_WGS84_SEMIMAJOR, SRS_WGS84_INVFLATTENING,
+                    "Greenwich", 0.0);
+
+//    err = poSRS->importFromWkt(Meta::DEF.projection.c_str());
+
+//    err = poSRS->SetWellKnownGeogCS("WGS 84");
+
+//    char *pChar = "GEOGCS[\"My_GCS_WGS_1984\",DATUM[\"D_WGS_1984\",SPHEROID[\"WGS_1984\",6378137.0,298.257223563]],PRIMEM[\"Greenwich\",180.0],UNIT[\"Degree\",0.0174532925199433]]";
+
+//    err = poSRS->importFromESRI(&pChar);
+//    err = OSRImportFromWkt(poSRS, &pChar);
+
+    if(err != OGRERR_NONE){
+        cerr << "[write] fail to set CRS. err code: " << err << endl;
+    }
 
     string fileName = abnormalType + startTime;
 
-    poLayer = poDS->CreateLayer(fileName.c_str(), ref, wkbPolygon, NULL);
+    poLayer = poDS->CreateLayer(fileName.c_str(), poSRS, wkbPolygon, NULL);
     if (poLayer == NULL)
     {
         printf("Layer creation failed.\n");
@@ -144,11 +164,11 @@ void SFileOpt::write(string outPath, string startTime, string abnormalType, vect
         for (auto line: polygon.lines) {
             polygonStr += "(";
             for (auto node: line.nodes) {
-                int _row = node.row;//点行号
-                int _col = node.col;//点列号
+                int _row = node.row;
+                int _col = node.col;
 
-                double log = startLog + (_col + 1) * resolution;//经度
-                double lat = startLat - (_row + 1) * resolution;//纬度
+                double log = Meta::DEF.getLon(_col);
+                double lat = Meta::DEF.getLat(_row);
 
                 polygonStr += to_string(log) + " " + to_string(lat);
                 polygonStr += ",";
@@ -165,23 +185,24 @@ void SFileOpt::write(string outPath, string startTime, string abnormalType, vect
         }
         polygonStr += ")";
 
-        char *pszWkt = (char *) polygonStr.c_str();
+        const char *pszWkt = (char *) polygonStr.c_str();
 
         OGRGeometry *poGeom;
-        OGRGeometryFactory::createFromWkt(&pszWkt, ref, &poGeom);
+        OGRGeometryFactory::createFromWkt(&pszWkt, poSRS, &poGeom);
 
         {
             // calculate field of polygon
             poFeature->SetField(0, "pr");
             poFeature->SetField(1, polygon.clusterId);
+            poFeature->SetField(2, polygon.id);
             poFeature->SetField(4, startTime.c_str());
-            double minLog = startLog + (polygon.minCol + 1) * resolution;//最小经度
-            double minLat = startLat - (polygon.maxRow + 1) * resolution;//最小纬度
-            double maxLog = startLog + (polygon.maxCol + 1) * resolution;//最大经度
-            double maxLat = startLat - (polygon.minRow + 1) * resolution;//最大纬度
+            double minLog = Meta::DEF.getLon(polygon.minCol);
+            double minLat = Meta::DEF.getLat(polygon.minRow);
+            double maxLog = Meta::DEF.getLon(polygon.maxCol);
+            double maxLat = Meta::DEF.getLat(polygon.maxRow);
 
-            double centroidLog = startLog + (polygon.centroidCol + 0.5) * resolution;//质心经度
-            double centroidLat = startLat - (polygon.centroidRow + 0.5) * resolution;//质心纬度
+            double centroidLog = Meta::DEF.getLon(polygon.centroidCol);//质心经度
+            double centroidLat = Meta::DEF.getLat(polygon.centroidRow);//质心纬度
 
             poFeature->SetField(5, minLog);
             poFeature->SetField(6, minLat);
@@ -195,7 +216,6 @@ void SFileOpt::write(string outPath, string startTime, string abnormalType, vect
             poFeature->SetField(9, area);
 
             poFeature->SetField(10, polygon.avgValue);
-            //poFeature->SetField(11, polygon.volume);
             poFeature->SetField(11, polygon.maxValue);
             poFeature->SetField(12, polygon.minValue);
 
@@ -208,7 +228,7 @@ void SFileOpt::write(string outPath, string startTime, string abnormalType, vect
 
         poFeature->SetGeometryDirectly(poGeom);
 
-        OGRErr err = poLayer->CreateFeature(poFeature);
+        err = poLayer->CreateFeature(poFeature);
         if (err != OGRERR_NONE)
         {
             cout << "error: [save]Failed to create feature in shapefile. err:" << to_string(err) << endl;

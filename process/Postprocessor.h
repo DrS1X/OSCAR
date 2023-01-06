@@ -1,13 +1,8 @@
 #pragma once
 
-#include "util/util.h"
-#include "_const.h"
-#include <cmath>
-#include <memory>
+#include "util.h"
+#include "Cst.h"
 #include "DataModel.h"
-#include "TifOpt.h"
+#include "Tif.h"
 
-class Postprocessor {
-public:
-	static void Resort(vector<string> RepeatFileList, vector<string> OtherFileList, string mSaveFilePath);
-};
+vector<string> Resort(vector<string> RepeatFileList, vector<string> OtherFileList, string mSaveFilePath);

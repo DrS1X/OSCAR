@@ -1,6 +1,6 @@
 #include <cmath>
 #include <memory>
-#include "algo.h"
+#include "Algo.h"
 
 using namespace std;
 
@@ -16,7 +16,7 @@ void DcSTMC::ExpandCluster1(vector<RoSTCM>& Rasterpixels, int drID, int rscluste
 		//�ж�ʱ������Ҫ���Ƿ�������
 		RoSTCM & des = Rasterpixels[arrvals[i]];//��ȡ��i�������
 		r = abs(des.Attribute - avg);
-		if (!des.isVisited() && r <= 5.0)
+		if (!des.isVisited() && r <= V_THRESHOLD)
 		{
 			//��ʼ����
 			des.SetrsClusterId(rsclusterId);
@@ -92,56 +92,23 @@ void DcSTMC::Lable(vector<RoSTCM>& Rasterpixels, int mTempFileNum) {
 		else if (Rasterpixels[j].x == 0 || Rasterpixels[j].x == mRows - 1 || Rasterpixels[j].y == 0 || Rasterpixels[j].y == mCols - 1)
 			Rasterpixels[j].SetKey(false);
 
-		//STGC ʱ��������
-		else if (Rasterpixels[j].t >= T && Rasterpixels[j].t <= mTempFileNum - T - 1)//else if(Rasterpixels[j].t >=2 && Rasterpixels[j].t <=mFileNum-3 && Rasterpixels[j].t%2 ==0)
+		//时空立方体
+		else if (Rasterpixels[j].t >= T && Rasterpixels[j].t <= mTempFileNum - T - 1)
 		{
-			////ʱ������ʱ�䴰��Ϊ2
 			for (int n = 0; n < T; n++)
 			{
-				if (Neighborhood == 24)
-				{
-					if (Rasterpixels[j].x == 1 || Rasterpixels[j].y == 1 || Rasterpixels[j].x == mRows - 2 || Rasterpixels[j].y == mCols - 2)
-						Rasterpixels[j].SetKey(false);
-					else
-					{
-						TID[n * 2] = Rasterpixels[j - (n + 1) * mRows * mCols].rsID;
-						TT[n * 2] = Rasterpixels[j - (n + 1) * mRows * mCols].Attribute;
-						TID[n * 2 + 1] = Rasterpixels[j + (n + 1) * mRows * mCols].rsID;
-						TT[n * 2 + 1] = Rasterpixels[j + (n + 1) * mRows * mCols].Attribute;
-					}
-				}
-				else
-				{
-					TID[n * 2] = Rasterpixels[j - (n + 1) * mRows * mCols].rsID;
-					TT[n * 2] = Rasterpixels[j - (n + 1) * mRows * mCols].Attribute;
-					TID[n * 2 + 1] = Rasterpixels[j + (n + 1) * mRows * mCols].rsID;
-					TT[n * 2 + 1] = Rasterpixels[j + (n + 1) * mRows * mCols].Attribute;
-				}
+                TID[n * 2] = Rasterpixels[j - (n + 1) * mRows * mCols].rsID;
+                TT[n * 2] = Rasterpixels[j - (n + 1) * mRows * mCols].Attribute;
+                TID[n * 2 + 1] = Rasterpixels[j + (n + 1) * mRows * mCols].rsID;
+                TT[n * 2 + 1] = Rasterpixels[j + (n + 1) * mRows * mCols].Attribute;
 			}
-			//ʱ��������26��
+
 			for (int tt = 0; tt < T; tt++)
 			{
 				ID[tt] = TID[tt];
 				NN[tt] = TT[tt];
 			}
-			switch (Neighborhood)
-			{
-				//4����
-			case 4:
-			{
-				ID[T] = Rasterpixels[j - 1].rsID;
-				ID[T + 1] = Rasterpixels[j + 1].rsID;
-				ID[T + 2] = Rasterpixels[j - mCols].rsID;
-				ID[T + 3] = Rasterpixels[j + mCols].rsID;
-				NN[T] = Rasterpixels[j - 1].Attribute;
-				NN[T + 1] = Rasterpixels[j + 1].Attribute;
-				NN[T + 2] = Rasterpixels[j - mCols].Attribute;
-				NN[T + 3] = Rasterpixels[j + mCols].Attribute;
-				break;
-			}
 
-			//8����
-			case 8:
 			{
 				ID[T] = Rasterpixels[j - 1].rsID;
 				ID[T + 1] = Rasterpixels[j + 1].rsID;
@@ -159,217 +126,57 @@ void DcSTMC::Lable(vector<RoSTCM>& Rasterpixels, int mTempFileNum) {
 				NN[T + 5] = Rasterpixels[j + mCols].Attribute;
 				NN[T + 6] = Rasterpixels[j + mCols - 1].Attribute;
 				NN[T + 7] = Rasterpixels[j + mCols + 1].Attribute;
-				break;
 			}
 
-			//24����
-			case 24:
-			{
-				if (Rasterpixels[j].x == 1 || Rasterpixels[j].y == 1 || Rasterpixels[j].x == mRows - 2 || Rasterpixels[j].y == mCols - 2)
-					Rasterpixels[j].SetKey(false);
-				else
-				{
-					ID[T] = Rasterpixels[j - 1].rsID;
-					ID[T + 1] = Rasterpixels[j + 1].rsID;
-					ID[T + 2] = Rasterpixels[j - mCols].rsID;
-					ID[T + 3] = Rasterpixels[j - mCols - 1].rsID;
-					ID[T + 4] = Rasterpixels[j - mCols + 1].rsID;
-					ID[T + 5] = Rasterpixels[j + mCols].rsID;
-					ID[T + 6] = Rasterpixels[j + mCols - 1].rsID;
-					ID[T + 7] = Rasterpixels[j + mCols + 1].rsID;
-					ID[T + 8] = Rasterpixels[j - 2].rsID;
-					ID[T + 9] = Rasterpixels[j + 2].rsID;
-					ID[T + 10] = Rasterpixels[j - 2 * mCols].rsID;
-					ID[T + 11] = Rasterpixels[j - 2 * mCols - 1].rsID;
-					ID[T + 12] = Rasterpixels[j - 2 * mCols + 1].rsID;
-					ID[T + 13] = Rasterpixels[j + 2 * mCols].rsID;
-					ID[T + 14] = Rasterpixels[j + 2 * mCols - 1].rsID;
-					ID[T + 15] = Rasterpixels[j + 2 * mCols + 1].rsID;
-					ID[T + 16] = Rasterpixels[j - mCols - 2].rsID;
-					ID[T + 17] = Rasterpixels[j + mCols - 2].rsID;
-					ID[T + 18] = Rasterpixels[j - mCols + 2].rsID;
-					ID[T + 19] = Rasterpixels[j - mCols + 2].rsID;
-					ID[T + 20] = Rasterpixels[j - 2 * mCols + 2].rsID;
-					ID[T + 21] = Rasterpixels[j - 2 * mCols - 2].rsID;
-					ID[T + 22] = Rasterpixels[j + 2 * mCols - 2].rsID;
-					ID[T + 23] = Rasterpixels[j + 2 * mCols + 2].rsID;
+            for (int tt = 0; tt < T * 2; tt++)
+            {
+                ID[T + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] - 1].rsID;
+                ID[T + 1 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] + 1].rsID;
+                ID[T + 2 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] - mCols].rsID;
+                ID[T + 3 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] - mCols - 1].rsID;
+                ID[T + 4 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] - mCols + 1].rsID;
+                ID[T + 5 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] + mCols].rsID;
+                ID[T + 6 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] + mCols - 1].rsID;
+                ID[T + 7 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] + mCols + 1].rsID;
+
+                NN[T + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] - 1].Attribute;
+                NN[T + 1 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] + 1].Attribute;
+                NN[T + 2 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] - mCols].Attribute;
+                NN[T + 3 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] - mCols - 1].Attribute;
+                NN[T + 4 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] - mCols + 1].Attribute;
+                NN[T + 5 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] + mCols].Attribute;
+                NN[T + 6 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] + mCols - 1].Attribute;
+                NN[T + 7 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] + mCols + 1].Attribute;
+            }
+            for (int tt = 0; tt < T; tt++)
+            {
+                ID[Neighborhood * (T * 2 + 1) + T + tt] = TID[T + tt];
+                NN[Neighborhood * (T * 2 + 1) + T + tt] = TT[T + tt];
+            }
 
 
-					NN[T] = Rasterpixels[j - 1].Attribute;
-					NN[T + 1] = Rasterpixels[j + 1].Attribute;
-					NN[T + 2] = Rasterpixels[j - mCols].Attribute;
-					NN[T + 3] = Rasterpixels[j - mCols - 1].Attribute;
-					NN[T + 4] = Rasterpixels[j - mCols + 1].Attribute;
-					NN[T + 5] = Rasterpixels[j + mCols].Attribute;
-					NN[T + 6] = Rasterpixels[j + mCols - 1].Attribute;
-					NN[T + 7] = Rasterpixels[j + mCols + 1].Attribute;
-					NN[T + 8] = Rasterpixels[j - 2].Attribute;
-					NN[T + 9] = Rasterpixels[j + 2].Attribute;
-					NN[T + 10] = Rasterpixels[j - 2 * mCols].Attribute;
-					NN[T + 11] = Rasterpixels[j - 2 * mCols - 1].Attribute;
-					NN[T + 12] = Rasterpixels[j - 2 * mCols + 1].Attribute;
-					NN[T + 13] = Rasterpixels[j + 2 * mCols].Attribute;
-					NN[T + 14] = Rasterpixels[j + 2 * mCols - 1].Attribute;
-					NN[T + 15] = Rasterpixels[j + 2 * mCols + 1].Attribute;
-					NN[T + 16] = Rasterpixels[j - mCols - 2].Attribute;
-					NN[T + 17] = Rasterpixels[j + mCols - 2].Attribute;
-					NN[T + 18] = Rasterpixels[j - mCols + 2].Attribute;
-					NN[T + 19] = Rasterpixels[j - mCols + 2].Attribute;
-					NN[T + 20] = Rasterpixels[j - 2 * mCols + 2].Attribute;
-					NN[T + 21] = Rasterpixels[j - 2 * mCols - 2].Attribute;
-					NN[T + 22] = Rasterpixels[j + 2 * mCols - 2].Attribute;
-					NN[T + 23] = Rasterpixels[j + 2 * mCols + 2].Attribute;
-				}
-				break;
-			}
-			}
-			//����ʱ������
-			switch (Neighborhood)
-			{
-				//4����
-			case 4:
-			{
-				for (int tt = 0; tt < T * 2; tt++)
-				{
-					ID[T + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] - 1].rsID;
-					ID[T + 1 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] + 1].rsID;
-					ID[T + 2 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] - mCols].rsID;
-					ID[T + 3 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] + mCols].rsID;
+			//检验时间相邻的栅格是否有值
+            if (TT[0] == mFillValue * mScale || TT[1] == mFillValue * mScale || TT[0] == 0 || TT[1] == 0){
 
-					NN[T + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] - 1].Attribute;
-					NN[T + 1 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] + 1].Attribute;
-					NN[T + 2 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] - mCols].Attribute;
-					NN[T + 3 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] + mCols].Attribute;
-				}
-				for (int tt = 0; tt < T; tt++)
-				{
-					ID[Neighborhood * (T * 2 + 1) + T + tt] = TID[T + tt];
-					NN[Neighborhood * (T * 2 + 1) + T + tt] = TT[T + tt];
-				}
-				break;
-			}
+            }else {
+                for (int k = 0; k < (2 * T + 1) * (Neighborhood + 1) - 1; k++) {
 
-			//8����
-			case 8:
-			{
-				for (int tt = 0; tt < T * 2; tt++)
-				{
-					ID[T + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] - 1].rsID;
-					ID[T + 1 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] + 1].rsID;
-					ID[T + 2 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] - mCols].rsID;
-					ID[T + 3 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] - mCols - 1].rsID;
-					ID[T + 4 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] - mCols + 1].rsID;
-					ID[T + 5 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] + mCols].rsID;
-					ID[T + 6 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] + mCols - 1].rsID;
-					ID[T + 7 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] + mCols + 1].rsID;
+				    if (NN[k] == mFillValue * mScale || NN[k] == 0)
+					    continue;
 
-					NN[T + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] - 1].Attribute;
-					NN[T + 1 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] + 1].Attribute;
-					NN[T + 2 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] - mCols].Attribute;
-					NN[T + 3 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] - mCols - 1].Attribute;
-					NN[T + 4 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] - mCols + 1].Attribute;
-					NN[T + 5 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] + mCols].Attribute;
-					NN[T + 6 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] + mCols - 1].Attribute;
-					NN[T + 7 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] + mCols + 1].Attribute;
-				}
-				for (int tt = 0; tt < T; tt++)
-				{
-					ID[Neighborhood * (T * 2 + 1) + T + tt] = TID[T + tt];
-					NN[Neighborhood * (T * 2 + 1) + T + tt] = TT[T + tt];
-				}
-				break;
-			}
-			//24����
-			case 24:
-			{
-				if (Rasterpixels[j].x == 1 || Rasterpixels[j].y == 1 || Rasterpixels[j].x == mRows - 2 || Rasterpixels[j].y == mCols - 2)
-					Rasterpixels[j].SetKey(false);
-				else
-				{
-					for (int tt = 0; tt < T * 2; tt++)
-					{
-						ID[T + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] - 1].rsID;
-						ID[T + 1 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] + 1].rsID;
-						ID[T + 2 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] - mCols].rsID;
-						ID[T + 3 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] - mCols - 1].rsID;
-						ID[T + 4 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] - mCols + 1].rsID;
-						ID[T + 5 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] + mCols].rsID;
-						ID[T + 6 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] + mCols - 1].rsID;
-						ID[T + 7 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] + mCols + 1].rsID;
-						ID[T + 8 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] - 2].rsID;
-						ID[T + 9 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] + 2].rsID;
-						ID[T + 10 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] - 2 * mCols].rsID;
-						ID[T + 11 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] - 2 * mCols - 1].rsID;
-						ID[T + 12 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] - 2 * mCols + 1].rsID;
-						ID[T + 13 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] + 2 * mCols].rsID;
-						ID[T + 14 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] + 2 * mCols - 1].rsID;
-						ID[T + 15 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] + 2 * mCols + 1].rsID;
-						ID[T + 16 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] - mCols - 2].rsID;
-						ID[T + 17 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] + mCols - 2].rsID;
-						ID[T + 18 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] - mCols + 2].rsID;
-						ID[T + 19 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] - mCols + 2].rsID;
-						ID[T + 20 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] - 2 * mCols + 2].rsID;
-						ID[T + 21 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] - 2 * mCols - 2].rsID;
-						ID[T + 22 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] + 2 * mCols - 2].rsID;
-						ID[T + 23 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] + 2 * mCols + 2].rsID;
+                    Rasterpixels[j].neighborgrids.push_back(ID[k]);
+                }
+            }
 
-
-						NN[T + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] - 1].Attribute;
-						NN[T + 1 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] + 1].Attribute;
-						NN[T + 2 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] - mCols].Attribute;
-						NN[T + 3 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] - mCols - 1].Attribute;
-						NN[T + 4 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] - mCols + 1].Attribute;
-						NN[T + 5 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] + mCols].Attribute;
-						NN[T + 6 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] + mCols - 1].Attribute;
-						NN[T + 7 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] + mCols + 1].Attribute;
-						NN[T + 8 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] - 2].Attribute;
-						NN[T + 9 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] + 2].Attribute;
-						NN[T + 10 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] - 2 * mCols].Attribute;
-						NN[T + 11 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] - 2 * mCols - 1].Attribute;
-						NN[T + 12 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] - 2 * mCols + 1].Attribute;
-						NN[T + 13 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] + 2 * mCols].Attribute;
-						NN[T + 14 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] + 2 * mCols - 1].Attribute;
-						NN[T + 15 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] + 2 * mCols + 1].Attribute;
-						NN[T + 16 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] - mCols - 2].Attribute;
-						NN[T + 17 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] + mCols - 2].Attribute;
-						NN[T + 18 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] - mCols + 2].Attribute;
-						NN[T + 19 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] - mCols + 2].Attribute;
-						NN[T + 20 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] - 2 * mCols + 2].Attribute;
-						NN[T + 21 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] - 2 * mCols - 2].Attribute;
-						NN[T + 22 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] + 2 * mCols - 2].Attribute;
-						NN[T + 23 + Neighborhood * (tt + 1)] = Rasterpixels[TID[tt] + 2 * mCols + 2].Attribute;
-
-					}
-					for (int tt = 0; tt < T; tt++)
-					{
-						ID[Neighborhood * (T * 2 + 1) + T + tt] = TID[T + tt];
-						NN[Neighborhood * (T * 2 + 1) + T + tt] = TT[T + tt];
-					}
-				}
-				break;
-			}
-			}
-			//��ȡ����դ����Чʱ������
-			for (int k = 0; k < (2 * T + 1) * (Neighborhood + 1) - 1; k++)
-			{
-				if (TT[0] == mFillValue * mScale || TT[1] == mFillValue * mScale || TT[0] == 0 || TT[1] == 0)
-					break;
-
-				if (NN[k] == mFillValue * mScale || NN[k] == 0)//NN[k]>=-0.9 && NN[k]<=0.8)
-					continue;
-
-				Rasterpixels[j].neighborgrids.emplace_back(ID[k]);
-			}
-			//����Ƿ���Ϊ������ģ���������2*T+1����Чֵ
-			RoSTCM srcDr = Rasterpixels[j]; //��ȡ���ݵ����
-			vector<int> arrvalrasters = srcDr.Getneighborgrids(); //��ȡ���������ڵ�ID�б� 
+			//若连续2*T+1个有效值，则标记为聚类核心
+			RoSTCM srcDr = Rasterpixels[j];
+			vector<int> nb = srcDr.Getneighborgrids();
 
 			int c = 0; int d = 0;
-			for (int r = 0; r < arrvalrasters.size(); r++)
+			for (int r = 0; r < nb.size(); r++)
 			{
-				RoSTCM desDr = Rasterpixels[arrvalrasters[r]]; //��ȡ�����ڵ����ݵ�    
-																//List<int> arrval = desDr.Getneighborgrids(); //��ȡ���������ڵ�ID�б�
-				if (desDr.rsID == Rasterpixels[j].rsID - T * mRows * mCols)//���Ϸ������·�������Ҳ���������
+				RoSTCM desDr = Rasterpixels[nb[r]]; //获取领域内所有数据点
+				if (desDr.rsID == Rasterpixels[j].rsID - T * mRows * mCols)
 				{
 					c = 1;
 				}
@@ -379,7 +186,7 @@ void DcSTMC::Lable(vector<RoSTCM>& Rasterpixels, int mTempFileNum) {
 				}
 			}
 
-			if (Rasterpixels[j].Getneighborgrids().size() >= CP && c == 1 && d == 1)//ԭֵΪ20
+			if (Rasterpixels[j].Getneighborgrids().size() >= CP && c == 1 && d == 1)
 				Rasterpixels[j].SetKey(true);
 			else
 				Rasterpixels[j].SetKey(false);
@@ -387,13 +194,18 @@ void DcSTMC::Lable(vector<RoSTCM>& Rasterpixels, int mTempFileNum) {
 	}
 }
 
-void DcSTMC::Run(vector<string>& FileList, string outputPath, int in_mPerNum, int in_T) {
+pair<vector<string>, vector<string>> DcSTMC::Run(vector<string>& FileList, string outputPath, int in_mPerNum, int in_T) {
+    set<string> repeatFileSet;
+    set<string> otherFileSet;
+
 	this->mPerNum = in_mPerNum;
 	this->T = in_T;
-	string repeatFilePath = outputPath + "\\RepeatFile\\";
-	string otherFilePath = outputPath + "\\OtherFile\\";
-	util::checkFilePath(repeatFilePath);
-	util::checkFilePath(otherFilePath);
+	string repeatFilePath = outputPath + "\\RepeatFile";
+	string otherFilePath = outputPath + "\\OtherFile";
+    CheckFolderExist(repeatFilePath);
+    CheckFolderExist(otherFilePath);
+    repeatFilePath += "\\";
+    otherFilePath += "\\";
 
 	int mFileNum = FileList.size();
 	vector<RoSTCM> Rasterpixels;
@@ -420,12 +232,10 @@ void DcSTMC::Run(vector<string>& FileList, string outputPath, int in_mPerNum, in
 		}
 		for (int j = mStartFileIndex; j < mEndFileIndex; j++)
 		{
-			int* pBuffer = new int[mRows * mCols];//�ļ�����
-            TifOpt::readFlatten(FileList[j], pBuffer);
+			int* pBuffer = new int[mRows * mCols];
+            Tif::readInt(FileList[j],pBuffer);
 			for (int k = 0; k < mRows * mCols; k++)
 			{
-				//psBuffer[k + (j - mStartFileIndex) * mRows * mCols] = val[k] * mScale;
-				//rsets.Attribute = psBuffer[k + (j - mStartFileIndex) * mRows * mCols];
 				RoSTCM rsets;
 				rsets.Attribute = pBuffer[k] * mScale;
 				rsets.x = k / mCols; //row
@@ -438,7 +248,7 @@ void DcSTMC::Run(vector<string>& FileList, string outputPath, int in_mPerNum, in
 				rsets.SetrsClusterId(-1);
 				Rasterpixels.emplace_back(rsets);
 			}
-			delete pBuffer;
+			delete[] pBuffer;
 		}
 		//input
 
@@ -446,7 +256,7 @@ void DcSTMC::Run(vector<string>& FileList, string outputPath, int in_mPerNum, in
 		this->Lable(Rasterpixels, mTempFileNum);
 		//LabelData
 
-		//OutputRasterpixels(Rasterpixels, FileList, mStartFileIndex, mTempFileNum, "E:\\IMERG\\test\\tmp\\key");
+		OutputRasterpixels(Rasterpixels, FileList, mStartFileIndex, mTempFileNum, "E:\\pr\\pos2015_2016\\mon\\old\\tmp\\key");
 
 		//Clustering
 		int mstartClusterID = rsclusterId;
@@ -471,7 +281,7 @@ void DcSTMC::Run(vector<string>& FileList, string outputPath, int in_mPerNum, in
 		}
 		//Clustering
 
-		//OutputRasterpixels(Rasterpixels, FileList, mStartFileIndex, mTempFileNum, "E:\\IMERG\\test\\tmp\\clusterBeforeFilter");
+        OutputRasterpixels(Rasterpixels, FileList, mStartFileIndex, mTempFileNum, "E:\\pr\\pos2015_2016\\mon\\old\\tmp\\clusterBeforeFilter");
 
 		//Filter small clusters
 		while (mstartClusterID <= rsclusterId)
@@ -491,26 +301,47 @@ void DcSTMC::Run(vector<string>& FileList, string outputPath, int in_mPerNum, in
 			{
 				outt[j - ii * mRows * mCols] = Rasterpixels[j].rsclusterId;//�Ӵ��������������ļ�
 			}
-				
-			string mOutFileName = util::generateFileName(FileList[mStartFileIndex + ii], otherFilePath, "_Tcluster.hdfOpt");
+
+            bool isRepeat = false;
+			string mOutFileName = util::generateFileName(FileList[mStartFileIndex + ii], otherFilePath, "_Tcluster" + TIF_SUFFIX);
 			if (mFileNum != mPerNum)
 			{
-				if (mTempFileNum - ii <= T * 2 && i != mFileNum / (mPerNum - T * 2))
-					mOutFileName = util::generateFileName(FileList[mStartFileIndex + ii], repeatFilePath, "_Tcluster.hdfOpt");
-				if (i != 0 && ii < T * 2)
-					mOutFileName = util::generateFileName(FileList[mStartFileIndex + ii], repeatFilePath, "_Tcluster_2.hdfOpt");
-			}
+				if (mTempFileNum - ii <= T * 2 && i != mFileNum / (mPerNum - T * 2)) {
+                    mOutFileName = util::generateFileName(FileList[mStartFileIndex + ii], repeatFilePath,"_Tcluster" + TIF_SUFFIX);
+                    isRepeat = true;
+                }
 
-			meta.date = FileList[mStartFileIndex + ii].substr(FileList[mStartFileIndex + ii].find_last_of(".") - 8, 8);
+                if (i != 0 && ii < T * 2) {
+                    mOutFileName = util::generateFileName(FileList[mStartFileIndex + ii], repeatFilePath,"_Tcluster_2" + TIF_SUFFIX);
+                    isRepeat = true;
+                }
+            }
 
-			RFile fileOut(meta, mOutFileName, outt.get());
-            tifOpt.write(fileOut);
+            if(isRepeat)
+                repeatFileSet.insert(mOutFileName);
+            else
+                otherFileSet.insert(mOutFileName);
+
+			meta.date = GetDate(FileList[mStartFileIndex + ii]);
+
+			Tif::writeInt(mOutFileName, meta, outt.get());
 		}
 		Rasterpixels.clear();
 	}
+
+    vector<string> repeatFileList, otherFileList;
+    for(std::set<string>::iterator it = repeatFileSet.begin(); it != repeatFileSet.end(); ++it)
+        repeatFileList.push_back(*it);
+    for(std::set<string>::iterator it = otherFileSet.begin(); it != otherFileSet.end(); ++it)
+        otherFileList.push_back(*it);
+
+    pair<vector<string>, vector<string>> pr{repeatFileList, otherFileList};
+    return pr;
 }
 
 void DcSTMC::OutputRasterpixels(vector<RoSTCM>& Rasterpixels, vector<string>& fileList, int mStartFileIndex, int mTempFileNum, string outputPath) {
+    CheckFolderExist(outputPath);
+
 	unique_ptr<int[]> outt(new int[mRows * mCols]);
 	for (int ii = 0; ii < mTempFileNum; ii++)
 	{
@@ -518,10 +349,9 @@ void DcSTMC::OutputRasterpixels(vector<RoSTCM>& Rasterpixels, vector<string>& fi
 		{
 			outt[j - ii * mRows * mCols] = (int) Rasterpixels[j].GetrsClusterId();
 		}
-		string mOutFileName = util::generateFileName(fileList[mStartFileIndex + ii], outputPath, "cluster", "hdfOpt");
-		meta.date = fileList[mStartFileIndex + ii].substr(fileList[mStartFileIndex + ii].find_last_of(".") - 8, 8);
+		string mOutFileName = util::generateFileName(fileList[mStartFileIndex + ii], outputPath, "cluster", TIF_SUFFIX);
+		meta.date = GetDate(fileList[mStartFileIndex + ii]);
 
-        RFile fileOut(meta, mOutFileName, outt.get());
-        tifOpt.write(fileOut);
+        Tif::writeInt(mOutFileName,meta,  outt.get());
 	}
 }

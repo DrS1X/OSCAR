@@ -5,12 +5,10 @@ using namespace std;
 int Split(const string& str, const char split, vector<string>& res)
 {
 	if (str == "")		return -1;
-	//���ַ���ĩβҲ����ָ����������ȡ���һ��
 	string strs = str + split;
 	size_t prev = 0;
 	size_t pos = strs.find_first_of(split);
 
-	// ���Ҳ����������ַ��������������� npos
 	while (pos != strs.npos)
 	{
 		string temp = strs.substr(prev, pos - prev);
@@ -92,15 +90,15 @@ void GetSameEvent(string& str, const vector<string>& mIDList, vector<bool>& Even
 	}
 }
 
-void Postprocessor::Resort(vector<string> RepeatFileList, vector<string> OtherFileList, string mSaveFilePath)
+vector<string> Resort(vector<string> RepeatFileList, vector<string> OtherFileList, string mSaveFilePath)
 {
+    vector<string> outputFileList;
+    mSaveFilePath += "\\sorted";
+    CheckFolderExist(mSaveFilePath);
+
 	int mOtherFileNum = OtherFileList.size();
 	int mCols = Meta::DEF.nCol;
 	int mRows = Meta::DEF.nRow;
-	double mStartLog = Meta::DEF.startLon;
-	double mStartLat = Meta::DEF.startLat;
-	double mEndLog = Meta::DEF.endLon;
-	double mEndLat = Meta::DEF.endLat;
 	double mScale = Meta::DEF.scale;
 	double mResolution = Meta::DEF.resolution;
 	double mFillValue = Meta::DEF.fillValue;
@@ -126,8 +124,8 @@ void Postprocessor::Resort(vector<string> RepeatFileList, vector<string> OtherFi
 		//ͳ��2���ظ��ļ��ϵ��ص�cluster
 		for (int i = 0; i < mRepeatFileNum / 2; i++)
 		{
-            TifOpt::readFlatten(RepeatFileList[2 * i], pBuffer1.get());
-            TifOpt::readFlatten(RepeatFileList[2 * i + 1], pBuffer2.get());
+            Tif::readInt(RepeatFileList[2 * i], pBuffer1.get());
+            Tif::readInt(RepeatFileList[2 * i + 1], pBuffer2.get());
 			for (int j = 0; j < mRows * mCols; j++)
 			{
 				if (pBuffer1[j] != pBuffer2[j] && pBuffer1[j] > 1 && pBuffer2[j] > 1)
@@ -161,8 +159,8 @@ void Postprocessor::Resort(vector<string> RepeatFileList, vector<string> OtherFi
 		//ͳ��2���ظ��ļ��пռ����ڵ�cluster
 		for (int i = 0; i < mRepeatFileNum / 2; i++)
 		{
-            TifOpt::readFlatten(RepeatFileList[2 * i], pBuffer1.get());
-            TifOpt::readFlatten(RepeatFileList[2 * i + 1], pBuffer2.get());
+            Tif::readInt(RepeatFileList[2 * i], pBuffer1.get());
+            Tif::readInt(RepeatFileList[2 * i + 1], pBuffer2.get());
 			for (int j = 0; j < mRows * mCols; j++)
 			{
 				if (pBuffer1[j] < 2 && pBuffer2[j] >= 2)
@@ -241,7 +239,7 @@ void Postprocessor::Resort(vector<string> RepeatFileList, vector<string> OtherFi
 		//ͳ��1���ظ��ļ�������cluster
 		for (int i = 0; i < mRepeatFileNum; i++)
 		{
-            TifOpt::readFlatten(RepeatFileList[i], pBuffer1.get());
+            Tif::readInt(RepeatFileList[i], pBuffer1.get());
 			for (int j = 0; j < mRows * mCols; j++)
 			{
 				int row = j / mCols;
@@ -318,7 +316,7 @@ void Postprocessor::Resort(vector<string> RepeatFileList, vector<string> OtherFi
 	//�����ļ���ͳ�����ڵ�cluster
 	for (int i = 0; i < mOtherFileNum; i++)
 	{
-        TifOpt::readFlatten(OtherFileList[i], pBuffer2.get());
+        Tif::readInt(OtherFileList[i], pBuffer2.get());
 		for (int j = 0; j < mRows * mCols; j++)
 		{
 			int row = j / mCols;
@@ -417,17 +415,18 @@ void Postprocessor::Resort(vector<string> RepeatFileList, vector<string> OtherFi
 	Meta meta = Meta::DEF;
 	for (int i = 0; i < mOtherFileNum; i++)
 	{
-        TifOpt::readFlatten(OtherFileList[i], pBuffer1.get());
+        Tif::readInt(OtherFileList[i], pBuffer1.get());
 		Fill(mSameList, pBuffer1.get(), mRows, mCols);
-		string mOutFileName = util::generateFileName(OtherFileList[i], mSaveFilePath, ".hdfOpt");
+		string mOutFileName = util::generateFileName(OtherFileList[i], mSaveFilePath, TIF_SUFFIX);
+        outputFileList.push_back(mOutFileName);
 		meta.date = GetDate(OtherFileList[i]);
-        TifOpt::writeFlatten(mOutFileName, meta, pBuffer1.get());
+        Tif::writeInt(mOutFileName, meta, pBuffer1.get());
 	}
 
 	for (int i = 0; i < mRepeatFileNum / 2; i++)
 	{
-        TifOpt::readFlatten(RepeatFileList[2 * i], pBuffer1.get());
-        TifOpt::readFlatten(RepeatFileList[2 * i + 1], pBuffer2.get());
+        Tif::readInt(RepeatFileList[2 * i], pBuffer1.get());
+        Tif::readInt(RepeatFileList[2 * i + 1], pBuffer2.get());
 		for (int j = 0; j < mRows * mCols; j++)
 		{
 			if (pBuffer1[j] < 2 && pBuffer2[j] > 2)
@@ -435,8 +434,10 @@ void Postprocessor::Resort(vector<string> RepeatFileList, vector<string> OtherFi
 		}
 		Fill(mSameList, pBuffer1.get(), mRows, mCols);
 
-		string mOutFileName = util::generateFileName(RepeatFileList[2 * i], mSaveFilePath , ".hdfOpt");
+		string mOutFileName = util::generateFileName(RepeatFileList[2 * i], mSaveFilePath , TIF_SUFFIX);
+        outputFileList.push_back(mOutFileName);
 		meta.date = GetDate(RepeatFileList[2 * i]);
-		TifOpt::writeFlatten(mOutFileName, meta, pBuffer1.get());
+        Tif::writeInt(mOutFileName, meta, pBuffer1.get());
 	}
+    return outputFileList;
 }
