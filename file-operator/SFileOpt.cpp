@@ -69,20 +69,13 @@ void SFileOpt::write(string outPath, string startTime, string abnormalType, vect
 
     //Fields
     {
-        OGRFieldDefn oFieldName("Name", OFTString);
-        oFieldName.SetWidth(20);
-        poLayer->CreateField(&oFieldName, 1);
-
-        // 先创建一个叫FieldID的整型属性
         OGRFieldDefn oFieldStormID("PRID", OFTInteger);
         poLayer->CreateField(&oFieldStormID, 1);
 
-        // 先创建一个叫FieldID的整型属性
         OGRFieldDefn oFieldStateID("STID", OFTString);
         oFieldStateID.SetWidth(20);
         poLayer->CreateField(&oFieldStateID, 1);
 
-        // 再创建一个叫FeatureName的字符型属性，字符长度为50
         OGRFieldDefn oFieldSeqID("SQID", OFTString);
         oFieldSeqID.SetWidth(20);
         poLayer->CreateField(&oFieldSeqID, 1);
@@ -109,12 +102,6 @@ void SFileOpt::write(string outPath, string startTime, string abnormalType, vect
         oFieldMaxLat.SetPrecision(8);
         poLayer->CreateField(&oFieldMaxLat, 1);
 
-        //创建area字段
-        OGRFieldDefn oFieldArea("Area", OFTReal);
-        oFieldArea.SetWidth(20);
-        oFieldArea.SetPrecision(8);
-        poLayer->CreateField(&oFieldArea, 1);
-
         //创建平均降雨量字段
         OGRFieldDefn oFieldAvgRainFall("AvgValue", OFTReal);
         oFieldAvgRainFall.SetWidth(20);
@@ -132,6 +119,12 @@ void SFileOpt::write(string outPath, string startTime, string abnormalType, vect
         oFieldMinRainFall.SetWidth(20);
         oFieldMinRainFall.SetPrecision(8);
         poLayer->CreateField(&oFieldMinRainFall, 1);
+
+        /*//创建area字段
+        OGRFieldDefn oFieldArea("Area", OFTReal);
+        oFieldArea.SetWidth(20);
+        oFieldArea.SetPrecision(8);
+        poLayer->CreateField(&oFieldArea, 1);
 
         //创建质心字段
         OGRFieldDefn oFieldLogCore("CentLon", OFTReal);
@@ -152,7 +145,7 @@ void SFileOpt::write(string outPath, string startTime, string abnormalType, vect
         //创建Abnormal异常类型
         OGRFieldDefn oFieldAbnormal("Abnormal", OFTString);
         oFieldAbnormal.SetWidth(20);
-        poLayer->CreateField(&oFieldAbnormal, 1);
+        poLayer->CreateField(&oFieldAbnormal, 1);*/
     }
 
     for (auto polygon : polygons) {
@@ -192,38 +185,38 @@ void SFileOpt::write(string outPath, string startTime, string abnormalType, vect
 
         {
             // calculate field of polygon
-            poFeature->SetField(0, "pr");
-            poFeature->SetField(1, polygon.clusterId);
-            poFeature->SetField(2, polygon.id);
-            poFeature->SetField(4, startTime.c_str());
+            poFeature->SetField(0, polygon.clusterId);
+            poFeature->SetField(1, polygon.id);
+            poFeature->SetField(2, 0);
+            poFeature->SetField(3, startTime.c_str());
+
             double minLog = Meta::DEF.getLon(polygon.minCol);
-            double minLat = Meta::DEF.getLat(polygon.minRow);
+            double minLat = Meta::DEF.getLat(polygon.maxRow);
             double maxLog = Meta::DEF.getLon(polygon.maxCol);
-            double maxLat = Meta::DEF.getLat(polygon.maxRow);
+            double maxLat = Meta::DEF.getLat(polygon.minRow);
+
+
+            poFeature->SetField(4, minLog);
+            poFeature->SetField(5, minLat);
+            poFeature->SetField(6, maxLog);
+            poFeature->SetField(7, maxLat);
+
+            poFeature->SetField(8, polygon.avgValue);
+            poFeature->SetField(9, polygon.maxValue);
+            poFeature->SetField(10, polygon.minValue);
+
+            /*double area = polygon.area;
+            if(area < 0){
+                area = 0;
+            }
+            poFeature->SetField(9, area);
 
             double centroidLog = Meta::DEF.getLon(polygon.centroidCol);//质心经度
             double centroidLat = Meta::DEF.getLat(polygon.centroidRow);//质心纬度
-
-            poFeature->SetField(5, minLog);
-            poFeature->SetField(6, minLat);
-            poFeature->SetField(7, maxLog);
-            poFeature->SetField(8, maxLat);
-
-            double area = polygon.area;
-            /*if(area == POLYGON_FIELD_EMPTY){
-                area = getArea(poGeom);
-            }*/
-            poFeature->SetField(9, area);
-
-            poFeature->SetField(10, polygon.avgValue);
-            poFeature->SetField(11, polygon.maxValue);
-            poFeature->SetField(12, polygon.minValue);
-
-            //poFeature->SetField(15, polygon.length);
             poFeature->SetField(13, centroidLog);
             poFeature->SetField(14, centroidLat);
             poFeature->SetField(15, polygon.power);
-            poFeature->SetField(16, abnormalType.c_str());
+            poFeature->SetField(16, abnormalType.c_str());*/
         }
 
         poFeature->SetGeometryDirectly(poGeom);

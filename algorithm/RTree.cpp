@@ -31,21 +31,23 @@ void RTree::Run(RTreeParam p, vector<string> fileList, string outputPath) {
     ATTRIBUTE_RATIO_THRESHOLD = 0.3;
 
     for (int i = 0; i < fileList.size(); ++i) {
-        Raster rst(fileList[i]);
+        Raster rst(Meta::DEF,fileList[i]);
+        rst.read();
         RTree* tree = RTree::Create(rst.timePoint);
         vector<Poly> polyList;
         int windowEdge = GEO_WINDOW / 2;
-        for (int r = windowEdge; r < rst.rowNum - windowEdge; r++) {
-            for (int c = windowEdge; c < rst.colNum - windowEdge; c++) {
-                int v = rst.get(r, c);
-                if (rst.isVisited(r, c) || v == 0) continue;
+        for (int r = windowEdge; r < rst.meta.nRow - windowEdge; r++) {
+            for (int c = windowEdge; c < rst.meta.nCol - windowEdge; c++) {
+                float v = rst.get(r, c);
+                if (rst.isVisited(r, c) || IsEqual(v,0.0f)) 
+                    continue;
 
                 vector<pair<int, int>> noZero;
                 for (int k = 0; k < 8; ++k) {
                     int r2 = r + Neighbor8[k][0];
                     int c2 = c + Neighbor8[k][1];
-                    int v2 = rst.get(r2, c2);
-                    if (v2 != 0 && abs(v2 - v) < ATTRIBUTE_THRESHOLD) {
+                    float v2 = rst.get(r2, c2);
+                    if (!IsEqual(v2,0.0f) && fabs(v2 - v) < ATTRIBUTE_THRESHOLD) {
                         pair<int, int> pr{r2, c2};
                         noZero.push_back(pr);
                     }
@@ -68,7 +70,6 @@ void RTree::Run(RTreeParam p, vector<string> fileList, string outputPath) {
 }
 
 Poly* RTree::BFS(Raster &rst, vector<pair<int, int>> &noZero) {
-    Line line;
     Poly* pPoly = new Poly;
 
     queue<pair<int, int>> q;
@@ -86,6 +87,25 @@ Poly* RTree::BFS(Raster &rst, vector<pair<int, int>> &noZero) {
             int r = top.first, c = top.second;
             q.pop();
 
+            // mask
+            for (int i = 0; i < 8; i += 2) {
+                int r1 = r + Neighbor8[i][0];
+                int c1 = c + Neighbor8[i][1];
+                int r2 = r + Neighbor8[(i + 1) % 8][0];
+                int c2 = c + Neighbor8[(i + 1) % 8][1];
+                int r3 = r + Neighbor8[(i + 2) % 8][0];
+                int c3 = c + Neighbor8[(i + 2) % 8][1];
+
+                if (!rst.checkIndex(r1, c1) || !rst.checkIndex(r2, c2) ||
+                        !rst.checkIndex(r3, c3))
+                    continue;
+
+                if(IsZero(rst.get(r1,c1)) && !IsZero(rst.get(r2,c2)) &&
+                    IsZero(rst.get(r3,c3))){
+                    rst.update(r2,c2,0.0f);
+                }
+            }
+
             int cnt = 0;
             for (int i = 0; i < 8; ++i) {
                 int r2 = r + Neighbor8[i][0];
@@ -93,9 +113,8 @@ Poly* RTree::BFS(Raster &rst, vector<pair<int, int>> &noZero) {
                 if (!rst.checkIndex(r2, c2))
                     continue;
 
-                int v = rst.get(r2, c2);
-                if (!rst.isVisited(r2, c2) && v != 0) {
-                    // threshold
+                float v = rst.get(r2, c2);
+                if (!rst.isVisited(r2, c2) && !IsZero(v)) {
                     if(fabs(v - pPoly->avgValue) > ATTRIBUTE_THRESHOLD)
                         continue;
 
@@ -109,31 +128,24 @@ Poly* RTree::BFS(Raster &rst, vector<pair<int, int>> &noZero) {
             
             // edge
             if (cnt < 8) {
-               rst.getNode(nodeSet, r - 1, c - 1, line.range);
-               rst.getNode(nodeSet, r - 1, c, line.range);
-               rst.getNode(nodeSet, r, c - 1, line.range);
-               rst.getNode(nodeSet, r, c, line.range);
+               rst.getNode(nodeSet, r - 1, c - 1, pPoly->range);
+               rst.getNode(nodeSet, r - 1, c, pPoly->range);
+               rst.getNode(nodeSet, r, c - 1, pPoly->range);
+               rst.getNode(nodeSet, r, c, pPoly->range);
             }
 
             sz--;
         }
     }
 
-    line.range.updateGeo();
+    pPoly->range.updateGeo();
 
     vector<Node> nodes(nodeSet.begin(), nodeSet.end());
-    line.nodes = nodes;
+    Line line(nodes);
+    line.range = pPoly->range;
     line.sortNodes(); // make the line of polygon edge to be clear
 
-    vector<Line> lineList;
-    lineList.push_back(line);
-
-    pPoly->lines = lineList;
-    pPoly->range = line.range;
-    pPoly->minRow = line.range.rowMin;
-    pPoly->maxRow = line.range.rowMax;
-    pPoly->minCol = line.range.colMin;
-    pPoly->maxCol = line.range.colMax;
+    pPoly->lines.push_back(line);
     return pPoly;
 }
 
@@ -229,7 +241,7 @@ void RTree::insert(RNode *node) {
     if(node->dur > this->maxClusterDur)
         this->maxClusterDur = node->dur;
 
-    GeoRegion range = node->poly->range;
+    GeoRegion& range = node->poly->range;
     double pdMin[N_DIM] = {range.getLow(0), range.getLow(1)};
     double pdMax[N_DIM] = {range.getHigh(0), range.getHigh(1)};
 
@@ -306,6 +318,7 @@ void RNode::mergeCluster() {
     double area = this->poly->range.getArea();
     queue<RNode *> keep;
     // get max dur of previous
+    int maxDur = 0;
     for (auto it = overlap.begin(); it != overlap.end(); ++it) {
         RNode* pNode = *it;
         double prevArea = (pNode->poly->range).getArea();
@@ -321,13 +334,14 @@ void RNode::mergeCluster() {
 
         prev.push_back(pNode);
 
-        if (pNode->dur > this->dur)
-            this->dur = pNode->dur;
+        if (pNode->dur > maxDur)
+            maxDur = pNode->dur;
 
         if(pNode->isDeleted)
             keep.push(pNode);
     }
-    ++this->dur;
+    if(maxDur > 0)
+        this->dur = maxDur + 1;
 
     // update duration
     if(this->dur >= DUR_THRESHOLD){
@@ -369,21 +383,14 @@ void RNode::mergeCluster() {
     }
 }
 
-int Raster::index(int row, int col) const {
-    return row * colNum + col;
-}
+Raster::Raster(Meta _meta, string _fileName):Tif(_meta, _fileName) {
+    vis = new bool[meta.nPixel];
+    memset(vis, 0, meta.nPixel);
 
-Raster::Raster(string file) {
-    val = new int[sz];
-    vis = new bool[sz];
-    memset(vis, 0, sz);
-    Tif::readInt(file, val);
-
-    timePoint = getTimePoint(file);
+    timePoint = getTimePoint(_fileName);
 }
 
 Raster::~Raster(){
-    delete[] val;
     delete[] vis;
 }
 
@@ -391,7 +398,7 @@ TP Raster::getTimePoint(string fileName){
     string dateStr = GetDate(fileName);
 
     tm tm_ = {0};
-    tm_.tm_isdst = 0;                          // 非夏令时。
+    tm_.tm_isdst = 0; // 非夏令时。
     tm_.tm_sec = 0;
     tm_.tm_min = 0;
     tm_.tm_hour = 0;
@@ -414,23 +421,11 @@ TP Raster::getTimePoint(string fileName){
     return tp;
 }
 
-bool Raster::checkIndex(int row, int col) {
-    if (row < 0 || row >= rowNum || col < 0 || col >= colNum) {
-        return false;
-    } else {
-        return true;
-    }
-}
-
-int Raster::get(int row, int col) {
-    if(row < 0 || col < 0 || row >= rowNum || col >= colNum) // just for the edge process of getNode()
+float Raster::get(int row, int col) {
+    if(row < 0 || col < 0 || row >= meta.nRow || col >= meta.nCol) // just for the edge process of getNode()
         return 0;
     else
-        return val[index(row, col)];
-}
-
-void Raster::set(int row, int col, int value) {
-    val[index(row, col)] = value;
+        return data[index(row, col)];
 }
 
 bool Raster::isVisited(int row, int col){
@@ -449,26 +444,25 @@ bool Raster::visit(int row, int col) {
 }
 
 void Raster::getNode(std::set<Node>& nodeSet, const int r, const int c, GeoRegion &range) {
-    Node* n;
     int r1 = r, r2 = r, r3 = r + 1, r4 = r + 1;
     int c1 = c, c2 = c + 1, c3 = c, c4 = c + 1;
-    int v1 = get(r1, c1), v2 = get(r2, c2), v3 = get(r3, c3), v4 = get(r4, c4);
+    float v1 = get(r1, c1), v2 = get(r2, c2), v3 = get(r3, c3), v4 = get(r4, c4);
 
-    if (v1 == 0 && v2 != 0 && v3 != 0 && v4 != 0 || v1 != 0 && v2 == 0 && v3 == 0 && v4 == 0) {
+    if (IsZero(v1) && !IsZero(v2) && !IsZero(v3) && !IsZero(v4) || !IsZero(v1) && IsZero(v2) && IsZero(v3) && IsZero(v4)) {
         nodeSet.emplace(NodeType_LeftTop, r, c);
-    } else if (v1 != 0 && v2 == 0 && v3 != 0 && v4 != 0 || v1 == 0 && v2 != 0 && v3 == 0 && v4 == 0) {
+    } else if (!IsZero(v1) && IsZero(v2) && !IsZero(v3) && !IsZero(v4) || IsZero(v1) && !IsZero(v2) && IsZero(v3) && IsZero(v4)) {
         nodeSet.emplace(NodeType_RightTop, r, c);
-    } else if (v1 != 0 && v2 != 0 && v3 == 0 && v4 != 0 || v1 == 0 && v2 == 0 && v3 != 0 && v4 == 0) {
+    } else if (!IsZero(v1) && !IsZero(v2) && IsZero(v3) && !IsZero(v4) || IsZero(v1) && IsZero(v2) && !IsZero(v3) && IsZero(v4)) {
         nodeSet.emplace(NodeType_LeftBot, r, c);
-    } else if (v1 != 0 && v2 != 0 && v3 != 0 && v4 == 0 || v1 == 0 && v2 == 0 && v3 == 0 && v4 != 0) {
+    } else if (!IsZero(v1) && !IsZero(v2) && !IsZero(v3) && IsZero(v4) || IsZero(v1) && IsZero(v2) && IsZero(v3) && !IsZero(v4)) {
         nodeSet.emplace(NodeType_RightBot, r, c);
-    } else if(v1 != 0 && v4 != 0 && v2 == 0 && v3 == 0){
+    } else if(!IsZero(v1) && !IsZero(v4) && IsZero(v2) && IsZero(v3)){
         nodeSet.emplace(NodeType_LeftTopAndRightBot, r, c);
-    } else if(v1 == 0 && v4 == 0 && v2 != 0 && v3 != 0){
+    } else if(IsZero(v1) && IsZero(v4) && !IsZero(v2) && !IsZero(v3)){
         nodeSet.emplace(NodeType_RightTopAndLeftBot, r, c);
-    } else if (v1 != 0 && v2 == 0 && v3 != 0 && v4 == 0 || v1 == 0 && v2 != 0 && v3 == 0 && v4 != 0) {
+    } else if (!IsZero(v1) && IsZero(v2) && !IsZero(v3) && IsZero(v4) || IsZero(v1) && !IsZero(v2) && IsZero(v3) && !IsZero(v4)) {
         nodeSet.emplace(NodeType_TopBot, r, c);
-    } else if (v1 != 0 && v2 != 0 && v3 == 0 && v4 == 0 || v1 == 0 && v2 == 0 && v3 != 0 && v4 != 0) {
+    } else if (!IsZero(v1) && !IsZero(v2) && IsZero(v3) && IsZero(v4) || IsZero(v1) && IsZero(v2) && !IsZero(v3) && !IsZero(v4)) {
         nodeSet.emplace(NodeType_LeftRight, r, c);
     }
 
@@ -505,7 +499,7 @@ bool Line::sortNodes(){
         r += RowMove.at(direction);
         c += ColMove.at(direction);
         if(r < -1 || c < -1 || r >= rowLen || c >= colLen){
-            cout << "error: [sortNodes] out of range." << endl;
+            cerr << "[sortNodes] out of range." << endl;
             return false;
         }
 
@@ -530,3 +524,5 @@ bool Line::sortNodes(){
     Matrix tmp(range, nodes); // just view the matrix of nodes
     return true;
 }
+
+

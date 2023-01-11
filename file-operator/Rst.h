@@ -61,7 +61,7 @@ public:
         return IsEqual(data[index(r, c)], 0.0f);
     };
 
-    float get(int row, int col) {
+    virtual float get(int row, int col) {
         if(!checkIndex(row, col)) {
             cerr << "[get] out of data range. row:"<< row << ", col:" << col << endl;
             return meta.fillValue;
@@ -75,7 +75,7 @@ public:
         data[index(r,c)] = v;
     };
 
-    ~Rst(){
+    virtual ~Rst(){
         delete[] data;
     }
 

@@ -68,6 +68,10 @@ inline bool IsEqual(double a, double b) {
     return fabs(a - b) < std::numeric_limits<double>::epsilon();
 }
 
+inline bool IsZero(float a){
+    return IsEqual(a, 0.0f);
+}
+
 string GetDate(string fileName);
 
 class util {

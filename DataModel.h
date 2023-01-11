@@ -79,47 +79,16 @@ public:
     static const GeoRegion GLOBAL;
     int rowMin , rowMax, colMin , colMax;
 public:
-    GeoRegion():GeoRegion(Meta::DEF.startLat, Meta::DEF.endLat, Meta::DEF.startLon, Meta::DEF.endLon){
-        rowMin = INT_MAX;
-        rowMax = 0;
-        colMin = INT_MAX;
-        colMax = 0;
-    }
+    GeoRegion();
 
-    GeoRegion(double latMin, double latMax, double lonMin, double lonMax){
-        double pLow[2] = {lonMin, latMin};
-        double pHigh[2]= {lonMax,latMax};
-        this->GeoRegion::GeoRegion(pLow, pHigh);
-    }
+    GeoRegion(double latMin, double latMax, double lonMin, double lonMax);
 
     GeoRegion(const double* pLow, const double* pHigh):Region(pLow, pHigh, N_DIM){}
 
-    bool checkEdge(int row, int col){
-        bool check = false;
-        if(row <= rowMin){
-            rowMin = row;
-            check = true;
-        } else if(row >= rowMax){
-            rowMax = row;
-            check = true;
-        }
-        if(col <= colMin){
-            colMin = col;
-            check = true;
-        } else if(col >= colMax){
-            colMax = col;
-            check = true;
-        }
-        return check;
-    }
+    bool checkEdge(int row, int col);
 
     // row & col To lat & lon
-    void updateGeo(){
-        m_pLow[1] = Meta::DEF.startLat + (rowMin + 0.5) * Meta::DEF.resolution;
-        m_pHigh[1] = Meta::DEF.startLat + (rowMax + 0.5) * Meta::DEF.resolution;
-        m_pLow[0] = Meta::DEF.startLon + (colMin + 0.5) * Meta::DEF.resolution;
-        m_pHigh[0] = Meta::DEF.startLon + (colMax + 0.5) * Meta::DEF.resolution;
-    }
+    void updateGeo();
 };
 
 class Node {
@@ -147,8 +116,8 @@ public:
     int type;//结点类型
     int row;
     int col;
-    string dir1;//方向1
-    string dir2;//方向2
+    string dir1;
+    string dir2;
     string outDir;//线进入方向
     bool isVisited;
     int power;//强度
@@ -239,6 +208,11 @@ public:
             {"b", 0}
     };
 
+    Line();
+
+    Line( const Line &other);
+
+    Line(vector<Node> _nodes);
 
     bool Line::sortNodes();
 };
@@ -373,12 +347,27 @@ public:
     myRectangle minRec;//最小面积外包矩形
     myCircle minOutCir;//最小面积外接圆
     myCircle maxInCir;//最大面积内接圆
-    chrono::time_point<chrono::system_clock> time;
 public:
     Poly();
 
     void update(float v);
 
 };
+
+
+class Matrix{
+private:
+    vector<vector<Node *>> mat;
+    int rowOffset, rowLen, colOffset, colLen;
+public:
+    Matrix(GeoRegion& range, vector<Node>& nodeList);
+
+    void print();
+
+    inline Node* get(int row, int col){
+        return mat[row + 1][col + 1];
+    }
+};
+
 
 #endif //CLUSTERING_DATAMODEL_H
