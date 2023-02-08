@@ -11,7 +11,7 @@
 36	2510	6903139384993998	CMakeFiles/Clustering.dir/operator/opt.cpp.obj	c6c7f54f5fce469
 22	4541	6920873114830324	CMakeFiles/Clustering.dir/process/Postprocessor.cpp.obj	7db1ef913ea2d61b
 25	3073	6871132782837340	CMakeFiles/Clustering.dir/thread/AnomalyAnalysis.cpp.obj	bb79303362258917
-3951	6344	6920873133031677	CMakeFiles/Clustering.dir/algorithm/DcSTMC.cpp.obj	b3f171459a713a87
+3951	6344	6920873133031677	CMakeFiles/Clustering.dir/algorithm/DcSTCA.cpp.obj	b3f171459a713a87
 22	1542	6902185776879721	CMakeFiles/Clustering.dir/sidx/src/spatialindex/SpatialIndexImpl.cc.obj	aca834d7a40dfd92
 2	2131	6921041533956117	CMakeFiles/LibsGDAL.dir/util/util.cpp.obj	7329ad4d9788dfdc
 1439	1775	6921084059695858	Clustering.exe	e75fca2419781d52

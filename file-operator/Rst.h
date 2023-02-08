@@ -5,7 +5,10 @@
 #ifndef CLUSTERING_RST_H
 #define CLUSTERING_RST_H
 #include <string>
+#include <map>
 #include "DataModel.h"
+
+using namespace std;
 
 class Rst{
 public:
@@ -79,7 +82,7 @@ public:
         delete[] data;
     }
 
-    virtual bool read(string fName = "")  = 0;
+    virtual bool read(string fName = "", map<string,string> *metaData = nullptr)  = 0;
     virtual bool write(string fName = "") = 0;
 };
 

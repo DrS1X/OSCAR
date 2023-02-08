@@ -34,7 +34,7 @@ public:
 
     static std::unordered_map<string, string> parseAttribute(char* attText);
 
-    bool read(string fName = "")  override;
+    bool read(string fName = "", map<string,string> *metaData = nullptr)  override;
 
     bool write(string fName = "") override;
 };

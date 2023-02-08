@@ -16,6 +16,7 @@
     <excludeRoots>
       <file path="$PROJECT_DIR$/CMake-hdf5-1.12.0" />
       <file path="$PROJECT_DIR$/hdf5-1.13.3" />
+      <file path="$PROJECT_DIR$/pkg" />
       <file path="$PROJECT_DIR$/release-1930-x64-gdal-3-5-2-mapserver-8-0-0" />
       <file path="$PROJECT_DIR$/release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs" />
       <file path="$PROJECT_DIR$/release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs/hdf5-examples" />

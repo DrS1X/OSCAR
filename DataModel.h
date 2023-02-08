@@ -5,14 +5,14 @@
 #ifndef CLUSTERING_DATAMODEL_H
 #define CLUSTERING_DATAMODEL_H
 
-
+#include <array>
+#include <algorithm>
+#include <ogr_spatialref.h>
 #include "sidx_impl.h"
 #include "util.h"
 #include "Cst.h"
 
 using namespace std;
-
-enum AnomalyType {Positive, Negative, None};
 
 enum TimeUnit{Day, Mon};
 
@@ -22,9 +22,10 @@ public:
     float resolution, latLonOffset, scale = 1.0, fillValue = -9999;
     int nBand = 1, nRow, nCol, nPixel;
     float startLat, startLon, endLat, endLon;
-    string projection = "GEOGCRS[\"My_GCS_WGS_1984\",DATUM[\"World Geodetic System 1984\",ELLIPSOID[\"WGS 84\",6378137,298.257223563,LENGTHUNIT[\"metre\",1]],ID[\"EPSG\",6326]],PRIMEM[\"Greenwich\",180,ANGLEUNIT[\"Degree\",0.0174532925199433]],CS[ellipsoidal,2],AXIS[\"longitude\",east,ORDER[1],ANGLEUNIT[\"Degree\",0.0174532925199433]],AXIS[\"latitude\",north,ORDER[2],ANGLEUNIT[\"Degree\",0.0174532925199433]]]";
+    OGRSpatialReference *spatialReference;
     TimeUnit timeUnit;
     int timeScale;
+    bool isSimulated = false;
 
     // variable field
     string date;
@@ -35,12 +36,7 @@ public:
 
     Meta(){};
 
-    Meta(float _resolution, int _nRow, int _nCol,float _startLat, float _startLon, float _endLat, float _endLon):
-        resolution(_resolution), nRow( _nRow), nCol( _nCol),startLat( _startLat), startLon( _startLon), endLat(_endLat), endLon( _endLon)
-    {
-        nPixel = _nRow * _nCol;
-        latLonOffset = _resolution * 0.5;
-    };
+    Meta(float _resolution, float _scale, int _nRow, int _nCol,float _startLat, float _startLon, float _endLat, float _endLon);
 
     int getOrder(){
         // keep the place for February 29
@@ -81,7 +77,7 @@ public:
 public:
     GeoRegion();
 
-    GeoRegion(double latMin, double latMax, double lonMin, double lonMax);
+    GeoRegion(int _rowMin , int _rowMax,int _colMin , int _colMax);
 
     GeoRegion(const double* pLow, const double* pHigh):Region(pLow, pHigh, N_DIM){}
 
@@ -89,6 +85,8 @@ public:
 
     // row & col To lat & lon
     void updateGeo();
+
+    bool isEqual(const GeoRegion& another);
 };
 
 class Node {
@@ -214,7 +212,6 @@ public:
 
     Line(vector<Node> _nodes);
 
-    bool Line::sortNodes();
 };
 
 class myCircle {
@@ -327,30 +324,19 @@ class Poly {
 public:
     int id;
     int clusterId;
-    vector<Line> lines;//所有线
-    int minRow;//最小行数
-    int minCol;//最小列数
-    int maxRow;//最大行数
-    int maxCol;//最大列数
+    vector<Line> lines;
     GeoRegion range;
-    double area;//实际面积
-    double length;
+    double area;
     double avgValue;//平均距平值
     double maxValue;//最大距平值
     double minValue;//最小距平值
-    double sumValue;
-    long pixelCount;
-    int power;//强度
-    bool isMulti;//是否是多面
-    double centroidRow;//重心行号
-    double centroidCol;//重心列号
-    myRectangle minRec;//最小面积外包矩形
-    myCircle minOutCir;//最小面积外接圆
-    myCircle maxInCir;//最大面积内接圆
+    double sum;
+    double dev;
+    long pix;
 public:
     Poly();
 
-    void update(float v);
+    void update(int r, int c, float v);
 
 };
 

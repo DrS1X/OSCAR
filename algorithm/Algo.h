@@ -5,15 +5,21 @@
 #ifndef CLUSTERING_ALGO_H
 #define CLUSTERING_ALGO_H
 
+#include <iostream>
 #include <string>
 #include <vector>
 #include <queue>
+#include <list>
+#include <cmath>
+#include <memory>
+#include "Reader.h"
 #include "Cst.h"
-#include "util/util.h"
+#include "util.h"
 #include "Tif.h"
+#include "Csv.h"
 
 using namespace std;
-
+using filesystem::path;
 using TP = chrono::time_point<chrono::system_clock>;
 using duration_seconds = chrono::duration<float, ratio<60>>;
 using duration_hours = chrono::duration<float, std::ratio<3600>>;
@@ -23,134 +29,122 @@ using duration_months = chrono::duration<float, std::ratio<2629746>>;
 using duration_years = chrono::duration<float, std::ratio<31556952>>;
 
 
-struct RTreeParam{
-    int geoWindow;
-    int coreThreshold;
-    TimeUnit unit;
-    int durationThreshold;
-    float valueThreshold;
-    float overlapThreshold;
-};
+void DcSTCABatch(bool isDcSTCA, string inputPath, string outputPath, int T, int maxK = 0, int minK = 0, int stepK = 1);
 
-class RoSTCM
-{
+void Evaluation(path srcPath, path resPath, path outPath);
+
+class Pixel {
 public:
-    int rsID = -1; //??????ID
-    int rsclusterId = -1; //????????ID
-    bool isKeyrs; //???????????
-    bool Visited; //????????
-    double Attribute = 0;//??????????????
-    int t;//???????
+    int pid = -1;
+    int cid = -1;
+    bool isKey;
+    bool visited;
+    double Attribute = 0;
+    int t;
     int x;
-    int y;//???????
-    int a;//??????????????1????????-1???????0??
-    vector<int> neighborgrids; //????????????id?б?
+    int y;
+    int a;
+    vector<int> neighborGrids;
 
     //RoSTCM() {}
 
-    bool IsKey()
-    {
-        return this->isKeyrs;
+    bool IsKey() {
+        return this->isKey;
     }
 
     //???ú????????
-    void SetKey(bool isKeyrs)
-    {
-        this->isKeyrs = isKeyrs;
+    void SetKey(bool isKeyrs) {
+        this->isKey = isKeyrs;
     }
 
-    //???DpId????
-    int GetrsID()
-    {
-        return this->rsID;
-    }
 
     //????DpId????
-    void SetrsId(int rsID)
-    {
-        this->rsID = rsID;
+    void SetrsId(int rsID) {
+        this->pid = rsID;
     }
 
     //GetIsVisited????
-    bool isVisited()
-    {
-        return this->Visited;
+    bool isVisited() {
+        return this->visited;
     }
 
     //SetIsVisited????
-    void SetVisited(bool Visited)
-    {
-        this->Visited = Visited;
+    void SetVisited(bool Visited) {
+        this->visited = Visited;
     }
 
     //GetClusterId????
-    long GetrsClusterId()
-    {
-        return this->rsclusterId;
+    long GetrsClusterId() {
+        return this->cid;
     }
 
     //GetClusterId????
-    void SetrsClusterId(int rsclusterId)
-    {
-        this->rsclusterId = rsclusterId;
+    void SetrsClusterId(int rsclusterId) {
+        this->cid = rsclusterId;
     }
 
     //GetArrivalPoints????
-    vector<int> Getneighborgrids()
-    {
-        return neighborgrids;
+    vector<int> Getneighborgrids() {
+        return neighborGrids;
     }
-
-    //~RoSTCM()
-    //{
-
-    //}
 };
 
-struct Param
-{
-    int startID;
-    int endID;
-    int mTempFileNum;
+class Cluster {
+public :
+    int id;
+    double sum = 0.0;
+    double avg = 0.0;
+    double dev = 0.0;
+    int pix = 0;
+
+    Cluster() {
+        id = -1;
+    };
+
+    Cluster(int _id) : id(_id) {
+    };
+
+    Cluster(int _id, double _sum, double _dev, int _pix);
+
+    Cluster(const Cluster &another);
+
+    void expand(float v);
+
+    void expandBatch(double _sum, double _dev, int _pix);
+
+    void statistic();
+};
+
+
+class DcSTCA {
+public:
+    int T;
+    int Neighborhood = 8;
+    int batchSize = 10;
+    int clusterId = 2;
+    int MinNum;
     int mRows;
     int mCols;
-    //vector<RoSTCM> Rasterpixels;
-    int drID;
-    int rsclusterId;
-    int minnum;
-
-    int timesID;
+    double mScale = 0.001;
     double mFillValue;
-    double mScale;
-    double ProgressingPer;
-    int Index;
-};
+    double valueThreshold;
+    int coreThreshold;
+    Meta meta;
 
-class DcSTMC {
+    map<int, Cluster *> clusters;
+
+    float Run(string inPath, string outPath, int _T, int cTh, float vTh);
+
 private:
-    int T = 2;
-    int Neighborhood = 8;
-    int mPerNum = 200;
-    int rsclusterId = 2;
+    void ExpandCluster(vector<Pixel> &Rasterpixels, int drID, int clusterId, int row, int col);
 
-    int MinNum = 100;
-    int CP = 15; // 核心点阈值
+    void ClusterFilter(vector<Pixel> &Rasterpixels, int startID, int endID, int mTempFileNum, int size);
 
-    int mRows = Meta::DEF.nRow;
-    int mCols = Meta::DEF.nCol;
-    double mScale = Meta::DEF.scale;
-    double mFillValue = Meta::DEF.fillValue;
+    void Lable(vector<Pixel> &Rasterpixels, int mTempFileNum);
 
-    Meta meta = Meta::DEF;
-
-    void ExpandCluster1(vector<RoSTCM>& Rasterpixels, int drID, int rsclusterId, int row, int col, double avg, int num);
-    void ClusterFilter(vector<RoSTCM>& Rasterpixels, int startID, int endID, int mTempFileNum, int size);
-    void Lable(vector<RoSTCM>& Rasterpixels, int mTempFileNum);
-    void OutputRasterpixels(vector<RoSTCM>& Rasterpixels, vector<string>& fileList, int mStartFileIndex, int mTempFileNum, string outputPath);
-public:
-    double V_THRESHOLD;
-
-    pair<vector<string>, vector<string>> Run(vector<string>& FileList, string outputPath, int in_mPerNum, int in_T);
+    void
+    OutputRasterpixels(vector<Pixel> &Rasterpixels, vector<string> &fileList, int mStartFileIndex, int mTempFileNum,
+                       string outputPath);
 };
 
 #endif //CLUSTERING_ALGO_H

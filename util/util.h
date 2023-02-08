@@ -9,12 +9,7 @@
 #include <io.h>
 #include <direct.h>
 #include <iostream>
-#include <math.h>
-#include <algorithm>
 #include <vector>
-#include <list>
-#include <set>
-#include <array>
 #include <string>
 #include <chrono>
 #include <direct.h>
@@ -58,8 +53,6 @@ inline T** InitArr(int x, int y, T initValue){
     return arr;
 }
 
-bool CheckFolderExist(string folder);
-
 inline bool IsEqual(float a, float b) {
     return fabs(a - b) < std::numeric_limits<float>::epsilon();
 }
@@ -72,31 +65,86 @@ inline bool IsZero(float a){
     return IsEqual(a, 0.0f);
 }
 
-string GetDate(string fileName);
+inline long C2(int x){
+    return x * (x - 1) / 2;
+}
 
-class util {
-public:
+inline double L2(double x){
+    return fabs(x) < std::numeric_limits<double>::epsilon() ? 0.0 : log2(x);
+}
 
-    static void checkFilePath(string filePath);
 
-    static string generateFileName(string originFileName, string outputPath, string pre, string type);
+inline bool CheckFolderExist(std::filesystem::path folder, bool cover = true){
+    std::error_code err;
+    bool exist = false;
+    if (std::filesystem::exists(folder)){
+        exist = true;
+        if(!cover)
+            return exist;
+        if(!std::filesystem::remove_all(folder,err)){
+            std::cerr << "[CheckFolderExist] fail to remove the old folder: " << folder
+                      << ", err code: " << err.message() << endl;
+            return exist;
+        }
+    }
 
-    static string generateFileName(string originFilePath, string outputPath, string suffix);
+    if(!std::filesystem::create_directories(folder, err)) {
+        std::cerr << "[CheckFolderExist] fail to create new folder " << folder
+                  << ", err code: " << err.message() << endl;
+    }
+    return exist;
+}
 
-    static void getFileList(string path, vector<string> &files, string fileType);
+inline void GetFileList(string path, vector<string>& files)
+{
+    for (const auto & file : std::filesystem::recursive_directory_iterator(path)) {
+        if(file.is_directory())
+            continue;
+        string fileName = file.path().string();
+        int point = fileName.find_last_of('.');
+        if(fileName.substr(point, 4) == ".xml")
+            continue;
+        files.push_back(fileName);
+    }
+}
 
-    static int LeapYear(int Year);
+inline string GetDate(string fileName) {
+    static const std::regex pattern("19|20[0-9]{2}[0-1][0-9]([0-3][0-9]|)");
 
-    static double *GetMin_Max(double *value, long *pBuffer, long m_Rows, long m_Cols,
-                              long DefaultValue = -9999);   //以数组同时返回最大最小值 索引0为最小值，1为最大值 默认缺省值-9999
-    static double *
-    GetMin_Max(double *value, double *pBuffer, long m_Rows, long m_Cols, double DefaultValue = -9999);//重载
-    static double GetMeanValue(long *pBuffer, long m_Rows, long m_Cols, long DefaultValue = -9999);     //默认缺省值-9999
-    static double GetMeanValue(double *pBuffer, long m_Rows, long m_Cols, double DefaultValue = -9999);//重载
-    static double GetStdValue(long *pBuffer, long m_Rows, long m_Cols, long DefaultValue = -9999);  //默认缺省值-9999
-    static double GetStdValue(double *pBuffer, long m_Rows, long m_Cols, double DefaultValue = -9999);//重载
+    string date = "";
+    int idx = fileName.find_last_of("\\");
+    if(idx == -1)
+        idx = fileName.find_last_of("/");
+    if(idx != -1)
+        fileName = fileName.substr(idx + 1);
 
-    static void split(std::string &s, std::string &delim, std::vector<std::string> *ret);
-};
+    std::smatch result;
+    string::const_iterator iter_begin = fileName.cbegin();
+    string::const_iterator iter_end = fileName.cend();
+    if (regex_search(iter_begin, iter_end,result, pattern)){
+        date = fileName.substr(result[0].first - iter_begin,result[0].second - result[0].first);
+    }else{
+        cout << "[GetDate] failed to match date from file name: " <<fileName<< endl;
+    }
+
+    return date;
+}
+
+inline string GenerateFileName(string originFileName, string outputPath, string pre, string type) {
+    string date = GetDate(originFileName);
+    string folder = outputPath + "\\";
+
+    string mOutFileName = folder + pre + date + type;
+    return mOutFileName;
+}
+
+inline string GenerateFileName(string originFilePath, string outputPath, string suffix) {
+    string fileName = originFilePath.substr(originFilePath.find_last_of("\\"),
+                                            originFilePath.find_last_of(".") - originFilePath.find_last_of("\\"));
+    string folder = outputPath + "\\";
+
+    string outFileName = folder + fileName + suffix;
+    return outFileName;
+}
 
 #endif //CLUSTERING_UTIL_H

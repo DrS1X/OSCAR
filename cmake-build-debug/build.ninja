@@ -215,7 +215,7 @@ build CMakeFiles\Clustering.dir\process\Convertor.cpp.obj: CXX_COMPILER__Cluster
   TARGET_COMPILE_PDB = CMakeFiles\Clustering.dir\
   TARGET_PDB = Clustering.pdb
 
-build CMakeFiles\Clustering.dir\algorithm\DcSTMC.cpp.obj: CXX_COMPILER__Clustering_Debug F$:\CLion_Project\Clustering\algorithm\DcSTMC.cpp || cmake_object_order_depends_target_Clustering
+build CMakeFiles\Clustering.dir\algorithm\DcSTCA.cpp.obj: CXX_COMPILER__Clustering_Debug F$:\CLion_Project\Clustering\algorithm\DcSTCA.cpp || cmake_object_order_depends_target_Clustering
   FLAGS = /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -MDd
   INCLUDES = -IF:\CLion_Project\Clustering\. -IF:\CLion_Project\Clustering\file-operator -IF:\CLion_Project\Clustering\algorithm -IF:\CLion_Project\Clustering\process -IF:\CLion_Project\Clustering\model -IF:\CLion_Project\Clustering\util -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include -IF:\CLion_Project\Clustering\release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs\include\hdf4 -IF:\CLion_Project\Clustering\sidx\include -IF:\CLion_Project\Clustering\sidx\include\spatialindex -IF:\CLion_Project\Clustering\sidx\include\spatialindex\capi -IF:\CLion_Project\Clustering\sidx\include\spatialindex\tools
   OBJECT_DIR = CMakeFiles\Clustering.dir
@@ -255,7 +255,7 @@ build CMakeFiles\Clustering.dir\process\Reader.cpp.obj: CXX_COMPILER__Clustering
 #############################################
 # Link the executable Clustering.exe
 
-build Clustering.exe: CXX_EXECUTABLE_LINKER__Clustering_Debug CMakeFiles\Clustering.dir\main.cpp.obj CMakeFiles\Clustering.dir\file-operator\TifOpt.cpp.obj CMakeFiles\Clustering.dir\file-operator\hdfOpt.cpp.obj CMakeFiles\Clustering.dir\file-operator\Hdf5Opt.cpp.obj CMakeFiles\Clustering.dir\util\util.cpp.obj CMakeFiles\Clustering.dir\process\Postprocessor.cpp.obj CMakeFiles\Clustering.dir\process\Vectorization.cpp.obj CMakeFiles\Clustering.dir\process\AnomalyAnalysis.cpp.obj CMakeFiles\Clustering.dir\process\Convertor.cpp.obj CMakeFiles\Clustering.dir\algorithm\DcSTMC.cpp.obj CMakeFiles\Clustering.dir\algorithm\DBSCAN.cpp.obj CMakeFiles\Clustering.dir\algorithm\RTree.cpp.obj CMakeFiles\Clustering.dir\process\Reader.cpp.obj | LibsGDAL.lib LibsSpatialIndex.lib || LibsGDAL.lib LibsSpatialIndex.lib
+build Clustering.exe: CXX_EXECUTABLE_LINKER__Clustering_Debug CMakeFiles\Clustering.dir\main.cpp.obj CMakeFiles\Clustering.dir\file-operator\TifOpt.cpp.obj CMakeFiles\Clustering.dir\file-operator\hdfOpt.cpp.obj CMakeFiles\Clustering.dir\file-operator\Hdf5Opt.cpp.obj CMakeFiles\Clustering.dir\util\util.cpp.obj CMakeFiles\Clustering.dir\process\Postprocessor.cpp.obj CMakeFiles\Clustering.dir\process\Vectorization.cpp.obj CMakeFiles\Clustering.dir\process\AnomalyAnalysis.cpp.obj CMakeFiles\Clustering.dir\process\Convertor.cpp.obj CMakeFiles\Clustering.dir\algorithm\DcSTCA.cpp.obj CMakeFiles\Clustering.dir\algorithm\DBSCAN.cpp.obj CMakeFiles\Clustering.dir\algorithm\RTree.cpp.obj CMakeFiles\Clustering.dir\process\Reader.cpp.obj | LibsGDAL.lib LibsSpatialIndex.lib || LibsGDAL.lib LibsSpatialIndex.lib
   FLAGS = /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -MDd
   LINK_FLAGS = -Wl,--stack,1073741824 /debug /INCREMENTAL /subsystem:console
   LINK_LIBRARIES = LibsGDAL.lib  LibsSpatialIndex.lib  gdal_i.lib  mfhdf.lib  hdf5.lib  hdf5_cpp.lib  hdf5_hl_cpp.lib  spatialindex-64.lib  spatialindex_c-64.lib  kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib

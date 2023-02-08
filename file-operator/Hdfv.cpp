@@ -16,7 +16,7 @@ Hdfv::Hdfv(string fileName, string _groupName, string _datasetName):
 
 Hdfv::Hdfv(string fileName): Rst(fileName){}
 
-bool Hdfv::read(string fName) {
+bool Hdfv::read(string fName,map<string,string> *metaData) {
     try {
          // Turn off the auto-printing when failure occurs so that we can
          // handle the errors appropriately
