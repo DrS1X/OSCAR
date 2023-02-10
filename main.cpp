@@ -11,7 +11,6 @@
 
 using namespace std;
 
-
 Meta Meta::DEF(
         1.0,
         1.0f,
@@ -32,6 +31,8 @@ void SimulateInit() {
     Meta::DEF.startLon = 0;
     Meta::DEF.endLon = 20;
     Meta::DEF.nPixel = 60 * 20;
+    GeoRegion::GLOBAL.rowMax = Meta::DEF.nRow - 1;
+    GeoRegion::GLOBAL.colMax = Meta::DEF.nCol - 1;
 }
 
 
@@ -43,20 +44,6 @@ void Test_ReadTiff() {
 
     Tif *f = new Tif(Meta::DEF, fn);
     f->read();
-}
-
-void Test_RTree() {
-    GeoRegion r(20, 30, 20, 30);
-    Poly poly;
-    poly.range = r;
-    RNode node(&poly);
-
-    RTree t; // delete
-    t.insert(&node);
-
-    GeoRegion r2(10, 40, 10, 40);
-    list<RNode *> result = t.query(r2);
-    cout << result.size() << endl;
 }
 
 void Test_Intersect() {
@@ -220,8 +207,8 @@ int main(int argc, char *argv[]) {
              << "Example:\n"
              << "-S -o E:\\pr\\simulate -i E:\\pr\\simulate\\csv\n"
              << "-k -t 1 -o E:\\pr\\simulate -i E:\\pr\\simulate\\src -S\n"
-             << "-d -b -t 1 -m -o E:\\pr\\simulate -i E:\\pr\\simulate\\src -S\n"
-             << "-r -b -t 1 -m -o E:\\pr\\simulate -i E:\\pr\\simulate\\src -S\n"
+             << "-d -b -t 2 -x 45 -n 5 -s 5 -m -o E:\\pr\\pr2015_2016 -i E:\\pr\\pr2015_2016\\src\n"
+             << "-r -b -m -o E:\\pr\\simulate -i E:\\pr\\simulate\\src -S\n"
              << "-e -o E:\\pr\\simulate\\R_Batch_1T\\R_1_7_3.090000 -i E:\\pr\\simulate\\truth -i E:\\pr\\simulate\\R_Batch_1T\\R_1_7_3.090000\\rst -S\n"
              << "-d -t 1 -c 15 -v 3 -m -o E:\\pr\\simulate -i E:\\pr\\simulate\\tif2 -S\n"
              << "-r -t 1 -c 5 -v 3 -m -o E:\\pr\\simulate -i E:\\pr\\simulate\\tif2 -S\n"
@@ -297,7 +284,7 @@ int main(int argc, char *argv[]) {
                 int maxK = para.find('x') == para.end() ? 0 : para['x'];
                 int minK = para.find('n') == para.end() ? 0 : para['n'];
                 int stepK = para.find('s') == para.end() ? 1 : para['s'];
-                DcSTCABatch(true, inPath, outPath, para['t'], maxK, minK, stepK);
+                DcSTCABatch(inPath, outPath, para['t'], maxK, minK, stepK);
             } else {
                 DcSTCA a;
                 a.Run(inPath, outPath, para['t'], para['c'], para['v']);
@@ -307,12 +294,14 @@ int main(int argc, char *argv[]) {
         }
         case 'r': {
             if (para.find('b') != para.end()) {
-                int maxK = para.find('x') == para.end() ? 0 : para['x'];
-                int minK = para.find('n') == para.end() ? 0 : para['n'];
+                int maxK = para.find('x') == para.end() ? 9 : para['x'];
+                int minK = para.find('n') == para.end() ? 4 : para['n'];
                 int stepK = para.find('s') == para.end() ? 1 : para['s'];
-                DcSTCABatch(false, inPath, outPath, para['t'], maxK, minK, stepK);
+                vector<float> oThs{0.25, 0.5,0.75};
+                for (const auto oTh: oThs)
+                    RBatch(inPath, outPath, oTh);
             } else
-                RTree::Run(para['t'], para['c'], para['v'], inPath, outPath);
+                RTree::Run(para['t'], para['c'], para['v'], inPath, outPath); // para['t'] -> oTh
 
             break;
         }

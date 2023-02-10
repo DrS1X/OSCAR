@@ -95,10 +95,10 @@ Line::Line(vector<Node> _nodes) : nodes(_nodes) {
 
 Poly::Poly() {
     id = REGION_ID++;
-    clusterId = 0;
+    cid = 0;
 
-    maxValue = DBL_MIN;
-    minValue = DBL_MAX;
+    maxValue = FLT_MIN;
+    minValue = FLT_MAX;
     sum = 0.0;
     dev = 0.0;
     pix = 0;
@@ -107,15 +107,16 @@ Poly::Poly() {
 void Poly::update(int r, int c, float v) {
     range.checkEdge(r, c);
 
-    if (v > maxValue) {
+    if (v > maxValue)
         maxValue = v;
-    } else if (v < minValue) {
+
+    if (v < minValue)
         minValue = v;
-    }
+    
     sum += v;
     dev += v * v;
     ++pix;
-    avgValue = sum / pix;
+    avg = sum / pix;
 }
 
 

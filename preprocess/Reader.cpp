@@ -379,13 +379,13 @@ void SimulateData(filesystem::path inPath, filesystem::path outPath) {
         Tif *src = new Tif(Meta::DEF, srcPath.string());
         Tif *truth = new Tif(Meta::DEF, truthPath.string());
 
-        vector<vector<string>> csvDat(Meta::DEF.nRow, vector<string>(Meta::DEF.nCol));
-        Csv::Read(file.path().string(), csvDat, Meta::DEF.nRow, Meta::DEF.nCol);
+        vector<vector<string>> csvDat(Meta::DEF.nCol, vector<string>(Meta::DEF.nRow));
+        Csv::Read(file.path().string(), csvDat);
         for (int r = 0; r < Meta::DEF.nRow; ++r) {
             for (int c = 0; c < Meta::DEF.nCol; ++c) {
                 float v = 0.0f;
-                if (!csvDat[r][c].empty()) {
-                    v = std::atof(csvDat[r][c].c_str());
+                if (!csvDat[c][r].empty()) {
+                    v = std::atof(csvDat[c][r].c_str());
                     if (v >= 3)
                         truth->update(r, c, r / 20 + 1);
                 }

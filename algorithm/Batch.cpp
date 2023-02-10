@@ -137,47 +137,39 @@ void Kth(string inPath, string outPath, int T) {
     }
 }
 
-void DcSTCABatch(bool isDcSTCA, string inputPath, string outputPath, int T, int maxK, int minK, int stepK) {
-    if (minK == 0) minK = 4;
-    if (maxK == 0) maxK = isDcSTCA ? (2 * T + 1) * 9 : 9;
+void DcSTCABatch(path inputPath, path outputPath, int T, int maxK, int minK, int stepK) {
+    if (minK == 0) minK = 3;
+    if (maxK == 0) maxK = 9 * (2 * T + 1);
 
     // Kth
-    filesystem::path parent(inputPath);
-    parent = parent.parent_path();
-    string csvPath = parent.string();
-    csvPath += "\\Threshold_";
-    vector<vector<string>> K(maxK - minK + 1, vector<string>(2));
-    csvPath += isDcSTCA ? to_string(T) : "0";
-    csvPath += "T.csv";
-    if(!Csv::Read(csvPath, K, maxK - minK + 1, 2))
+    path csvInPath(inputPath);
+    csvInPath = csvInPath.parent_path().append("Threshold_" + to_string(T) + "T.csv");
+    vector<vector<string>> K(2, vector<string>());
+    if (!Csv::Read(csvInPath.string(), K))
         return;
     map<int, float> KV;
-    for (const auto &r: K) {
-        int key = atoi(r[0].c_str());
-        float val = atof(r[1].c_str());
+    for (int r = 0; r < K[0].size(); ++r) {
+        int key = atoi(K[0][r].c_str());
+        float val = atof(K[1][r].c_str());
         KV[key] = val;
     }
 
-    if (isDcSTCA)
-        outputPath += "\\DcSTCA_Batch_" + to_string(T) + "T";
-    else
-        outputPath += "\\R_Batch_" + to_string(T) + "T";
+    outputPath.append("DcSTCA_Batch_" + to_string(T) + "T");
     CheckFolderExist(outputPath);
 
-    string csvOutPath = isDcSTCA ? outputPath + "\\DcSTCA_Res_" + to_string(T) + "T.csv" :
-                     outputPath + "\\R_Res_" + to_string(T) + "T.csv";
-    Csv csv(csvOutPath, "cTh,vTh,avgDev,time");
+    path csvOutPath (outputPath);
+    csvOutPath.append("DcSTCA_Res_" + to_string(T) + "T.csv");
+    Csv csv(csvOutPath.string(), "cTh,vTh,avgDev,time");
     for (int k = minK; k <= maxK; k += stepK) {
-        float avgDev;
+        if(KV[k] == 0){
+            cerr << "[DcSTCABatch] " + to_string(k) +" Kth parameter no found.";
+            exit(1);
+        }
 
         std::chrono::steady_clock::time_point bef = std::chrono::steady_clock::now();
 
-        if (isDcSTCA) {
-            DcSTCA a;
-            avgDev = a.Run(inputPath, outputPath, T, k, KV[k]);
-        } else {
-            avgDev = RTree::Run(T, k, KV[k], inputPath, outputPath);
-        }
+        DcSTCA a;
+        double avgDev = a.Run(inputPath.string(), outputPath.string(), T, k, KV[k]);
 
         std::chrono::steady_clock::time_point aft = std::chrono::steady_clock::now();
         std::chrono::duration<double> time_span = std::chrono::duration_cast<std::chrono::duration<double>>(aft - bef);
@@ -186,17 +178,87 @@ void DcSTCABatch(bool isDcSTCA, string inputPath, string outputPath, int T, int 
     }
 }
 
+void RBatch(path inputPath, path outputPath, float oTh) {
+    const int minK = 4;
+    const int maxK = 9;
 
-Cluster::Cluster(int _id, double _sum, double _dev, int _pix): id(_id), sum(_sum), dev(_dev), pix(_pix){
+    // Kth
+    path csvInPath(inputPath);
+    csvInPath = csvInPath.parent_path().append("Threshold_0T.csv");
+    vector<vector<string>> K(2, vector<string>());
+    if (!Csv::Read(csvInPath.string(), K))
+        return;
+    map<int, float> KV;
+    for (int r = 0; r < K[0].size(); ++r) {
+        int key = atoi(K[0][r].c_str());
+        float val = atof(K[1][r].c_str());
+        KV[key] = val;
+    }
+
+    outputPath.append("R_Batch_" + to_string(oTh) + "oTh");
+    CheckFolderExist(outputPath);
+
+    path csvOutPath(outputPath);
+    csvOutPath.append("R_Res_" + to_string(oTh) + "oTh.csv");
+    Csv csv(csvOutPath.string(), "cTh,vTh,avgDev,pixAvg,time");
+    for (int k = minK; k <= maxK; k += 1) {
+        if(KV[k] == 0){
+            cerr << "[DcSTCABatch] " + to_string(k) +" Kth parameter no found.";
+            exit(1);
+        }
+
+        std::chrono::steady_clock::time_point bef = std::chrono::steady_clock::now();
+
+        auto res = RTree::Run(oTh, k, KV[k], inputPath.string(), outputPath.string());
+
+        std::chrono::steady_clock::time_point aft = std::chrono::steady_clock::now();
+        std::chrono::duration<double> time_span = std::chrono::duration_cast<std::chrono::duration<double>>(aft - bef);
+
+        csv.ofs << k << ',' << KV[k] << ',' << res.first << ',' << res.second << ',' << time_span.count() << endl;
+    }
+}
+
+
+Cluster::Cluster(int _id, RNode *node) : id(_id) {
+    nodes = vector<RNode *>(0);
+    node->poly->cid = id;
+    sum = node->poly->sum;
+    dev = node->poly->dev;
+    pix = node->poly->pix;
+    nodes.push_back(node);
+    begin = node->timePoint;
+    beginStr = GetTPStr(begin);
+    end = node->timePoint;
+    endStr = GetTPStr(end);
+    dur = 1;
+    nPoly = 1;
     avg = sum / pix;
 }
 
-Cluster::Cluster(const Cluster &another) {
-    id = another.id;
-    sum = another.sum;
-    avg = another.avg;
-    dev = another.dev;
-    pix = another.pix;
+void Cluster::merge(Cluster *another) {
+    another->isMerged = true;
+    sum += another->sum;
+    dev += another->dev;
+    pix += another->pix;
+    nPoly += another->nPoly;
+
+    if (begin > another->begin) {
+        begin = another->begin;
+        beginStr = GetTPStr(begin);
+        dur = GetDur(begin, end);
+    }
+    if (end < another->end) {
+        end = another->end;
+        endStr = GetTPStr(end);
+        dur = GetDur(begin, end);
+    }
+
+    for (auto &item: another->nodes) {
+        item->cluster = this;
+        item->poly->cid = id;
+        nodes.push_back(item);
+    }
+    avg = sum / pix;
 }
 
 void Cluster::expand(float v) {
@@ -206,10 +268,26 @@ void Cluster::expand(float v) {
     avg = sum / pix;
 }
 
-void Cluster::expandBatch(double _sum, double _dev, int _pix) {
-    sum += _sum;
-    dev += _dev;
-    pix += _pix;
+void Cluster::expandRNode(RNode *node) {
+    sum += node->poly->sum;
+    dev += node->poly->dev;
+    pix += node->poly->pix;
+    ++nPoly;
+    nodes.push_back(node);
+    node->cluster = this;
+    node->poly->cid = this->id;
+
+    if (node->timePoint > end) {
+        end = node->timePoint;
+        endStr = GetTPStr(end);
+        dur = GetDur(begin, end);
+    }
+    if (node->timePoint < begin) {
+        begin = node->timePoint;
+        beginStr = GetTPStr(begin);
+        dur = GetDur(begin, end);
+    }
+
     avg = sum / pix;
 }
 

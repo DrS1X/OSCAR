@@ -21,7 +21,7 @@ public:
     std::ofstream ofs;
     Csv(string fileName, string _head = "");
     ~Csv();
-    static bool Read(string fileName, vector<vector<string>> &words, int nRow, int nCol);
+    static bool Read(string fileName, vector<vector<string>> &words);
 };
 
 

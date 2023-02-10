@@ -6,6 +6,7 @@
 #define CLUSTERING_RST_H
 #include <string>
 #include <map>
+#include "util.h"
 #include "DataModel.h"
 
 using namespace std;

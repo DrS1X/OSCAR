@@ -14,7 +14,7 @@ Csv::~Csv() {
     ofs.close();
 }
 
-bool Csv::Read(string fileName, vector<vector<string>> &words, int nRow, int nCol) {
+bool Csv::Read(string fileName, vector<vector<string>> &words) {
     std::ifstream ifs(fileName, std::ios::in);
     std::string line;
 
@@ -29,16 +29,15 @@ bool Csv::Read(string fileName, vector<vector<string>> &words, int nRow, int nCo
     // get head
     std::getline(ifs, line);
 
-    for (int r = 0; r < nRow; ++r) {
-        std::getline(ifs, line);
+    while (std::getline(ifs, line)) {
         if (line.empty())
             break;
 
         sin.clear();
         sin.str(line);
-        for (int c = 0; c < nCol; ++c) {
+        for (int c = 0; c < words.size(); ++c) {
             std::getline(sin, word, ',');//将字符串流sin中的字符读到field字符串中，以逗号为分隔符
-            words[r][c] = word;
+            words[c].push_back(word);
         }
     }
 

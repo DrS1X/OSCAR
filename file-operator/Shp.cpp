@@ -69,7 +69,7 @@ void Shp::createFields(OGRLayer *poLayer) {
 
 void Shp::setFields(Poly* polygon, string time, OGRFeature *poFeature){
     // calculate field of polygon
-    poFeature->SetField(0, polygon->clusterId);
+    poFeature->SetField(0, polygon->cid);
     poFeature->SetField(1, polygon->id);
     poFeature->SetField(2, 0);
     poFeature->SetField(3, time.c_str());
@@ -85,7 +85,7 @@ void Shp::setFields(Poly* polygon, string time, OGRFeature *poFeature){
     poFeature->SetField(6, maxLog);
     poFeature->SetField(7, maxLat);
 
-    poFeature->SetField(8, polygon->avgValue);
+    poFeature->SetField(8, polygon->avg);
     poFeature->SetField(9, polygon->maxValue);
     poFeature->SetField(10, polygon->minValue);
 

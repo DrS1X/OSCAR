@@ -9,7 +9,6 @@
 #include <algorithm>
 #include <ogr_spatialref.h>
 #include "sidx_impl.h"
-#include "util.h"
 #include "Cst.h"
 
 using namespace std;
@@ -23,7 +22,7 @@ public:
     int nBand = 1, nRow, nCol, nPixel;
     float startLat, startLon, endLat, endLon;
     OGRSpatialReference *spatialReference;
-    TimeUnit timeUnit;
+    TimeUnit timeUnit = TimeUnit::Mon;
     int timeScale;
     bool isSimulated = false;
 
@@ -72,7 +71,7 @@ public:
 
 class GeoRegion : public SpatialIndex::Region {
 public:
-    static const GeoRegion GLOBAL;
+    static GeoRegion GLOBAL;
     int rowMin , rowMax, colMin , colMax;
 public:
     GeoRegion();
@@ -323,11 +322,11 @@ public:
 class Poly {
 public:
     int id;
-    int clusterId;
+    int cid;
     vector<Line> lines;
     GeoRegion range;
     double area;
-    double avgValue;//平均距平值
+    double avg;//平均距平值
     double maxValue;//最大距平值
     double minValue;//最小距平值
     double sum;

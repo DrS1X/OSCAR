@@ -28,8 +28,36 @@ using duration_weeks = chrono::duration<float, std::ratio<604800>>;
 using duration_months = chrono::duration<float, std::ratio<2629746>>;
 using duration_years = chrono::duration<float, std::ratio<31556952>>;
 
+inline int GetDur(chrono::system_clock::time_point begin, chrono::system_clock::time_point end) {
+    int dur = -1;
+    switch (Meta::DEF.timeUnit) {
+        case TimeUnit::Day:
+            dur = 1 + chrono::duration_cast<duration_days>(end - begin).count();
+            break;
+        case TimeUnit::Mon:
+            dur = 1 + chrono::duration_cast<duration_months>(end - begin).count();
+            break;
+    }
+    return dur;
+}
 
-void DcSTCABatch(bool isDcSTCA, string inputPath, string outputPath, int T, int maxK = 0, int minK = 0, int stepK = 1);
+inline string GetTPStr(chrono::system_clock::time_point timePoint) {
+    time_t t_ = chrono::system_clock::to_time_t(timePoint);
+    char timeChars[20];
+    string format;
+    if (Meta::DEF.timeUnit == TimeUnit::Day) {
+        format = "%Y%m%d";
+    } else {
+        format = "%Y%m";
+    }
+    std::strftime(timeChars, 20, format.c_str(), localtime(&t_));
+    string str = timeChars;
+    return str;
+}
+
+void DcSTCABatch(path inputPath, path outputPath, int T, int maxK, int minK, int stepK);
+
+void RBatch(path inputPath, path outputPath, float oTh);
 
 void Evaluation(path srcPath, path resPath, path outPath);
 
@@ -89,6 +117,8 @@ public:
     }
 };
 
+class RNode;
+
 class Cluster {
 public :
     int id;
@@ -96,21 +126,25 @@ public :
     double avg = 0.0;
     double dev = 0.0;
     int pix = 0;
-
-    Cluster() {
-        id = -1;
-    };
+    int nPoly = 0;
+    int dur;
+    chrono::system_clock::time_point end;
+    string endStr;
+    chrono::system_clock::time_point begin;
+    string beginStr;
+    bool isMerged = false;
+    vector<RNode *> nodes;
 
     Cluster(int _id) : id(_id) {
     };
 
-    Cluster(int _id, double _sum, double _dev, int _pix);
+    Cluster(int _id, RNode *p1);
 
-    Cluster(const Cluster &another);
+    void merge(Cluster *another);
 
     void expand(float v);
 
-    void expandBatch(double _sum, double _dev, int _pix);
+    void expandRNode(RNode *node);
 
     void statistic();
 };

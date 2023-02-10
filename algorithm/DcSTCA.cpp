@@ -128,7 +128,8 @@ void DcSTCA::Lable(vector<Pixel> &Rasterpixels, int mTempFileNum) {
             } else {
                 for (int k = 0; k < (2 * T + 1) * (Neighborhood + 1) - 1; k++) {
 
-                    if (NN[k] == mFillValue * mScale || NN[k] == 0)
+                    if (NN[k] == mFillValue * mScale || NN[k] == 0 ||
+                        fabs(NN[k] - Rasterpixels[j].Attribute) > valueThreshold)
                         continue;
 
                     Rasterpixels[j].neighborGrids.push_back(ID[k]);

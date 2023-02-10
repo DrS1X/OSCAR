@@ -17,7 +17,7 @@
 
 using std::string;
 
-class Raster: public Tif {
+class Raster : public Tif {
 public:
     TP timePoint;
 private:
@@ -42,47 +42,64 @@ public:
 class RNode {
 public:
     int id;
+    Cluster *cluster = nullptr;
     Poly *poly;
-    list<RNode *> prev;
-    list<RNode *> next;
-    int dur;
-    bool isDeleted;
     OGRFeature *pFeat;
+    OGRGeometry *pGeom;
+    double area;
+    chrono::system_clock::time_point timePoint;
+    string TPStr;
 
-    RNode(Poly *_pPoly);
+    RNode(Poly *_pPoly, chrono::system_clock::time_point _timePoint);
+
     void mergeCluster();
+
+    bool setFeature(OGRFeature *_pFeat);
+
     ~RNode();
 };
 
-class RTree{
+class RTree {
 private:
     IndexPropertyH prop;
     IndexH idx;
     int nodeId = 2;
     chrono::system_clock::time_point timePoint;
     string timePointStr;
-    int maxClusterDur;
+    int maxClusterDur = 1;
     Tif polyRst;
-    map<int, RNode*> poly2node;
+    map<int, RNode *> poly2node;
     GDALDataset *poShp;
     OGRLayer *poLayer;
 
 public:
-    static map<int, Cluster*> Clusters;
-    static queue<RTree*> Cache;
-    static float Run(int _T, int cTh, float vTh, string inPath, string outPath);
-    static bool flush();
-    static void flushAll();
-    static RTree* Create(TP _timePoint);
+    static map<int, Cluster *> Clusters;
+    static queue<RTree *> Cache;
 
-    RTree(){};
+    static pair<float, long> Run(float oTh, int cTh, float vTh, string inPath, string outPath);
+
+    static bool flush();
+
+    static void flushAll();
+
+    static RTree *Create(TP _timePoint);
+
+    RTree() {};
+
     RTree(TP _timePoint);
-    inline void flagPixel(Raster &rst, Poly* poly, int r, int c);
-    Poly* DBSCAN(Raster &rst, int r, int c, vector<pair<int,int>> neighbor);
+
+    inline void flagPixel(Raster &rst, Poly *poly, int r, int c);
+
+    Poly *DBSCAN(Raster &rst, int r, int c, vector<pair<int, int>> neighbor);
+
     bool polygonize(int ignoredPolyId);
-    void insert(RNode* node);
-    list<RNode*> RTree::query(GeoRegion range) const;
+
+    void insert(RNode *node);
+
+    list<RNode *> RTree::query(GeoRegion range) const;
+
     void save();
+
     ~RTree();
 };
 

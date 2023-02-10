@@ -2,7 +2,7 @@
 
 using namespace std;
 
-const GeoRegion GeoRegion::GLOBAL(0, Meta::DEF.nRow - 1, 0, Meta::DEF.nCol - 1);
+GeoRegion GeoRegion::GLOBAL(0, Meta::DEF.nRow - 1, 0, Meta::DEF.nCol - 1);
 
 queue<RTree *> RTree::Cache;
 
@@ -21,11 +21,11 @@ bool cmp(pair<int, float> p1, pair<int, float> p2) {
     return p1.second > p2.second;
 }
 
-float RTree::Run(int _T, int cTh, float vTh, string inPath, string outPath) {
+pair<float, long> RTree::Run(float oTh, int cTh, float vTh, string inPath, string outPath) {
     vector<string> fileList;
     GetFileList(inPath, fileList);
 
-    outPath += "\\R_" + to_string(_T) + "_" + to_string(cTh) + "_" + to_string(vTh);
+    outPath += "\\R_" + to_string(oTh) + "_" + to_string(cTh) + "_" + to_string(vTh);
     CheckFolderExist(outPath);
     OUTPUT_PATH_RST = outPath + "\\rst";
     CheckFolderExist(OUTPUT_PATH_RST);
@@ -35,8 +35,8 @@ float RTree::Run(int _T, int cTh, float vTh, string inPath, string outPath) {
     CLUSTER_ID = 2;
     CORE_THRESHOLD = cTh;
     ATTRIBUTE_THRESHOLD = vTh;
-    DUR_THRESHOLD = 2 * _T + 1;
-    OVERLAP_THRESHOLD = 0.5;
+    DUR_THRESHOLD = 2;
+    OVERLAP_THRESHOLD = oTh;
 
     // evaluation background value
     double datasetMean;
@@ -90,7 +90,7 @@ float RTree::Run(int _T, int cTh, float vTh, string inPath, string outPath) {
 
             if (neighbor.size() >= CORE_THRESHOLD) {
                 Poly *pPoly = tree->DBSCAN(rst, r, c, neighbor);
-                RNode *node = new RNode(pPoly);
+                RNode *node = new RNode(pPoly, tree->timePoint);
                 tree->poly2node[pPoly->id] = node;
             }
         }
@@ -117,19 +117,25 @@ float RTree::Run(int _T, int cTh, float vTh, string inPath, string outPath) {
     RTree::flushAll();
 
     // statistic dev of cluster
-    float devAvg = 0.0f;
-    int cCnt = 0;
+    double devAvg = 0.0f;
+    long pixAvg = 0;
+    int nCls = 0;
     for (const auto &item: RTree::Clusters) {
         Cluster *pc = item.second;
-        pc->statistic();
-        devAvg += pc->dev;
-        ++cCnt;
+        if(!pc->isMerged) {
+            pc->statistic();
+            devAvg += pc->dev;
+            pixAvg += pc->pix;
+            ++nCls;
+        }
 
         delete pc;
     }
-    devAvg = devAvg / cCnt;
+    devAvg = devAvg / nCls;
+    pixAvg = pixAvg / nCls;
     RTree::Clusters.clear();
-    return devAvg;
+    cout << "[RTree::Run] devAvg: " << to_string(devAvg) << ", pixAvg: " << to_string(pixAvg) << endl;
+    return pair<float, long>{devAvg, pixAvg};
 }
 
 Poly *RTree::DBSCAN(Raster &rst, int r0, int c0, vector<pair<int, int>> neighbor) {
@@ -140,11 +146,14 @@ Poly *RTree::DBSCAN(Raster &rst, int r0, int c0, vector<pair<int, int>> neighbor
         q.push(p);
     }
 
+    char flag[8];
     while (!q.empty()) {
         pair<int, int> top = q.front();
         int r = top.first, c = top.second;
         q.pop();
-//        neighbor.clear();
+        ::memset(flag, 0, 8);
+        int reachableCnt = 1;
+
         for (int i = 0; i < 8; ++i) {
             int r1 = r + Neighbor8[i][0];
             int c1 = c + Neighbor8[i][1];
@@ -153,31 +162,35 @@ Poly *RTree::DBSCAN(Raster &rst, int r0, int c0, vector<pair<int, int>> neighbor
             int r3 = r + Neighbor8[(i + 2) % 8][0];
             int c3 = c + Neighbor8[(i + 2) % 8][1];
 
-            float v = rst.get(r2, c2);
-            if (rst.checkIndex(r2, c2) &&
-                !rst.isVisited(r2, c2) &&
-                fabs(v - pPoly->avgValue) <= ATTRIBUTE_THRESHOLD) {
-                if (i % 2 == 0 &&
-                    rst.checkIndex(r1, c1) &&
-                    rst.checkIndex(r3, c3) &&
-                    (fabs(pPoly->avgValue - rst.get(r1, c1)) > ATTRIBUTE_THRESHOLD ||
-                     rst.isVisited(r1, c1) && polyRst.get(r1, c1) != pPoly->id) &&
-                    (fabs(pPoly->avgValue - rst.get(r3, c3)) > ATTRIBUTE_THRESHOLD ||
-                     rst.isVisited(r3, c3) && polyRst.get(r3, c3) != pPoly->id))
-                    continue;
+            if (!rst.checkIndex(r2, c2) ||
+                fabs(rst.get(r2, c2) - pPoly->avg) > ATTRIBUTE_THRESHOLD)
+                continue;
 
-//                neighbor.emplace_back(r2, c2);
+            flag[(i + 1) % 8] = 'r';
+            ++reachableCnt;
+
+            if (rst.isVisited(r2, c2) ||
+                i % 2 == 0 &&
+                rst.checkIndex(r1, c1) &&
+                rst.checkIndex(r3, c3) &&
+                (fabs(pPoly->avg - rst.get(r1, c1)) > ATTRIBUTE_THRESHOLD ||
+                 rst.isVisited(r1, c1) && polyRst.get(r1, c1) != pPoly->id) &&
+                (fabs(pPoly->avg - rst.get(r3, c3)) > ATTRIBUTE_THRESHOLD ||
+                 rst.isVisited(r3, c3) && polyRst.get(r3, c3) != pPoly->id))
+                continue;
+
+            flag[(i + 1) % 8] = 'v';
+        }
+
+        if (reachableCnt >= CORE_THRESHOLD) {
+            for (int i = 0; i < 8; ++i) {
+                if (flag[i] != 'v')
+                    continue;
+                int r2 = r + Neighbor8[i][0], c2 = c + Neighbor8[i][1];
                 q.emplace(r2, c2);
                 flagPixel(rst, pPoly, r2, c2);
             }
         }
-
-        /*if (neighbor.size() + 1 >= CORE_THRESHOLD) {
-            for (int i = 0; i < neighbor.size(); ++i) {
-                q.push(neighbor[i]);
-                flagPixel(rst, pPoly, neighbor[i].first, neighbor[i].second);
-            }
-        }*/
     }
 
     pPoly->range.updateGeo();
@@ -215,7 +228,7 @@ bool RTree::polygonize(int ignoredPolyId) {
         int polyID = feature->GetFieldAsInteger(1);
         RNode *node = poly2node[polyID];
         assert(node != NULL);
-        node->pFeat = feature;
+        node->setFeature(feature);
     }
 
     return true;
@@ -243,17 +256,7 @@ RTree::RTree(TP _timePoint) {
     IndexProperty_SetIndexStorage(prop, RTStorageType::RT_Memory);
     this->idx = Index_Create(prop);
 
-    // get time string  of one moment
-    time_t t_ = chrono::system_clock::to_time_t(this->timePoint);
-    char timeChars[20];
-    string format;
-    if (Meta::DEF.timeUnit == TimeUnit::Day) {
-        format = "%Y%m%d";
-    } else {
-        format = "%Y%m";
-    }
-    std::strftime(timeChars, 20, format.c_str(), localtime(&t_));
-    timePointStr = timeChars;
+    timePointStr = GetTPStr(timePoint);
 }
 
 RTree::~RTree() {
@@ -272,21 +275,9 @@ bool RTree::flush() {
 
     RTree *back = RTree::Cache.back();
     RTree *front = RTree::Cache.front();
-    int diff;
-    switch (Meta::DEF.timeUnit) {
-        case TimeUnit::Day:
-            diff = chrono::duration_cast<duration_days>(back->timePoint - front->timePoint).count();
-            break;
-        case TimeUnit::Mon:
-            diff = chrono::duration_cast<duration_months>(back->timePoint - front->timePoint).count();
-            break;
-        default:
-            cout << "[flush] time unit is need." << endl;
-            diff = 0;
-    }
+    int diff = GetDur(front->timePoint, back->timePoint);
 
     if (diff <= back->maxClusterDur) {
-//        cout << "Info: [flush] size of RTree::Cache is " + RTree::Cache.size() << endl;
         return false;
     }
 
@@ -308,12 +299,11 @@ void RTree::flushAll() {
 }
 
 void RTree::save() {
-
     for (auto kv: poly2node) {
         RNode *node = kv.second;
         OGRFeature *feature = kv.second->pFeat;
 
-        if (node->isDeleted) {
+        if (!node->cluster || node->cluster->dur < DUR_THRESHOLD) {
             GIntBig fid = feature->GetFID();
             OGRFeature::DestroyFeature(feature);
             poLayer->DeleteFeature(fid);
@@ -321,14 +311,6 @@ void RTree::save() {
             Shp::setFields(node->poly, timePointStr, feature);
             poLayer->SetFeature(feature);
             OGRFeature::DestroyFeature(feature);
-
-            int cid = node->poly->clusterId;
-            if (RTree::Clusters.find(cid) == Clusters.end())
-                RTree::Clusters[cid] = new Cluster(cid, node->poly->sum, node->poly->dev, node->poly->pix);
-
-            RTree::Clusters[cid]->expandBatch(node->poly->sum, node->poly->dev, node->poly->pix);
-
-
         }
     }
     GDALClose(poShp);
@@ -337,8 +319,8 @@ void RTree::save() {
 void RTree::insert(RNode *node) {
     node->id = ++nodeId;
     node->mergeCluster();
-    if (node->dur > this->maxClusterDur)
-        this->maxClusterDur = node->dur;
+    if (node->cluster && node->cluster->dur > this->maxClusterDur)
+        this->maxClusterDur = node->cluster->dur;
 
     GeoRegion &range = node->poly->range;
     double pdMin[N_DIM] = {range.getLow(0), range.getLow(1)};
@@ -396,10 +378,10 @@ list<RNode *> RTree::query(GeoRegion range) const {
 }
 
 
-RNode::RNode(Poly *_pPoly) {
+RNode::RNode(Poly *_pPoly, chrono::system_clock::time_point _timePoint) {
     this->poly = _pPoly;
-    this->isDeleted = true;
-    this->dur = 1;
+    this->timePoint = _timePoint;
+    this->TPStr = GetTPStr(_timePoint);
 }
 
 RNode::~RNode() {
@@ -418,119 +400,82 @@ void RNode::mergeCluster() {
         return;
     }
 
-    // get area of this RNode
-    OGRGeometry *poGeom = this->pFeat->GetGeometryRef();
-    if (poGeom == NULL || !poGeom->IsValid()) {
-        cerr << "[mergeCluster] fail to get poGeom." << endl;
-        return;
-    }
-    OGRPolygon *poPoly = poGeom->toPolygon();
-    double area = poPoly->get_Area();
-
     // filter overlap polygon
-    queue<RNode *> keep;
-    // get max dur of previous
-    int maxDur = 0;
-    float maxArea = area;
-    RNode *maxPrevNode;
+    vector<RNode *> connectivity;
+    float maxIntersectRatio = 0.0;
+    RNode *maxIntersectNode = this;
     for (auto it = overlap.begin(); it != overlap.end(); ++it) {
         RNode *pn = *it;
 
         // intersection area
-        double prevArea, intersectArea;
-        OGRGeometry *poGeom2, *poGeom3;
-        OGRPolygon *poPoly2, *poPoly3;
-        poGeom2 = pn->pFeat->GetGeometryRef();
-        if (poGeom2 == NULL || !poGeom2->IsValid()) {
-            cerr << "[mergeCluster] fail to get poGeom2." << endl;
-            return;
-        }
-        if (!poGeom->Overlaps(poGeom2) &&
-            !poGeom->Contains(poGeom2) &&
-            !poGeom2->Contains(poGeom))
+        if (!this->pGeom->Overlaps(pn->pGeom) &&
+            !this->pGeom->Contains(pn->pGeom) &&
+            !pn->pGeom->Contains(this->pGeom))
             continue;
-        poGeom3 = poGeom->Intersection(poGeom2);
+        OGRGeometry *poGeom3 = this->pGeom->Intersection(pn->pGeom);
         if (poGeom3 == NULL || !poGeom3->IsValid()) {
             cerr << "[mergeCluster] fail to get poGeom3." << endl;
             return;
         }
-        poPoly2 = poGeom2->toPolygon();
-        poPoly3 = poGeom3->toPolygon();
-        prevArea = poPoly2->get_Area();
-        intersectArea = poPoly3->get_Area();
+        double intersectArea = poGeom3->toPolygon()->get_Area();
 
-        // attribute difference
-        double valDiff = fabs(poly->avgValue - pn->poly->avgValue);
-
-        if (/*intersectArea / prevArea < OVERLAP_THRESHOLD &&
-            intersectArea / area < OVERLAP_THRESHOLD ||*/
-                intersectArea <= CORE_THRESHOLD ||
-                valDiff > ATTRIBUTE_THRESHOLD) {
+        if (intersectArea / pn->area < OVERLAP_THRESHOLD &&
+            intersectArea / area < OVERLAP_THRESHOLD ||
+//                intersectArea <= CORE_THRESHOLD ||
+                fabs(poly->avg - pn->poly->avg) > ATTRIBUTE_THRESHOLD ||
+                pn->cluster &&
+                fabs(poly->avg - pn->cluster->avg) > ATTRIBUTE_THRESHOLD) {
             continue;
         }
 
-        prev.push_back(pn);
+        connectivity.push_back(pn);
 
-        if (prevArea > maxArea) {
-            maxArea = prevArea;
-            maxPrevNode = pn;
-        }
-
-        if (pn->dur > maxDur)
-            maxDur = pn->dur;
-
-        if (pn->isDeleted)
-            keep.push(pn);
-    }
-    if (maxDur > 0)
-        this->dur = maxDur + 1;
-
-    // update duration
-    if (dur >= DUR_THRESHOLD) {
-        //keep this cluster to save
-        isDeleted = false;
-        while (!keep.empty()) {
-            RNode *top = keep.front();
-            top->isDeleted = false;
-            keep.pop();
-            for (auto prevNode: top->prev) {
-                keep.push(prevNode);
-            }
+        double ratio = intersectArea / this->area;
+        if (pn->cluster && ratio > maxIntersectRatio) {
+            maxIntersectRatio = ratio;
+            maxIntersectNode = pn;
         }
     }
 
-    // update cluste id
-    if (this->prev.size() == 0)
+    if (connectivity.empty())
         return;
 
+    if (maxIntersectNode == this) {
+        // all prev node is not cluster
+        Cluster *newCls = new Cluster(CLUSTER_ID, this);
+        this->cluster = newCls;
+        RTree::Clusters[newCls->id] = newCls;
+        ++CLUSTER_ID;
 
-    if (this->prev.front()->poly->clusterId == 0) {
-        this->poly->clusterId = CLUSTER_ID++;
-        this->prev.front()->poly->clusterId = this->poly->clusterId;
-    } else
-        this->poly->clusterId = this->prev.front()->poly->clusterId;
-
-    if (this->prev.size() > 1) {
-        queue<RNode *, list<RNode *>> cluster(prev);
-
-        while (!cluster.empty()) {
-            RNode *top = cluster.front();
-            cluster.pop();
-            if (top->poly->clusterId != poly->clusterId) {
-                delete RTree::Clusters[top->poly->clusterId];
-                RTree::Clusters.erase(top->poly->clusterId);
-
-                top->poly->clusterId = poly->clusterId;
-
-                RTree::Clusters[poly->clusterId]->expandBatch(
-                        top->poly->sum, top->poly->dev, top->poly->pix);
-            }
-            for (auto prevNode: top->prev) {
-                if (prevNode->poly->clusterId != poly->clusterId)
-                    cluster.push(prevNode);
+        for (auto pn: connectivity) {
+            newCls->expandRNode(pn);
+        }
+    } else {
+        // merge cluster based the largest prev node
+        Cluster *base = maxIntersectNode->cluster;
+        base->expandRNode(this);
+        for (auto pn: connectivity) {
+            if (pn->cluster == base)
+                continue;
+            if (!pn->cluster) {
+                pn->poly->cid = base->id;
+                base->expandRNode(pn);
+            } else {
+                // merge prev cluster to base cluster
+                base->merge(pn->cluster);
             }
         }
     }
+}
+
+bool RNode::setFeature(OGRFeature *_pFeat) {
+    pFeat = _pFeat;
+    pGeom = this->pFeat->GetGeometryRef();
+    if (pGeom == NULL || !pGeom->IsValid()) {
+        cerr << "[setFeature] fail to get Geometry." << endl;
+        return false;
+    }
+    area = pGeom->toPolygon()->get_Area();
 }
 
 Raster::Raster(Meta _meta, string _fileName) : Tif(_meta, _fileName) {
