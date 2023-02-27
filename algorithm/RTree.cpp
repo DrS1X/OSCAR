@@ -11,7 +11,8 @@ map<int, Cluster *> RTree::Clusters;
 const int GEO_WINDOW = 3;
 int DUR_THRESHOLD;
 int CORE_THRESHOLD;
-string OUTPUT_PATH_RST;
+string OUTPUT_PATH_PID;
+string OUTPUT_PATH_CID;
 string OUTPUT_PATH_SHP;
 int CLUSTER_ID;
 float OVERLAP_THRESHOLD;
@@ -27,9 +28,11 @@ vector<float> RTree::Run(float oTh, int cTh, float vTh, string inPath, string ou
 
     outPath += "\\R_" + to_string(oTh) + "_" + to_string(cTh) + "_" + to_string(vTh);
     CheckFolderExist(outPath);
-    OUTPUT_PATH_RST = outPath + "\\rst";
-    CheckFolderExist(OUTPUT_PATH_RST);
+    OUTPUT_PATH_PID = outPath + "\\pid";
+    OUTPUT_PATH_CID = outPath + "\\cid";
     OUTPUT_PATH_SHP = outPath + "\\shp";
+    CheckFolderExist(OUTPUT_PATH_PID);
+    CheckFolderExist(OUTPUT_PATH_CID);
     CheckFolderExist(OUTPUT_PATH_SHP);
 
     CLUSTER_ID = 2;
@@ -211,7 +214,7 @@ bool RTree::polygonize(int ignoredPolyId) {
 
     // raster and shape file name
     string fileName = "poly_" + timePointStr;
-    polyRst.name = OUTPUT_PATH_RST + "\\" + fileName + TIF_SUFFIX;
+    polyRst.name = OUTPUT_PATH_PID + "\\" + fileName + TIF_SUFFIX;
     string shpFileName = OUTPUT_PATH_SHP + "\\" + fileName + SHP_SUFFIX;
 
     poShp = Shp::driver->Create(shpFileName.c_str(), 0, 0, 0, GDT_Unknown, NULL);
@@ -313,6 +316,20 @@ void RTree::save() {
             OGRFeature::DestroyFeature(feature);
         }
     }
+
+    // write raster of cluster id
+    for (int r = 0; r < Meta::DEF.nRow; ++r) {
+        for (int c = 0; c < Meta::DEF.nCol; ++c) {
+            int polyID = polyRst.get(r,c);
+            if(IsZero(polyID))
+                continue;
+
+            polyRst.update(r,c,poly2node[polyID]->poly->cid);
+        }
+    }
+    polyRst.meta.date = timePointStr;
+    polyRst.write(OUTPUT_PATH_CID + "\\cid");
+
     GDALClose(GDALDataset::ToHandle(poShp));
 }
 

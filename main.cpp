@@ -207,9 +207,9 @@ int main(int argc, char *argv[]) {
              << "Example:\n"
              << "-S -o E:\\pr\\simulate -i E:\\pr\\simulate\\csv\n"
              << "-k -t 1 -o E:\\pr\\simulate -i E:\\pr\\simulate\\src -S\n"
-             << "-d -b -t 2 -x 45 -n 5 -s 5 -m -o E:\\pr\\pr2015_2016 -i E:\\pr\\pr2015_2016\\src\n"
+             << "-d -b -t 1 -x 27 -n 3 -s 1 -m -o E:\\pr\\simulate -i E:\\pr\\simulate\\src -S\n"
              << "-r -b -m -o E:\\pr\\simulate -i E:\\pr\\simulate\\src -S\n"
-             << "-e -o E:\\pr\\simulate\\R_Batch_1T\\R_1_7_3.090000 -i E:\\pr\\simulate\\truth -i E:\\pr\\simulate\\R_Batch_1T\\R_1_7_3.090000\\rst -S\n"
+             << "-e -o E:\\pr\\simulate\\R_Batch_0.500000oTh\\R_0.500000_7_3.090000 -i E:\\pr\\simulate\\truth -i E:\\pr\\simulate\\R_Batch_0.500000oTh\\R_0.500000_7_3.090000\\cid -S\n"
              << "-d -t 1 -c 15 -v 3 -m -o E:\\pr\\simulate -i E:\\pr\\simulate\\tif2 -S\n"
              << "-r -t 1 -c 5 -v 3 -m -o E:\\pr\\simulate -i E:\\pr\\simulate\\tif2 -S\n"
              << endl;

@@ -83,7 +83,7 @@ bool Tif::read(string fName, map<string,string> *metaData) {
 
     GDALDataset *pDataset = GDALDataset::FromHandle(GDALOpen(name.c_str(), GA_ReadOnly));
     if (pDataset == NULL) {
-        cerr << "[read] fail to read tiff file." << endl;
+        cerr << "[read] fail to read tiff file. file name: " <<  name << endl;
         return false;
     }
 

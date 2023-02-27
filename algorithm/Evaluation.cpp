@@ -7,13 +7,16 @@ void Evaluation(path truPath, path resPath, path outPath) {
 //    outPath /= "evaluation";
 //    CheckFolderExist(outPath);
 
+    const int ClusterIDOffset = 1;
     const int NC = 3;
-    vector<vector<int>> M(NC + 2, vector<int>(NC + 2));
-    int end = M.size() - 1;
+    vector<vector<int>> M(NC + 2, vector<int>()); // unknown the number of column
 
+    // input algorithm result and ground truth
     auto ItEnd = filesystem::directory_iterator();
     auto truIt = filesystem::directory_iterator(truPath);
     auto resIt = filesystem::directory_iterator(resPath);
+    int RowEnd = M.size() - 1;
+    int ColEnd = 0;
     for (; truIt != ItEnd && resIt != ItEnd; ++truIt, ++resIt) {
         Tif *tru = new Tif(Meta::DEF, (*truIt).path().string());
         Tif *res = new Tif(Meta::DEF, (*resIt).path().string());
@@ -22,8 +25,13 @@ void Evaluation(path truPath, path resPath, path outPath) {
 
         for (int r = 0; r < Meta::DEF.nRow; ++r) {
             for (int c = 0; c < Meta::DEF.nCol; ++c) {
-                int cid = res->get(r, c) <= 0 ? 0 : r / (Meta::DEF.nRow / NC) + 1;
+                int cid = res->get(r, c) <= 0 ? 0 : res->get(r, c) - ClusterIDOffset;
                 int tid = tru->get(r, c);
+                if (cid >= M[tid].size()) {
+                    M[tid].resize(cid + 1, 0);
+                    if (cid > ColEnd)
+                        ColEnd = cid;
+                }
                 ++M[tid][cid];
             }
         }
@@ -31,13 +39,22 @@ void Evaluation(path truPath, path resPath, path outPath) {
         delete tru;
         delete res;
     }
-    for (int r = 0; r < end; ++r)
-        for (int c = 0; c < M[0].size() - 1; ++c)
-            M[r][M[0].size() - 1] += M[r][c];
+
+    // complete the matrix M
+    ++ColEnd;
+    for (int r = 0; r < RowEnd; ++r) {
+        M[r].resize(ColEnd + 1, 0);
+        for (int c = 0; c < ColEnd; ++c) {
+            M[r][ColEnd] += M[r][c];
+        }
+    }
+    M[RowEnd].resize(ColEnd + 1, 0);
+
     for (int c = 0; c < M[0].size(); ++c)
-        for (int r = 0; r < end; ++r)
-            M[end][c] += M[r][c];
-    int N = M[end][M[0].size() - 1];
+        for (int r = 0; r < RowEnd; ++r)
+            M[RowEnd][c] += M[r][c];
+
+    int N = M[RowEnd][ColEnd];
     Csv csvM(outPath.string() + "\\M.csv");
     for (int r = 0; r < M.size(); ++r) {
         csvM.ofs << M[r][0];
@@ -49,15 +66,15 @@ void Evaluation(path truPath, path resPath, path outPath) {
 
     // ARI
     double Sni_ = 0.0, Sn_j = 0.0;
-    for (int r = 0; r < end; ++r)
-        Sni_ += C2(M[r][M[0].size() - 1]);
-    for (int c = 0; c < M[0].size() - 1; ++c)
-        Sni_ += C2(M[end][c]);
+    for (int r = 0; r < RowEnd; ++r)
+        Sni_ += C2(M[r][ColEnd]);
+    for (int c = 0; c < ColEnd; ++c)
+        Sn_j += C2(M[RowEnd][c]);
     double expectedIndex = Sni_ * Sn_j / C2(N);
     double maxIndex = (Sni_ + Sn_j) / 2;
     double index = 0.0;
-    for (int r = 0; r < end; ++r) {
-        for (int c = 0; c < M[0].size() - 1; ++c) {
+    for (int r = 0; r < RowEnd; ++r) {
+        for (int c = 0; c < ColEnd; ++c) {
             index += C2(M[r][c]);
         }
     }
@@ -65,71 +82,27 @@ void Evaluation(path truPath, path resPath, path outPath) {
 
     // NMI
     double MI = 0.0;
-    for (int r = 0; r < M.size() - 1; ++r) {
-        for (int c = 0; c < M[0].size() - 1; ++c) {
+    for (int r = 0; r < RowEnd; ++r) {
+        for (int c = 0; c < ColEnd; ++c) {
             double Prc = 1.0 * M[r][c] / N;
-            double Pr = 1.0 * M[r][end] / N;
-            double Pc = 1.0 * M[end][c] / N;
-            MI += Prc * L2(Prc / (Pr * Pc));
+            double Pr = 1.0 * M[r][ColEnd] / N;
+            double Pc = 1.0 * M[RowEnd][c] / N;
+            MI += IsZero(Prc) ? 0.0 : Prc * L2(Prc / (Pr * Pc));
         }
     }
     double Hr = 0.0, Hc = 0.0;
-    for (int r = 0; r < M.size(); ++r) {
-        double Pr = 1.0 * M[r][end] / N;
+    for (int r = 0; r < RowEnd; ++r) {
+        double Pr = 1.0 * M[r][ColEnd] / N;
         Hr += -Pr * L2(Pr);
     }
-    for (int c = 0; c < M[0].size(); ++c) {
-        double Pc = 1.0 * M[end][c] / N;
+    for (int c = 0; c < ColEnd; ++c) {
+        double Pc = 1.0 * M[RowEnd][c] / N;
         Hc += -Pc * L2(Pc);
     }
-    double NMI = MI / sqrt(Hr * Hc);
+    double NMI = 2 * MI / (Hr + Hc);
 
-    vector<double> ARIs(NC + 1);
-    vector<double> NMIs(NC + 1);
-    for (int i = 0; i <= NC; ++i) {
-        int TP = M[i][i];
-        int FP = M[end][i] - TP;
-        int FN = M[i][end] - TP;
-        int TN = N - TP - FP - FN;
-
-        /*
-           0   1
-        0 TP  FN
-        1 FP  TN
-                */
-
-        double ei = 1.0 * (C2(TP + FN) + C2(FP + TN)) * (C2(TP + FP) + C2(FN + TN)) / C2(N);
-        double maxi = (C2(TP + FN) + C2(FP + TN) + C2(TP + FP) + C2(FN + TN)) / 2.0;
-        double ind = C2(TP) + C2(FN) + C2(FP) + C2(TN);
-        ARIs[i] = (ind - ei) / (maxi - ei);
-
-        double p0_ = 1.0 * (TP + FN) / N;
-        double p1_ = 1 - p0_;
-        double p_0 = 1.0 * (TP + FP) / N;
-        double p_1 = 1 - p_0;
-        double hr = -p0_ * L2(p0_) - p1_ * L2(p1_);
-        double hc = -p_0 * L2(p_0) - p_1 * L2(p_1);
-
-        double p00 = 1.0 * TP / N;
-        double p01 = 1.0 * FN / N;
-        double p10 = 1.0 * FP / N;
-        double p11 = 1.0 * TN / N;
-
-        double mi = p00 * L2(p00 / p0_ / p_0) +
-                    p01 * L2(p01 / p0_ / p_1) +
-                    p10 * L2(p10 / p1_ / p_0) +
-                    p11 * L2(p11 / p1_ / p_1);
-
-        NMIs[i] = mi / sqrt(hr * hc);
-    }
-
-    Csv csv(outPath.string() + "\\Evaluation.csv", "cid,ARI,NMI");
-    for (int i = 0; i < NC + 1; ++i) {
-        csv.ofs << to_string(i) << ',' <<
-                to_string(ARIs[i]) << ',' <<
-                to_string(NMIs[i]) << endl;
-    }
-    csv.ofs << "Total," << ARI << ',' << NMI;
+    Csv csv(outPath.string() + "\\Evaluation.csv", "ARI,NMI");
+    csv.ofs << ARI << ',' << NMI << endl;
 }
 
 vector<float> InnerEval(Cluster *BG, double datasetMean, map<int, Cluster *> &clusters) {

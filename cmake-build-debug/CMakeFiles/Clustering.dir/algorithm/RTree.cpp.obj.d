@@ -1,3 +1,1 @@
-E:/CLion_project/Clustering/pkg/sidx/include/spatialindex/tools/Tools.h
-C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.34.31933/include/cassert
-C:/Program Files (x86)/Windows Kits/10/include/10.0.22000.0/ucrt/assert.h
+E:/CLion_project/Clustering/pkg/release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs/include/H5public.h

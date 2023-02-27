@@ -70,7 +70,7 @@ inline long C2(int x){
 }
 
 inline double L2(double x){
-    return fabs(x) < std::numeric_limits<double>::epsilon() ? 0.0 : log2(x);
+    return x < std::numeric_limits<double>::epsilon() ? 0.0 : log2(x);
 }
 
 
