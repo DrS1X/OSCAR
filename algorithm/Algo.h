@@ -59,8 +59,6 @@ void DcSTCABatch(path inputPath, path outputPath, int T, int maxK, int minK, int
 
 void RBatch(path inputPath, path outputPath, float oTh);
 
-void Evaluation(path srcPath, path resPath, path outPath);
-
 class Pixel {
 public:
     int pid = -1;
@@ -167,7 +165,7 @@ public:
 
     map<int, Cluster *> clusters;
 
-    float Run(string inPath, string outPath, int _T, int cTh, float vTh);
+    vector<float> Run(string inPath, string outPath, int _T, int cTh, float vTh);
 
 private:
     void ExpandCluster(vector<Pixel> &Rasterpixels, int drID, int clusterId, int row, int col);
@@ -180,5 +178,10 @@ private:
     OutputRasterpixels(vector<Pixel> &Rasterpixels, vector<string> &fileList, int mStartFileIndex, int mTempFileNum,
                        string outputPath);
 };
+
+
+void Evaluation(path srcPath, path resPath, path outPath);
+
+vector<float> InnerEval(Cluster *BG, double datasetMean, map<int, Cluster *> &clusters);
 
 #endif //CLUSTERING_ALGO_H

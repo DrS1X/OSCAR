@@ -21,7 +21,7 @@ bool cmp(pair<int, float> p1, pair<int, float> p2) {
     return p1.second > p2.second;
 }
 
-pair<float, long> RTree::Run(float oTh, int cTh, float vTh, string inPath, string outPath) {
+vector<float> RTree::Run(float oTh, int cTh, float vTh, string inPath, string outPath) {
     vector<string> fileList;
     GetFileList(inPath, fileList);
 
@@ -42,14 +42,16 @@ pair<float, long> RTree::Run(float oTh, int cTh, float vTh, string inPath, strin
     double datasetMean;
     Background(inPath, &datasetMean);
 
+    Cluster background(0);
     int windowEdge = GEO_WINDOW / 2;
+    vector<pair<int, float>> coreList;
     for (int i = 0; i < fileList.size(); ++i) {
         Raster rst(Meta::DEF, fileList[i]);
         rst.read();
         RTree *tree = RTree::Create(rst.timePoint);
         vector<Poly> polyList;
         vector<pair<int, int>> neighbor;
-        vector<pair<int, float>> coreList;
+        coreList.clear();
 
         // get core and sort
         for (int r = windowEdge; r < rst.meta.nRow - windowEdge; ++r) {
@@ -101,6 +103,9 @@ pair<float, long> RTree::Run(float oTh, int cTh, float vTh, string inPath, strin
         int ignoredPoly = 0;
         for (auto kv: tree->poly2node) {
             if (kv.second->poly->range.isEqual(GeoRegion::GLOBAL)) {
+                background.pix += kv.second->poly->pix;
+                background.sum += kv.second->poly->sum;
+                background.dev += kv.second->poly->dev;
                 tree->poly2node.erase(kv.first);
                 ignoredPoly = kv.first;
                 break;
@@ -117,25 +122,11 @@ pair<float, long> RTree::Run(float oTh, int cTh, float vTh, string inPath, strin
     RTree::flushAll();
 
     // statistic dev of cluster
-    double devAvg = 0.0f;
-    long pixAvg = 0;
-    int nCls = 0;
-    for (const auto &item: RTree::Clusters) {
-        Cluster *pc = item.second;
-        if(!pc->isMerged) {
-            pc->statistic();
-            devAvg += pc->dev;
-            pixAvg += pc->pix;
-            ++nCls;
-        }
+    vector<float> res  = InnerEval(&background, datasetMean, RTree::Clusters);
 
-        delete pc;
-    }
-    devAvg = devAvg / nCls;
-    pixAvg = pixAvg / nCls;
     RTree::Clusters.clear();
-    cout << "[RTree::Run] devAvg: " << to_string(devAvg) << ", pixAvg: " << to_string(pixAvg) << endl;
-    return pair<float, long>{devAvg, pixAvg};
+
+    return res;
 }
 
 Poly *RTree::DBSCAN(Raster &rst, int r0, int c0, vector<pair<int, int>> neighbor) {
@@ -194,6 +185,15 @@ Poly *RTree::DBSCAN(Raster &rst, int r0, int c0, vector<pair<int, int>> neighbor
     }
 
     pPoly->range.updateGeo();
+
+    for (int r = pPoly->range.rowMin; r <= pPoly->range.rowMax; ++r) {
+        for (int c = pPoly->range.colMin; c <= pPoly->range.colMax; ++c) {
+            if (polyRst.get(r, c) != pPoly->id) {
+                pPoly->sumBG += rst.get(r, c);
+                pPoly->nPixBG += 1;
+            }
+        }
+    }
 
     return pPoly;
 }
@@ -313,7 +313,7 @@ void RTree::save() {
             OGRFeature::DestroyFeature(feature);
         }
     }
-    GDALClose(poShp);
+    GDALClose(GDALDataset::ToHandle(poShp));
 }
 
 void RTree::insert(RNode *node) {
@@ -421,10 +421,10 @@ void RNode::mergeCluster() {
 
         if (intersectArea / pn->area < OVERLAP_THRESHOLD &&
             intersectArea / area < OVERLAP_THRESHOLD ||
-//                intersectArea <= CORE_THRESHOLD ||
-                fabs(poly->avg - pn->poly->avg) > ATTRIBUTE_THRESHOLD ||
+            //                intersectArea <= CORE_THRESHOLD ||
+            fabs(poly->avg - pn->poly->avg) > ATTRIBUTE_THRESHOLD /*||
                 pn->cluster &&
-                fabs(poly->avg - pn->cluster->avg) > ATTRIBUTE_THRESHOLD) {
+                fabs(poly->avg - pn->cluster->avg) > ATTRIBUTE_THRESHOLD*/) {
             continue;
         }
 

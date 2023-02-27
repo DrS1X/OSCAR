@@ -602,13 +602,36 @@ vector<string> Resort(vector<string> RepeatFileList, vector<string> OtherFileLis
 }
 
 
-bool ClusterRstPolygonize(vector<string> fileList, string outPath){
+bool ClusterRstPolygonize(vector<string> fileList, string outPath, string inPath, Cluster* BG){
     outPath += "\\vec";
     CheckFolderExist(outPath);
 
-    for (const auto &f: fileList){
+    vector<string> srcFileList;
+    GetFileList(inPath, srcFileList);
+
+    assert(fileList.size() == srcFileList.size());
+
+    std::sort(fileList.begin(), fileList.end());
+    for (int k = 0; k < fileList.size(); ++k){
+        Tif *srcTif = new Tif(Meta::DEF, srcFileList[k]);
+        srcTif->read();
+
+        string f = fileList[k];
         Tif *tif = new Tif(Meta::DEF, f);
         tif->read();
+
+        assert(srcTif->meta.date == tif->meta.date);
+
+        for(int i = 0; i < Meta::DEF.nRow; ++i){
+            for(int j = 0; j < Meta::DEF.nCol; ++j){
+                float v = tif->get(i,j);
+                if(IsEqual(v, 0) || IsEqual(v, -1)){
+                    BG->pix += 1;
+                    BG->sum += v;
+                    BG->dev += v * v;
+                }
+            }
+        }
 
         int idx = f.find_last_of('\\');
         int idx2 = f.find_last_of('.');
@@ -630,7 +653,7 @@ bool ClusterRstPolygonize(vector<string> fileList, string outPath){
     return true;
 }
 
-float DcSTCA::Run(string inPath, string outPath, int _T, int cTh, float vTh) {
+vector<float> DcSTCA::Run(string inPath, string outPath, int _T, int cTh, float vTh) {
     meta = Meta::DEF;
     mRows = Meta::DEF.nRow;
     mCols = Meta::DEF.nCol;
@@ -640,7 +663,7 @@ float DcSTCA::Run(string inPath, string outPath, int _T, int cTh, float vTh) {
     T = _T;
 
     // mask background
-    double datasetMean;
+    static double datasetMean;
     float stdDevTime = 1.0f;
     string maskPath(outPath);
     maskPath += "\\mask_" + to_string(stdDevTime);
@@ -775,19 +798,6 @@ float DcSTCA::Run(string inPath, string outPath, int _T, int cTh, float vTh) {
         Rasterpixels.clear();
     }
 
-    // statistic dev of cluster
-    float devAvg = 0.0f;
-    int cCnt = 0;
-    for (const auto &item: clusters) {
-        Cluster *pc = item.second;
-        pc->statistic();
-        devAvg += pc->dev;
-        ++cCnt;
-
-        delete pc;
-    }
-    devAvg = devAvg / cCnt;
-
     // output
     vector<string> repeatFileList, otherFileList;
     for (std::set<string>::iterator it = repeatFileSet.begin(); it != repeatFileSet.end(); ++it)
@@ -799,9 +809,13 @@ float DcSTCA::Run(string inPath, string outPath, int _T, int cTh, float vTh) {
     vector<string> sorted = Resort(repeatFileList, otherFileList, outPath);
 
     // Polygonize
-    ClusterRstPolygonize(sorted, outPath);
+    Cluster *BG = new Cluster(0);
+    ClusterRstPolygonize(sorted, outPath, inPath, BG);
 
-    return devAvg;
+    // statistic
+    vector<float> res  = InnerEval(BG, datasetMean, clusters);
+
+    return res;
 }
 
 

@@ -1,14 +1,3 @@
-C:/Program Files (x86)/Windows Kits/10/include/10.0.22000.0/shared/poppack.h
-C:/Program Files (x86)/Windows Kits/10/include/10.0.22000.0/shared/winsmcrd.h
-C:/Program Files (x86)/Windows Kits/10/include/10.0.22000.0/um/winspool.h
-C:/Program Files (x86)/Windows Kits/10/include/10.0.22000.0/um/prsht.h
-C:/Program Files (x86)/Windows Kits/10/include/10.0.22000.0/shared/pshpack8.h
-C:/Program Files (x86)/Windows Kits/10/include/10.0.22000.0/shared/poppack.h
-C:/Program Files (x86)/Windows Kits/10/include/10.0.22000.0/um/ole2.h
-C:/Program Files (x86)/Windows Kits/10/include/10.0.22000.0/shared/pshpack8.h
-C:/Program Files (x86)/Windows Kits/10/include/10.0.22000.0/um/objbase.h
-C:/Program Files (x86)/Windows Kits/10/include/10.0.22000.0/shared/pshpack8.h
-C:/Program Files (x86)/Windows Kits/10/include/10.0.22000.0/um/combaseapi.h
-C:/Program Files (x86)/Windows Kits/10/include/10.0.22000.0/shared/pshpack8.h
-C:/Program Files (x86)/Windows Kits/10/include/10.0.22000.0/um/unknwnbase.h
-C:/Program Files (x86)/Windows Kits/10/include/10.0.22000.0/um/objidlbase.h
+E:/CLion_project/Clustering/pkg/release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs/include/gdal.h
+E:/CLion_project/Clustering/pkg/release-1930-x64-gdal-3-5-2-mapserver-8-0-0-libs/include/gdal_version.h
+C:/Program Files (x86)/Windows Kits/10/include/10.0.22000.0/ucrt/corecrt_malloc.h

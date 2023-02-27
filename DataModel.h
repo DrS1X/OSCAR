@@ -332,6 +332,8 @@ public:
     double sum;
     double dev;
     long pix;
+    double sumBG;
+    long nPixBG;
 public:
     Poly();
 

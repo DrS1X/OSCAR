@@ -157,24 +157,25 @@ void DcSTCABatch(path inputPath, path outputPath, int T, int maxK, int minK, int
     outputPath.append("DcSTCA_Batch_" + to_string(T) + "T");
     CheckFolderExist(outputPath);
 
-    path csvOutPath (outputPath);
+    path csvOutPath(outputPath);
     csvOutPath.append("DcSTCA_Res_" + to_string(T) + "T.csv");
-    Csv csv(csvOutPath.string(), "cTh,vTh,avgDev,time");
+    Csv csv(csvOutPath.string(), "cTh,vTh,devAvgNoBG,devAvg,devWeightAvg,CHI,time");
     for (int k = minK; k <= maxK; k += stepK) {
-        if(KV[k] == 0){
-            cerr << "[DcSTCABatch] " + to_string(k) +" Kth parameter no found.";
+        if (KV[k] == 0) {
+            cerr << "[DcSTCABatch] " + to_string(k) + " Kth parameter no found.";
             exit(1);
         }
 
         std::chrono::steady_clock::time_point bef = std::chrono::steady_clock::now();
 
         DcSTCA a;
-        double avgDev = a.Run(inputPath.string(), outputPath.string(), T, k, KV[k]);
+        vector<float> res = a.Run(inputPath.string(), outputPath.string(), T, k, KV[k]);
 
         std::chrono::steady_clock::time_point aft = std::chrono::steady_clock::now();
         std::chrono::duration<double> time_span = std::chrono::duration_cast<std::chrono::duration<double>>(aft - bef);
 
-        csv.ofs << k << ',' << KV[k] << ',' << avgDev << ',' << time_span.count() << endl;
+        csv.ofs << k << ',' << KV[k] << ',' << res[0] << ',' << res[1] << ',' << res[2] << ',' << res[3] << ','
+                << time_span.count() << endl;
     }
 }
 
@@ -200,10 +201,10 @@ void RBatch(path inputPath, path outputPath, float oTh) {
 
     path csvOutPath(outputPath);
     csvOutPath.append("R_Res_" + to_string(oTh) + "oTh.csv");
-    Csv csv(csvOutPath.string(), "cTh,vTh,avgDev,pixAvg,time");
+    Csv csv(csvOutPath.string(), "cTh,vTh,devAvgNoBG,devAvg,devWeightAvg,CHI,time");
     for (int k = minK; k <= maxK; k += 1) {
-        if(KV[k] == 0){
-            cerr << "[DcSTCABatch] " + to_string(k) +" Kth parameter no found.";
+        if (KV[k] == 0) {
+            cerr << "[DcSTCABatch] " + to_string(k) + " Kth parameter no found.";
             exit(1);
         }
 
@@ -214,7 +215,8 @@ void RBatch(path inputPath, path outputPath, float oTh) {
         std::chrono::steady_clock::time_point aft = std::chrono::steady_clock::now();
         std::chrono::duration<double> time_span = std::chrono::duration_cast<std::chrono::duration<double>>(aft - bef);
 
-        csv.ofs << k << ',' << KV[k] << ',' << res.first << ',' << res.second << ',' << time_span.count() << endl;
+        csv.ofs << k << ',' << KV[k] << ',' << res[0] << ',' << res[1] << ',' << res[2] << ',' << res[3] << ','
+                << time_span.count() << endl;
     }
 }
 
@@ -287,12 +289,12 @@ void Cluster::expandRNode(RNode *node) {
         beginStr = GetTPStr(begin);
         dur = GetDur(begin, end);
     }
-
     avg = sum / pix;
 }
 
 void Cluster::statistic() {
     assert(pix > 0);
-    double x = dev / pix - avg * avg;
-    dev = x > 0.0 ? sqrt(x) : 0.0;
+    avg = sum / pix;
+    dev = dev / pix - avg * avg;
+//    dev = x > 0.0 ? sqrt(x) : 0.0;
 }

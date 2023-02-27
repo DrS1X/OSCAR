@@ -76,7 +76,7 @@ public:
     static map<int, Cluster *> Clusters;
     static queue<RTree *> Cache;
 
-    static pair<float, long> Run(float oTh, int cTh, float vTh, string inPath, string outPath);
+    static vector<float> Run(float oTh, int cTh, float vTh, string inPath, string outPath);
 
     static bool flush();
 

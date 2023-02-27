@@ -129,5 +129,46 @@ void Evaluation(path truPath, path resPath, path outPath) {
                 to_string(ARIs[i]) << ',' <<
                 to_string(NMIs[i]) << endl;
     }
-    csv.ofs << "Total," << ARI << ','<< NMI;
+    csv.ofs << "Total," << ARI << ',' << NMI;
+}
+
+vector<float> InnerEval(Cluster *BG, double datasetMean, map<int, Cluster *> &clusters) {
+    BG->statistic();
+    float devAvg = 0, devAvgNoBG = 0, devWeightAvg = 0;
+    long nPix = 0;
+    int nCls = 0;
+    float CHI_1 = BG->pix * (BG->avg - datasetMean) * (BG->avg - datasetMean);
+    float CHI_2 = BG->dev * BG->pix;
+    float CHI;
+    for (const auto &item: clusters) {
+        Cluster *pc = item.second;
+        if (!pc->isMerged) {
+            pc->statistic();
+
+            CHI_1 += pc->avg - datasetMean;
+            CHI_2 += pc->dev * pc->pix;
+            devAvg += pc->dev;
+            devWeightAvg += pc->dev * pc->pix;
+            nPix += pc->pix;
+            ++nCls;
+        }
+        delete pc;
+    }
+
+    CHI_1 = CHI_1 / (nCls - 1);
+    CHI_2 = CHI_2 / (nPix - nCls);
+    CHI = CHI_1 / CHI_2;
+
+    devAvgNoBG = devAvg / nCls;
+
+    devAvg += BG->dev;
+    devWeightAvg += BG->dev * BG->pix;
+    nPix += BG->pix;
+    nCls += 1;
+
+    devAvg = devAvg / nCls;
+    devWeightAvg = devWeightAvg / nPix;
+
+    vector<float> res = {devAvgNoBG, devAvg, devWeightAvg, CHI};
+    return res;
 }
