@@ -654,6 +654,8 @@ bool ClusterRstPolygonize(vector<string> fileList, string outPath, string inPath
 }
 
 vector<float> DcSTCA::Run(string inPath, string outPath, int _T, int cTh, float vTh) {
+    batchSize = 21;
+
     meta = Meta::DEF;
     mRows = Meta::DEF.nRow;
     mCols = Meta::DEF.nCol;

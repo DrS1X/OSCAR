@@ -152,7 +152,7 @@ class DcSTCA {
 public:
     int T;
     int Neighborhood = 8;
-    int batchSize = 10;
+    int batchSize;
     int clusterId = 2;
     int MinNum;
     int mRows;

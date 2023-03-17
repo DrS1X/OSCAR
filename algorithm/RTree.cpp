@@ -23,6 +23,8 @@ bool cmp(pair<int, float> p1, pair<int, float> p2) {
 }
 
 vector<float> RTree::Run(float oTh, int cTh, float vTh, string inPath, string outPath) {
+    std::chrono::steady_clock::time_point bef = std::chrono::steady_clock::now();
+
     vector<string> fileList;
     GetFileList(inPath, fileList);
 
@@ -128,6 +130,13 @@ vector<float> RTree::Run(float oTh, int cTh, float vTh, string inPath, string ou
     vector<float> res  = InnerEval(&background, datasetMean, RTree::Clusters);
 
     RTree::Clusters.clear();
+
+    std::chrono::steady_clock::time_point aft = std::chrono::steady_clock::now();
+    std::chrono::duration<double> time_span = std::chrono::duration_cast<std::chrono::duration<double>>(aft - bef);
+    res.push_back(time_span.count());
+
+    cout << "devAvgNoBG,devAvg,devWeightAvg,CHI,time" << endl;
+    cout << res[0] << ',' << res[1] << ',' << res[2] << ',' << res[3] << ',' << res[4] << endl;
 
     return res;
 }

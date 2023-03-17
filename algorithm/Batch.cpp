@@ -208,15 +208,9 @@ void RBatch(path inputPath, path outputPath, float oTh) {
             exit(1);
         }
 
-        std::chrono::steady_clock::time_point bef = std::chrono::steady_clock::now();
-
         auto res = RTree::Run(oTh, k, KV[k], inputPath.string(), outputPath.string());
 
-        std::chrono::steady_clock::time_point aft = std::chrono::steady_clock::now();
-        std::chrono::duration<double> time_span = std::chrono::duration_cast<std::chrono::duration<double>>(aft - bef);
-
-        csv.ofs << k << ',' << KV[k] << ',' << res[0] << ',' << res[1] << ',' << res[2] << ',' << res[3] << ','
-                << time_span.count() << endl;
+        csv.ofs << k << ',' << KV[k] << ',' << res[0] << ',' << res[1] << ',' << res[2] << ',' << res[3] << ',' << res[4] << endl;
     }
 }
 
