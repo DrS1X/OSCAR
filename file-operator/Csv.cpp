@@ -14,7 +14,7 @@ Csv::~Csv() {
     ofs.close();
 }
 
-bool Csv::Read(string fileName, vector<vector<string>> &words) {
+bool Csv::Read(string fileName, vector<vector<string>> &words, bool hasHead) {
     std::ifstream ifs(fileName, std::ios::in);
     std::string line;
 
@@ -27,7 +27,8 @@ bool Csv::Read(string fileName, vector<vector<string>> &words) {
     std::string word;
 
     // get head
-    std::getline(ifs, line);
+    if(hasHead)
+        std::getline(ifs, line);
 
     while (std::getline(ifs, line)) {
         if (line.empty())

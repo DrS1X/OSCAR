@@ -360,7 +360,7 @@ void SimulateData(filesystem::path inPath, filesystem::path outPath) {
     srcPath /= "src";
     truthPath /= "truth";
     CheckFolderExist(srcPath);
-    CheckFolderExist(outPath);
+    CheckFolderExist(truthPath);
 
     std::vector<std::string> files;
     GetFileList(inPath.string(), files);
@@ -374,14 +374,12 @@ void SimulateData(filesystem::path inPath, filesystem::path outPath) {
     for (const auto &file: std::filesystem::directory_iterator(inPath)) {
         filesystem::path fileName(file.path().filename());
         fileName.replace_extension(".tiff");
-        srcPath /= fileName;
-        truthPath /= fileName;
-        Tif *src = new Tif(Meta::DEF, srcPath.string());
-        Tif *truth = new Tif(Meta::DEF, truthPath.string());
+        Tif *src = new Tif(Meta::DEF, srcPath.string() + "\\" +fileName.string());
+        Tif *truth = new Tif(Meta::DEF, truthPath.string() + "\\" + fileName.string());
 
-        vector<vector<string>> csvDat(Meta::DEF.nCol, vector<string>(Meta::DEF.nRow));
+        vector<vector<string>> csvDat(Meta::DEF.nCol, vector<string>());
         Csv::Read(file.path().string(), csvDat);
-        for (int r = 0; r < Meta::DEF.nRow; ++r) {
+        for (int r = 0; r < Meta::DEF.nRow - 1; ++r) {
             for (int c = 0; c < Meta::DEF.nCol; ++c) {
                 float v = 0.0f;
                 if (!csvDat[c][r].empty()) {

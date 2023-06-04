@@ -170,12 +170,36 @@ void Test_BackGround(){
     Background( inPath, &mean, &time, maskOutPath);
 }
 
+void script(){
+    SimulateInit();
+    Tif* t6 = new Tif(Meta::DEF, "E:\\pr\\simulate\\src\\s200006.tiff");
+    Tif* t7 = new Tif(Meta::DEF, "E:\\pr\\simulate\\src\\s200007.tiff");
+    t6->read();
+    t7->read();
+    vector<vector<float>> mem(20,vector<float>(20));
+    for (int i = 0; i < 20; ++i) {
+        for (int j = 0; j < 20; ++j) {
+            mem[i][j] = t6->get(i,j);
+            t6->update(i,j, t7->get(i,j));
+        }
+    }
+    for (int i = 0; i < 20; ++i) {
+        for (int j = 0; j < 20; ++j) {
+            t7->update(i,j, mem[i][j]);
+        }
+    }
+    t6->name = "E:\\pr\\simulate\\s200006.tiff";
+    t7->name = "E:\\pr\\simulate\\s200007.tiff";
+    t6->write();
+    t7->write();
+}
+
 extern int optind, opterr, optopt;
 extern char *optarg;
 
 int main(int argc, char *argv[]) {
     if (argc <= 1) {
-        Test_BackGround();
+        script();
         return 0;
     }
 
@@ -209,7 +233,7 @@ int main(int argc, char *argv[]) {
              << "-k -t 1 -o E:\\pr\\simulate -i E:\\pr\\simulate\\src -S\n"
              << "-d -b -t 1 -x 27 -n 3 -s 1 -m -o E:\\pr\\simulate -i E:\\pr\\simulate\\src -S\n"
              << "-r -b -m -o E:\\pr\\simulate -i E:\\pr\\simulate\\src -S\n"
-             << "-e -o E:\\pr\\simulate\\R_Batch_0.500000oTh\\R_0.500000_7_3.090000 -i E:\\pr\\simulate\\truth -i E:\\pr\\simulate\\R_Batch_0.500000oTh\\R_0.500000_7_3.090000\\cid -S\n"
+             << "-e -o E:\\pr\\simulate\\R_Batch_0.750000oTh\\R_0.750000_7_3.090000 -i E:\\pr\\simulate\\truth -i E:\\pr\\simulate\\R_Batch_0.750000oTh\\R_0.750000_7_3.090000\\cid -S\n"
              << "-d -t 1 -c 15 -v 3 -m -o E:\\pr\\simulate -i E:\\pr\\simulate\\tif2 -S\n"
              << "-r -t 1 -c 5 -v 3 -m -o E:\\pr\\simulate -i E:\\pr\\simulate\\tif2 -S\n"
              << endl;

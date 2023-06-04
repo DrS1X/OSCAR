@@ -180,7 +180,7 @@ void DcSTCABatch(path inputPath, path outputPath, int T, int maxK, int minK, int
 }
 
 void RBatch(path inputPath, path outputPath, float oTh) {
-    const int minK = 4;
+    const int minK = 3;
     const int maxK = 9;
 
     // Kth
